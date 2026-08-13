@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FAF8F5;
+    color: #111827;
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Warm Light Architectural Styling System */
+.light-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px -2px rgba(17, 24, 39, 0.04);
+  transition: all 0.2s ease-in-out;
+}
+
+.light-card:hover {
+  border-color: #111827;
+  box-shadow: 0 10px 25px -4px rgba(17, 24, 39, 0.08);
+}
+
+.light-btn {
+  background-color: #111827;
+  color: #FAF8F5;
+  border-radius: 10px;
+  font-weight: 700;
+  transition: all 0.2s ease-in-out;
+}
+
+.light-btn:hover {
+  background-color: #1F2937;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(17, 24, 39, 0.15);
+}
+
+.light-badge {
+  background-color: #111827;
+  color: #FAF8F5;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Leaflet Map Light Architectural Theme Overrides */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: #FAF8F5 !important;
+  border: 1px solid #E5E7EB;
+  z-index: 10;
+}
+
+.leaflet-tile {
+  filter: contrast(1.05) saturate(0.9);
+}
+
+.leaflet-popup-content-wrapper {
+  background: #111827 !important;
+  color: #FAF8F5 !important;
+  border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+  background: #111827 !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+@import "maplibre-gl/dist/maplibre-gl.css";
