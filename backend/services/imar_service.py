@@ -37,6 +37,16 @@ MUNICIPAL_WEBGIS: Dict[str, Dict[str, str]] = {
     "basaksehir": {"platform": "netgis", "base": "https://webgis.basaksehir.bel.tr/imardurumu/"},
     "silivri":    {"platform": "netgis", "base": "https://webgis.silivri.bel.tr/imardurumu/"},
     "gungoren":   {"platform": "netgis", "base": "https://keos.gungoren.bel.tr:3443/imardurumu/"},
+    # İBB/ArcGIS "Kent Rehberi" platformu (AdaParsel + PlanBinaYok mekansal sorgu).
+    "uskudar":    {"platform": "arcgis_kentrehberi",
+                   "gis": "https://harita.uskudar.bel.tr/server/rest/services/KENTREHBERI",
+                   "eharita": "https://cbs.uskudar.bel.tr/eharita/"},
+}
+
+# ArcGIS KULLANIM kodları için yedek eşleme (domain yoksa).
+_KULLANIM_FALLBACK = {
+    1: "Konut", 2: "Ticaret", 3: "Konut + Ticaret", 4: "Sanayi", 5: "Turizm",
+    6: "Yeşil Alan", 7: "Donatı", 8: "Resmi Kurum", 9: "Eğitim", 10: "Sağlık",
 }
 
 _UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -154,7 +164,8 @@ def _extract_imar(doc: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Platform adaptörleri
 # ---------------------------------------------------------------------------
-def _query_netgis(base: str, district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]]:
+def _query_netgis(cfg: Dict[str, str], district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]]:
+    base = cfg["base"]
     s = requests.Session()
     s.headers.update({"User-Agent": _UA})
     s.get(base, timeout=8, verify=False)
@@ -194,7 +205,29 @@ def fetch_parcel_geometry(district: str, ada: str, parsel: str) -> Optional[Dict
     Ada/parsel-öncelikli akışta konumu adres olmadan bulmak için. Desteklenen
     ilçe değilse / hata -> None."""
     cfg = MUNICIPAL_WEBGIS.get(_norm(district))
-    if not cfg or cfg["platform"] != "netgis" or not ada or not parsel:
+    if not cfg or not ada or not parsel:
+        return None
+
+    # ArcGIS Kent Rehberi: AdaParsel katmanından geometri (4326).
+    if cfg["platform"] == "arcgis_kentrehberi":
+        try:
+            gis = cfg["gis"]
+            j = _agq(gis + "/AdaParsel/MapServer/1/query",
+                     {"where": "ADANO='%s' AND ADINUMARASI='%s'" % (ada, parsel),
+                      "outFields": "MAHALLE", "returnGeometry": "true", "outSR": "4326"})
+            feats = j.get("features", [])
+            if not feats:
+                return None
+            ring = feats[0]["geometry"]["rings"][0]
+            cx = sum(p[0] for p in ring) / len(ring)
+            cy = sum(p[1] for p in ring) / len(ring)
+            geom = {"type": "Polygon", "coordinates": [[[p[0], p[1]] for p in ring]]}
+            return {"lat": cy, "lng": cx, "geometry": geom,
+                    "tapu_mahalle": feats[0]["attributes"].get("MAHALLE", "")}
+        except Exception:
+            return None
+
+    if cfg["platform"] != "netgis":
         return None
     base = cfg["base"]
     try:
@@ -228,8 +261,101 @@ def fetch_parcel_geometry(district: str, ada: str, parsel: str) -> Optional[Dict
         return None
 
 
+# ArcGIS coded-value domain cache (gis_base -> {field -> {code: label}}).
+_ARCGIS_DOMAINS: Dict[str, Dict[str, Dict[Any, str]]] = {}
+
+
+def _arcgis_domains(gis: str) -> Dict[str, Dict[Any, str]]:
+    if gis in _ARCGIS_DOMAINS:
+        return _ARCGIS_DOMAINS[gis]
+    out: Dict[str, Dict[Any, str]] = {}
+    try:
+        f = requests.get(gis + "/PlanBinaYok/MapServer/221?f=json", timeout=10, verify=False).json()
+        for fl in f.get("fields", []):
+            dom = fl.get("domain")
+            if dom and dom.get("codedValues"):
+                out[fl["name"]] = {c["code"]: c["name"] for c in dom["codedValues"]}
+    except Exception:
+        pass
+    _ARCGIS_DOMAINS[gis] = out
+    return out
+
+
+def _agq(url: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    params = dict(params)
+    params["f"] = "json"
+    return requests.get(url, params=params, timeout=12, verify=False).json()
+
+
+def _query_arcgis_kentrehberi(cfg: Dict[str, str], district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]]:
+    """İBB/ArcGIS 'Kent Rehberi' platformu: AdaParsel katmanından parsel geometrisi,
+    PlanBinaYok/221 (PLAN ADASI) katmanından mekansal kesişimle YAPISAL imar verisi
+    (TAKS/KAKS, fonksiyon, yapı düzeni, bahçe mesafeleri, kat, yükseklik...)."""
+    gis = cfg["gis"]
+    where = "ADANO='%s' AND ADINUMARASI='%s'" % (ada, parsel)
+    j = _agq(gis + "/AdaParsel/MapServer/1/query",
+             {"where": where, "outFields": "ID,PAFTANO,ALANI,MAHALLE",
+              "returnGeometry": "true", "outSR": "4326"})
+    feats = j.get("features", [])
+    if not feats:
+        return None
+    a = feats[0]["attributes"]
+    ring = feats[0].get("geometry", {}).get("rings", [[]])[0]
+    if not ring:
+        return None
+    cx = sum(p[0] for p in ring) / len(ring)
+    cy = sum(p[1] for p in ring) / len(ring)
+
+    pt = json.dumps({"x": cx, "y": cy, "spatialReference": {"wkid": 4326}})
+    pj = _agq(gis + "/PlanBinaYok/MapServer/221/query",
+              {"geometry": pt, "geometryType": "esriGeometryPoint", "inSR": "4326",
+               "spatialRel": "esriSpatialRelIntersects", "outFields": "*", "returnGeometry": "false"})
+    pf = pj.get("features", [])
+    plan = pf[0]["attributes"] if pf else {}
+
+    dom = _arcgis_domains(gis)
+    kod = plan.get("KULLANIM")
+    fonksiyon = (dom.get("KULLANIM", {}).get(kod) or _KULLANIM_FALLBACK.get(kod))
+    nizam = dom.get("YAPIDUZENI", {}).get(plan.get("YAPIDUZENI"))
+
+    def val(v):
+        return v if v not in (None, "", " ", 0) else None
+
+    out: Dict[str, Any] = {
+        "supported": True,
+        "belediye": district.strip().title() + " Belediyesi",
+        "ada_parsel": "%s/%s" % (ada, parsel),
+        "tapu_mahalle": a.get("MAHALLE", ""),
+        "pafta": a.get("PAFTANO"),
+        "parsel_alani": ("%.2f m²" % a["ALANI"]) if a.get("ALANI") else None,
+        "kaynak_url": "%s#/imardurum?id=%s" % (cfg.get("eharita", ""), a.get("ID", "")),
+        "_lat": cy, "_lng": cx,
+    }
+    if fonksiyon:
+        out["fonksiyon"] = fonksiyon
+    if nizam:
+        out["insaat_nizami"] = nizam
+    for key, col in (("taks", "TAKS"), ("kaks", "KAKS"), ("kat_adedi", "KATADEDI"),
+                     ("on_bahce", "ONBAHCEMESAFESI"), ("yan_bahce", "YANBAHCEMESAFESI"),
+                     ("arka_bahce", "ARKABAHCEMESAFESI"), ("bina_yuksekligi", "MAKSBINAYUKSEKLIK"),
+                     ("bina_derinligi", "MAKSDERINLIK"), ("min_cephe", "MINCEPHE")):
+        v = val(plan.get(col))
+        if v is not None:
+            out[key] = v
+    # ham alanlar (algoritmalar için) — kodları çözülmüş etiketlerle
+    tum = {}
+    for k, v in plan.items():
+        if val(v) is not None and not k.startswith(("SHAPE", "OBJECTID", "GLOBALID")):
+            tum[k] = dom.get(k, {}).get(v, v)
+    if tum:
+        out["tum_alanlar"] = tum
+    # imar verisi gerçekten geldiyse döndür
+    return out if (fonksiyon or "taks" in out or "kat_adedi" in out) else None
+
+
 _ADAPTERS = {
     "netgis": _query_netgis,
+    "arcgis_kentrehberi": _query_arcgis_kentrehberi,
 }
 
 
@@ -241,7 +367,7 @@ def _query_live(district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]
     if not adapter:
         return None
     try:
-        return adapter(cfg["base"], district, ada, parsel)
+        return adapter(cfg, district, ada, parsel)
     except Exception:
         return None
 
