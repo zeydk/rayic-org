@@ -29,6 +29,9 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
     sifir_konut_prim_pct,
     kiralik_rayic_tlm2,
     base_price_source,
+    trend_yillik_nominal_pct,
+    projeksiyon_12ay_tlm2,
+    projeksiyon_24ay_tlm2,
   } = valuation;
 
   const monthlyRent = financials?.estimated_monthly_rent || roundEstimatedRent(estimated_total_price);
@@ -102,6 +105,12 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
           {typeof sifir_konut_prim_pct === "number" && sifir_konut_prim_pct > 0.5 && (
             <span className="text-[10px] text-[#7C3AED] font-semibold mt-0.5 block">
               🏗️ Konut yaşı: {yas_bandi} — sıfır (yeni) konut, bu yaştaki daireye göre bölgede ~%{sifir_konut_prim_pct.toFixed(0)} primli
+            </span>
+          )}
+          {typeof trend_yillik_nominal_pct === "number" && typeof projeksiyon_12ay_tlm2 === "number" && (
+            <span className="text-[10px] text-[#0284C7] font-semibold mt-0.5 block">
+              📈 Fiyat trendi: +%{trend_yillik_nominal_pct.toFixed(1)}/yıl (nominal) · 12 ay projeksiyon: {projeksiyon_12ay_tlm2.toLocaleString("tr-TR")} ₺/m²
+              {typeof projeksiyon_24ay_tlm2 === "number" ? ` · 24 ay: ${projeksiyon_24ay_tlm2.toLocaleString("tr-TR")} ₺/m²` : ""}
             </span>
           )}
         </div>

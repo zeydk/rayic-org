@@ -26,6 +26,9 @@ class ValuationResult(BaseModel):
     yas_bandi: str = "-"
     sifir_konut_prim_pct: Optional[float] = None
     kiralik_rayic_tlm2: Optional[float] = None
+    trend_yillik_nominal_pct: Optional[float] = None
+    projeksiyon_12ay_tlm2: Optional[float] = None
+    projeksiyon_24ay_tlm2: Optional[float] = None
     valuation_breakdown: Dict[str, float]
 
 
@@ -84,6 +87,46 @@ def _age_multiplier(district: Optional[str], band: str) -> float:
             if band in c:
                 return c[band]
     return _AGE_GENEL.get(band, 1.0)
+
+
+def _load_market_trend() -> Dict[str, Any]:
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "market_trend.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+_MARKET_TREND = _load_market_trend()
+_TREND_ILCE: Dict[str, float] = _MARKET_TREND.get("ilce_yillik_nominal_pct", {})
+_TREND_ISTANBUL: float = float(_MARKET_TREND.get("istanbul_yillik_nominal_pct", 17.5))
+
+
+def market_projection(district: Optional[str], current_tlm2: float) -> Dict[str, Any]:
+    """Fiyat trendi + market projeksiyonu. Trend, EmlakJet(2024-09)→piyasa
+    raporu(2026-06) gerçekleşen yıllık nominal büyümeden; TCMB KFE makro endeks
+    YoY bağlam olarak eklenir. Projeksiyon = güncel × (1+trend)^yıl."""
+    # İlçe gerçekleşen trendi (kaynak gürültüsü içerir) ile İstanbul genelini
+    # 50/50 blend'le — daha kararlı bir yerel trend.
+    ilce_yr = None
+    for k, v in _TREND_ILCE.items():
+        if _norm_tr(k) == _norm_tr(district or ""):
+            ilce_yr = float(v)
+            break
+    if ilce_yr is not None:
+        yr = 0.5 * ilce_yr + 0.5 * _TREND_ISTANBUL
+    else:
+        yr = _TREND_ISTANBUL
+    yr = max(6.0, min(35.0, yr))
+    r = yr / 100.0
+    kfe_yoy = get_tcmb_kfe_summary().get("nominal_change_yoy")
+    return {
+        "trend_yillik_nominal_pct": round(yr, 1),
+        "kfe_makro_yoy_pct": kfe_yoy,
+        "projeksiyon_12ay_tlm2": round(current_tlm2 * (1 + r)),
+        "projeksiyon_24ay_tlm2": round(current_tlm2 * (1 + r) ** 2),
+    }
 
 
 def piyasa_kiralik(district: Optional[str], neighborhood: Optional[str]) -> Optional[float]:
@@ -341,6 +384,7 @@ def calculate_valuation(
 
     # Base m² brought to today's level.
     base_m2 = round(base_m2_hist * k_tcmb, 0)
+    _proj = market_projection(district, base_m2)
     price_before_inflation = base_m2_hist * net_m2 * k_age * k_floor * k_facade
     raw_estimated_price = base_m2 * net_m2 * k_age * k_floor * k_facade
     tcmb_impact_tl = raw_estimated_price - price_before_inflation
@@ -384,6 +428,9 @@ def calculate_valuation(
         yas_bandi=_yas_info["yas_bandi"],
         sifir_konut_prim_pct=_yas_info["sifir_konut_prim_pct"],
         kiralik_rayic_tlm2=piyasa_kiralik(district, neighborhood),
+        trend_yillik_nominal_pct=_proj["trend_yillik_nominal_pct"],
+        projeksiyon_12ay_tlm2=_proj["projeksiyon_12ay_tlm2"],
+        projeksiyon_24ay_tlm2=_proj["projeksiyon_24ay_tlm2"],
         valuation_breakdown={
             "base_m2": base_m2,
             "net_m2": net_m2,
