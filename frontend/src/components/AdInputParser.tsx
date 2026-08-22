@@ -774,14 +774,16 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
                         ["İnşaat Nizamı", imarDurumu.insaat_nizami],
                         ["Emsal (KAKS)", imarDurumu.kaks || imarDurumu.emsal],
                         ["TAKS", imarDurumu.taks],
-                        ["Bina Yüksekliği", imarDurumu.bina_yuksekligi || imarDurumu.maks_yukseklik_m],
-                        ["Kat Adedi", imarDurumu.kat_adedi || imarDurumu.maks_kat],
+                        ["Bina Yüksekliği (Hmaks)", imarDurumu.bina_yuksekligi || imarDurumu.hmaks || imarDurumu.maks_yukseklik_m],
+                        ["Kat Adedi", imarDurumu.kat_adedi || imarDurumu.maks_kat_adedi || imarDurumu.maks_kat],
                         ["Ön Bahçe", imarDurumu.on_bahce],
                         ["Yan Bahçe", imarDurumu.yan_bahce],
                         ["Arka Bahçe", imarDurumu.arka_bahce],
                         ["Bina Derinliği", imarDurumu.bina_derinligi],
                         ["Bina Genişliği", imarDurumu.bina_genisligi],
                         ["Pafta", imarDurumu.pafta],
+                        ["Plan Ölçeği", imarDurumu.plan_olcegi],
+                        ["Tasdik Tarihi", imarDurumu.tasdik_tarihi],
                         ["Parsel Alanı", imarDurumu.parsel_alani],
                       ] as [string, string | undefined][]).filter(([, v]) => v).map(([label, v]) => (
                         <div key={label} className="p-2 bg-[#FAF8F5] border border-[#E5E7EB] rounded-lg">
@@ -790,6 +792,21 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
                         </div>
                       ))}
                     </div>
+
+                    {/* Ham belediye öznitelikleri — hiçbir alan kaybolmasın (her platform) */}
+                    {imarDurumu.tum_alanlar && Object.keys(imarDurumu.tum_alanlar).length > 0 && (
+                      <details className="text-[10px] text-slate-600 mt-1">
+                        <summary className="cursor-pointer font-bold text-[#0284C7]">🗂️ Tüm İmar Öznitelikleri ({Object.keys(imarDurumu.tum_alanlar).length})</summary>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mt-1">
+                          {Object.entries(imarDurumu.tum_alanlar as Record<string, string>).map(([label, v]) => (
+                            <div key={label} className="p-1.5 bg-[#FAF8F5] border border-[#E5E7EB] rounded-md">
+                              <span className="text-[8px] text-slate-500 uppercase block font-bold break-words">{label}</span>
+                              <span className="text-[11px] text-[#111827] font-bold break-words">{String(v)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    )}
                     {imarDurumu.plan_notlari && (
                       <details className="text-[10px] text-slate-600">
                         <summary className="cursor-pointer font-bold text-[#0284C7]">📋 Plan Notları ve İmar Planı Geçmişi</summary>
