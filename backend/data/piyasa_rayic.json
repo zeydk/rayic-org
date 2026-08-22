@@ -1,450 +1,2005 @@
 {
- "Adalar": {
-  "Heybeli̇ada": {
-   "satilik_tlm2": 97992,
-   "kiralik_tlm2": 724.27
-  },
-  "Maden": {
-   "satilik_tlm2": 103088,
-   "kiralik_tlm2": 679.78
-  },
-  "Ni̇zam": {
-   "kiralik_tlm2": 573.9
-  }
+ "meta": {
+  "kaynak": "İnBusiness Ağustos 2026 Emlak Raporu (özel araştırma)",
+  "donem": "Haziran 2026",
+  "metrik": "satılık ve kiralık TL/m² (blended, tüm yaşlar)",
+  "ilce_sayisi": 39,
+  "mahalle_sayisi": 479
  },
- "Arnavutköy": {
-  "Anadolu": {
-   "kiralik_tlm2": 261.77
+ "rayic": {
+  "Adalar": {
+   "Heybeliada": {
+    "satilik": 97992,
+    "kiralik": 724.27
+   },
+   "Maden": {
+    "satilik": 103088,
+    "kiralik": 679.78
+   },
+   "Nizam": {
+    "satilik": 120700,
+    "kiralik": 573.9
+   }
   },
-  "Arnavutköy Merkez": {
-   "satilik_tlm2": 45369,
-   "kiralik_tlm2": 2747
+  "Arnavutköy": {
+   "Anadolu": {
+    "satilik": 41911,
+    "kiralik": 261.77
+   },
+   "Arnavutköy Merkez": {
+    "satilik": 45369,
+    "kiralik": 275.47
+   },
+   "Hadımköy": {
+    "satilik": 42335,
+    "kiralik": 262.14
+   }
   },
-  "Hadimköy": {
-   "satilik_tlm2": 42335,
-   "kiralik_tlm2": 2624
-  }
- },
- "Ataşehi̇r": {
-  "Aşikveysel": {
-   "satilik_tlm2": 64186,
-   "kiralik_tlm2": 489.27
+  "Ataşehir": {
+   "Aşıkveysel": {
+    "satilik": 64186,
+    "kiralik": 489.27
+   },
+   "Atatürk": {
+    "satilik": 140476,
+    "kiralik": 665.53
+   },
+   "Barbaros": {
+    "satilik": 143898,
+    "kiralik": 707.01
+   },
+   "Esatpaşa": {
+    "satilik": 75834,
+    "kiralik": 465.97
+   },
+   "Fetih": {
+    "satilik": 82813,
+    "kiralik": 394.44
+   },
+   "İçerenköy": {
+    "satilik": 67599,
+    "kiralik": 411.34
+   },
+   "İnönü": {
+    "satilik": 74333,
+    "kiralik": 521.01
+   },
+   "Kayışdağı": {
+    "satilik": 68514,
+    "kiralik": 557.53
+   },
+   "Küçükbakkalköy": {
+    "satilik": 107439,
+    "kiralik": 606.79
+   },
+   "Mevlana": {
+    "satilik": 74434,
+    "kiralik": 313.0
+   },
+   "Örnek": {
+    "satilik": 83663,
+    "kiralik": 467.93
+   },
+   "Yeni Çamlıca": {
+    "satilik": 64559,
+    "kiralik": 278.95
+   },
+   "Yeni Sahra": {
+    "satilik": 61563,
+    "kiralik": 359.32
+   },
+   "Yenişehir": {
+    "satilik": 108592,
+    "kiralik": 521.21
+   }
   },
-  "Atatürk": {
-   "satilik_tlm2": 140476,
-   "kiralik_tlm2": 665.53
-  }
- },
- "Bağcilar": {
-  "Ki̇razli": {
-   "satilik_tlm2": 57301,
-   "kiralik_tlm2": 353.59
+  "Avcılar": {
+   "Ambarlı": {
+    "satilik": 47952,
+    "kiralik": 357.75
+   },
+   "Cihangir": {
+    "satilik": 43953,
+    "kiralik": 357.54
+   },
+   "Denizköşkler": {
+    "satilik": 45686,
+    "kiralik": 300.66
+   },
+   "Gümüşpala": {
+    "satilik": 43775,
+    "kiralik": 344.86
+   },
+   "Merkez": {
+    "satilik": 55618,
+    "kiralik": 322.5
+   },
+   "Mustafa Kemal Paşa": {
+    "satilik": 40866,
+    "kiralik": 332.87
+   },
+   "Tahtakale": {
+    "satilik": 58829,
+    "kiralik": 350.4
+   },
+   "Üniversite": {
+    "satilik": 50328,
+    "kiralik": 373.55
+   }
   },
-  "Mahmutbey": {
-   "kiralik_tlm2": 426.8
+  "Bağcılar": {
+   "15 Temmuz": {
+    "satilik": 55465,
+    "kiralik": 405.08
+   },
+   "Bağlar": {
+    "satilik": 75786,
+    "kiralik": 492.28
+   },
+   "Barbaros": {
+    "satilik": 41640,
+    "kiralik": 310.25
+   },
+   "Çınar": {
+    "satilik": 40975,
+    "kiralik": 306.54
+   },
+   "Fatih": {
+    "satilik": 37102,
+    "kiralik": 234.71
+   },
+   "Göztepe": {
+    "satilik": 68832,
+    "kiralik": 404.41
+   },
+   "Güneşli": {
+    "satilik": 55856,
+    "kiralik": 430.52
+   },
+   "Hürriyet": {
+    "satilik": 55448,
+    "kiralik": 316.89
+   },
+   "İnönü": {
+    "satilik": 32063,
+    "kiralik": 247.07
+   },
+   "Kazım Karabekir": {
+    "satilik": 40556,
+    "kiralik": 287.65
+   },
+   "Kemalpaşa": {
+    "satilik": 36013,
+    "kiralik": 214.65
+   },
+   "Kırazlı": {
+    "satilik": 57301,
+    "kiralik": 353.59
+   },
+   "Mahmutbey": {
+    "satilik": 71774,
+    "kiralik": 426.8
+   },
+   "Merkez": {
+    "satilik": 50613,
+    "kiralik": 302.5
+   },
+   "Sancaktepe": {
+    "satilik": 51740,
+    "kiralik": 328.51
+   },
+   "Yavuz Selim": {
+    "satilik": 49388,
+    "kiralik": 306.01
+   },
+   "Yenigün": {
+    "satilik": 36293,
+    "kiralik": 298.84
+   },
+   "Yenimahalle": {
+    "satilik": 67047,
+    "kiralik": 437.52
+   },
+   "Yıldıztepe": {
+    "satilik": 39544,
+    "kiralik": 294.12
+   }
   },
-  "Merkez": {
-   "kiralik_tlm2": 302.5
+  "Bahçelievler": {
+   "Bahçelievler": {
+    "satilik": 115211,
+    "kiralik": 669.15
+   },
+   "Çobançeşme": {
+    "satilik": 60718,
+    "kiralik": 382.1
+   },
+   "Cumhuriyet": {
+    "satilik": 44807,
+    "kiralik": 365.42
+   },
+   "Fevzi Çakmak": {
+    "satilik": 57363,
+    "kiralik": 385.42
+   },
+   "Hürriyet": {
+    "satilik": 57373,
+    "kiralik": 428.43
+   },
+   "Kocasinan Merkez": {
+    "satilik": 60321,
+    "kiralik": 426.16
+   },
+   "Şirinevler": {
+    "satilik": 57771,
+    "kiralik": 422.29
+   },
+   "Siyavuşpaşa": {
+    "satilik": 59900,
+    "kiralik": 476.41
+   },
+   "Soğanlı": {
+    "satilik": 55495,
+    "kiralik": 440.02
+   },
+   "Yenibosna Merkez": {
+    "satilik": 65080,
+    "kiralik": 490.11
+   },
+   "Zafer": {
+    "satilik": 52196,
+    "kiralik": 394.34
+   }
+  },
+  "Bakırköy": {
+   "Ataköy 2-5-6. Kısım": {
+    "satilik": 219753,
+    "kiralik": 944.24
+   },
+   "Ataköy 3-4-11. Kısım": {
+    "satilik": 129664,
+    "kiralik": 715.44
+   },
+   "Ataköy 7-8-9-10. Kısım": {
+    "satilik": 123150,
+    "kiralik": 797.18
+   },
+   "Basınköy": {
+    "satilik": 135767,
+    "kiralik": 598.24
+   },
+   "Cevizlik": {
+    "satilik": 75230,
+    "kiralik": 516.73
+   },
+   "Kartaltepe": {
+    "satilik": 101717,
+    "kiralik": 559.32
+   },
+   "Osmaniye": {
+    "satilik": 90961,
+    "kiralik": 625.81
+   },
+   "Sakızağacı": {
+    "satilik": 121223,
+    "kiralik": 546.45
+   },
+   "Şenlikköy": {
+    "satilik": 135222,
+    "kiralik": 597.25
+   },
+   "Yenimahalle": {
+    "satilik": 62014,
+    "kiralik": 498.63
+   },
+   "Yeşilköy": {
+    "satilik": 163447,
+    "kiralik": 834.94
+   },
+   "Yeşilyurt": {
+    "satilik": 215211,
+    "kiralik": 823.18
+   },
+   "Zeytinlik": {
+    "satilik": 80804,
+    "kiralik": 450.38
+   },
+   "Zuhuratbaba": {
+    "satilik": 111973,
+    "kiralik": 654.3
+   }
+  },
+  "Başakşehir": {
+   "Bahçeşehir 1. Kısım": {
+    "satilik": 69642,
+    "kiralik": 368.76
+   },
+   "Bahçeşehir 2. Kısım": {
+    "satilik": 56649,
+    "kiralik": 357.24
+   },
+   "Başak": {
+    "satilik": 79193,
+    "kiralik": 391.88
+   },
+   "Başakşehir": {
+    "satilik": 78824,
+    "kiralik": 433.65
+   },
+   "Güvercintepe": {
+    "satilik": 40422,
+    "kiralik": 256.95
+   },
+   "Kayabaşı": {
+    "satilik": 75088,
+    "kiralik": 451.4
+   },
+   "Ziya Gökalp": {
+    "satilik": 75998,
+    "kiralik": 417.08
+   }
+  },
+  "Bayrampaşa": {
+   "Altıntepsi": {
+    "satilik": 58715,
+    "kiralik": 432.01
+   },
+   "Cevatpaşa": {
+    "satilik": 55950,
+    "kiralik": 354.66
+   },
+   "İsmet Paşa": {
+    "satilik": 108546,
+    "kiralik": 636.15
+   },
+   "Kartaltepe": {
+    "satilik": 51830,
+    "kiralik": 371.14
+   },
+   "Kocatepe": {
+    "satilik": 67704,
+    "kiralik": 462.09
+   },
+   "Muratpaşa": {
+    "satilik": 58080,
+    "kiralik": 371.58
+   },
+   "Ortamahalle": {
+    "satilik": 45518,
+    "kiralik": 361.63
+   },
+   "Terazidere": {
+    "satilik": 51070,
+    "kiralik": 326.63
+   },
+   "Yenidoğan": {
+    "satilik": 53280,
+    "kiralik": 360.26
+   },
+   "Yıldırım": {
+    "satilik": 77677,
+    "kiralik": 465.85
+   }
+  },
+  "Beşiktaş": {
+   "Abbasağa": {
+    "satilik": 160215,
+    "kiralik": 593.51
+   },
+   "Akat": {
+    "satilik": 334539,
+    "kiralik": 813.94
+   },
+   "Arnavutköy": {
+    "satilik": 257444,
+    "kiralik": 811.91
+   },
+   "Balmumcu": {
+    "satilik": 516233,
+    "kiralik": 812.68
+   },
+   "Bebek": {
+    "satilik": 370061,
+    "kiralik": 1325.63
+   },
+   "Cihannüma": {
+    "satilik": 83981,
+    "kiralik": 462.84
+   },
+   "Dikilitaş": {
+    "satilik": 156556,
+    "kiralik": 626.33
+   },
+   "Etiler": {
+    "satilik": 280583,
+    "kiralik": 864.51
+   },
+   "Gayrettepe": {
+    "satilik": 158689,
+    "kiralik": 637.77
+   },
+   "Konaklar": {
+    "satilik": 177044,
+    "kiralik": 689.96
+   },
+   "Kültür": {
+    "satilik": 268596,
+    "kiralik": 988.66
+   },
+   "Kuruçeşme": {
+    "satilik": 248521,
+    "kiralik": 843.12
+   },
+   "Levazım": {
+    "satilik": 492741,
+    "kiralik": 776.48
+   },
+   "Levent": {
+    "satilik": 237039,
+    "kiralik": 903.56
+   },
+   "Mecidiye": {
+    "satilik": 87209,
+    "kiralik": 548.86
+   },
+   "Muradiye": {
+    "satilik": 104514,
+    "kiralik": 557.18
+   },
+   "Nisbetiye": {
+    "satilik": 244868,
+    "kiralik": 833.05
+   },
+   "Ortaköy": {
+    "satilik": 240304,
+    "kiralik": 760.25
+   },
+   "Sinanpaşa": {
+    "satilik": 82240,
+    "kiralik": 547.26
+   },
+   "Türkali": {
+    "satilik": 99541,
+    "kiralik": 519.6
+   },
+   "Ulus": {
+    "satilik": 223333,
+    "kiralik": 789.83
+   },
+   "Vişnezade": {
+    "satilik": 123243,
+    "kiralik": 670.4
+   },
+   "Yıldız": {
+    "satilik": 141624,
+    "kiralik": 593.16
+   }
+  },
+  "Beykoz": {
+   "Acarlar": {
+    "satilik": 197046,
+    "kiralik": 861.59
+   },
+   "Göksu": {
+    "satilik": 105803,
+    "kiralik": 430.22
+   },
+   "Göztepe": {
+    "satilik": 96870,
+    "kiralik": 436.11
+   },
+   "Kavacık": {
+    "satilik": 77416,
+    "kiralik": 363.67
+   },
+   "Soğuksu": {
+    "satilik": 116148,
+    "kiralik": 590.59
+   }
+  },
+  "Beylikdüzü": {
+   "Adnan Kahveci": {
+    "satilik": 47157,
+    "kiralik": 298.89
+   },
+   "Barış": {
+    "satilik": 41450,
+    "kiralik": 305.15
+   },
+   "Büyükşehir": {
+    "satilik": 47790,
+    "kiralik": 352.61
+   },
+   "Cumhuriyet": {
+    "satilik": 28868,
+    "kiralik": 319.57
+   },
+   "Dereağzı": {
+    "satilik": 48561,
+    "kiralik": 299.24
+   },
+   "Gürpınar": {
+    "satilik": 51040,
+    "kiralik": 295.1
+   },
+   "Kavaklı": {
+    "satilik": 47874,
+    "kiralik": 329.19
+   },
+   "Marmara": {
+    "satilik": 52347,
+    "kiralik": 411.84
+   },
+   "Yakuplu": {
+    "satilik": 34554,
+    "kiralik": 288.14
+   }
+  },
+  "Beyoğlu": {
+   "Cihangir": {
+    "satilik": 107741,
+    "kiralik": 698.67
+   },
+   "Firuzağa": {
+    "satilik": 93148,
+    "kiralik": 593.82
+   },
+   "Gümüşsuyu": {
+    "satilik": 111903,
+    "kiralik": 682.97
+   },
+   "Halıcıoğlu": {
+    "satilik": 51918,
+    "kiralik": 308.38
+   },
+   "Kaptanpaşa": {
+    "satilik": 52065,
+    "kiralik": 319.21
+   },
+   "Küçük Piyale": {
+    "satilik": 52540,
+    "kiralik": 317.43
+   },
+   "Kulaksız": {
+    "satilik": 42788,
+    "kiralik": 342.87
+   },
+   "Ömer Avni": {
+    "satilik": 160328,
+    "kiralik": 757.17
+   },
+   "Örnektepe": {
+    "satilik": 58470,
+    "kiralik": 384.28
+   },
+   "Sütlüce": {
+    "satilik": 86886,
+    "kiralik": 470.17
+   }
+  },
+  "Büyükçekmece": {
+   "19 Mayıs": {
+    "satilik": 60274,
+    "kiralik": 303.35
+   },
+   "Alkent 2000": {
+    "satilik": 73615,
+    "kiralik": 322.6
+   },
+   "Atatürk": {
+    "satilik": 51818,
+    "kiralik": 357.23
+   },
+   "Cumhuriyet": {
+    "satilik": 65130,
+    "kiralik": 390.95
+   },
+   "Dizdariye": {
+    "satilik": 39341,
+    "kiralik": 271.44
+   },
+   "Fatih": {
+    "satilik": 52376,
+    "kiralik": 332.04
+   },
+   "Güzelce": {
+    "satilik": 68227,
+    "kiralik": 390.85
+   },
+   "Kumburgaz": {
+    "satilik": 42223,
+    "kiralik": 324.94
+   },
+   "Mimar Sinan Merkez": {
+    "satilik": 53578,
+    "kiralik": 322.22
+   },
+   "Murat Çeşme": {
+    "satilik": 56971,
+    "kiralik": 358.44
+   },
+   "Pınartepe": {
+    "satilik": 48512,
+    "kiralik": 334.52
+   },
+   "Sinanoba": {
+    "satilik": 58187,
+    "kiralik": 319.28
+   },
+   "Türkoba": {
+    "satilik": 50978,
+    "kiralik": 292.28
+   }
+  },
+  "Çatalca": {
+   "Ferhatpaşa": {
+    "satilik": 50494,
+    "kiralik": 324.32
+   }
+  },
+  "Çekmeköy": {
+   "Alemdağ": {
+    "satilik": 63033,
+    "kiralik": 406.89
+   },
+   "Aydınlar": {
+    "satilik": 60475,
+    "kiralik": 327.7
+   },
+   "Çamlık": {
+    "satilik": 58921,
+    "kiralik": 318.92
+   },
+   "Çatalmeşe": {
+    "satilik": 63705,
+    "kiralik": 344.63
+   },
+   "Cumhuriyet": {
+    "satilik": 60969,
+    "kiralik": 347.77
+   },
+   "Hamidiye": {
+    "satilik": 57960,
+    "kiralik": 329.14
+   },
+   "Kirazlıdere": {
+    "satilik": 63242,
+    "kiralik": 392.85
+   },
+   "Mehmet Akif": {
+    "satilik": 57833,
+    "kiralik": 352.41
+   },
+   "Merkez": {
+    "satilik": 67081,
+    "kiralik": 366.25
+   },
+   "Mimar Sinan": {
+    "satilik": 62668,
+    "kiralik": 351.4
+   },
+   "Taşdelen": {
+    "satilik": 74980,
+    "kiralik": 401.12
+   }
+  },
+  "Esenler": {
+   "Birlik": {
+    "satilik": 43180,
+    "kiralik": 298.47
+   },
+   "Davutpaşa": {
+    "satilik": 40264,
+    "kiralik": 304.35
+   },
+   "Fatih": {
+    "satilik": 44069,
+    "kiralik": 297.61
+   },
+   "Fevzi Çakmak": {
+    "satilik": 40265,
+    "kiralik": 331.47
+   },
+   "Kazım Karabekir": {
+    "satilik": 44454,
+    "kiralik": 265.44
+   },
+   "Menderes": {
+    "satilik": 43621,
+    "kiralik": 278.45
+   },
+   "Namık Kemal": {
+    "satilik": 41134,
+    "kiralik": 335.78
+   },
+   "Nine Hatun": {
+    "satilik": 37554,
+    "kiralik": 298.63
+   }
+  },
+  "Esenyurt": {
+   "Akçaburgaz": {
+    "satilik": 32925,
+    "kiralik": 209.0
+   },
+   "Ardıçlı": {
+    "satilik": 40446,
+    "kiralik": 264.7
+   },
+   "Atatürk": {
+    "satilik": 28930,
+    "kiralik": 207.62
+   },
+   "Bağlarçeşme": {
+    "satilik": 26214,
+    "kiralik": 203.69
+   },
+   "Cumhuriyet": {
+    "satilik": 27449,
+    "kiralik": 275.03
+   },
+   "Esenkent": {
+    "satilik": 45532,
+    "kiralik": 256.01
+   },
+   "Fatih": {
+    "satilik": 27435,
+    "kiralik": 197.95
+   },
+   "Güzelyurt": {
+    "satilik": 29404,
+    "kiralik": 266.3
+   },
+   "İncirtepe": {
+    "satilik": 27806,
+    "kiralik": 218.94
+   },
+   "İnönü": {
+    "satilik": 26810,
+    "kiralik": 169.86
+   },
+   "İstiklal": {
+    "satilik": 25861,
+    "kiralik": 164.58
+   },
+   "Mehterçeşme": {
+    "satilik": 28712,
+    "kiralik": 227.29
+   },
+   "Namık Kemal": {
+    "satilik": 32162,
+    "kiralik": 254.71
+   },
+   "Orhan Gazi": {
+    "satilik": 36487,
+    "kiralik": 230.13
+   },
+   "Örnek": {
+    "satilik": 28336,
+    "kiralik": 228.81
+   },
+   "Pınar": {
+    "satilik": 25958,
+    "kiralik": 197.77
+   },
+   "Saadetdere": {
+    "satilik": 35113,
+    "kiralik": 242.34
+   },
+   "Talatpaşa": {
+    "satilik": 25296,
+    "kiralik": 194.13
+   },
+   "Yenikent": {
+    "satilik": 32019,
+    "kiralik": 220.41
+   },
+   "Yeşilkent": {
+    "satilik": 30923,
+    "kiralik": 250.67
+   }
+  },
+  "Eyüpsultan": {
+   "Akşemsettin": {
+    "satilik": 69812,
+    "kiralik": 349.44
+   },
+   "Alibeyköy": {
+    "satilik": 71307,
+    "kiralik": 465.66
+   },
+   "Çırçır": {
+    "satilik": 69888,
+    "kiralik": 412.09
+   },
+   "Düğmeciler": {
+    "satilik": 89653,
+    "kiralik": 372.26
+   },
+   "Emniyettepe": {
+    "satilik": 51314,
+    "kiralik": 415.75
+   },
+   "Esentepe": {
+    "satilik": 51806,
+    "kiralik": 386.83
+   },
+   "Göktürk Merkez": {
+    "satilik": 141972,
+    "kiralik": 764.86
+   },
+   "Güzeltepe": {
+    "satilik": 85528,
+    "kiralik": 536.81
+   },
+   "İslambey": {
+    "satilik": 51915,
+    "kiralik": 363.54
+   },
+   "Karadolap": {
+    "satilik": 65086,
+    "kiralik": 347.3
+   },
+   "Merkez": {
+    "satilik": 54354,
+    "kiralik": 374.74
+   },
+   "Mithatpaşa": {
+    "satilik": 137947,
+    "kiralik": 695.46
+   },
+   "Rami Cuma": {
+    "satilik": 46859,
+    "kiralik": 347.47
+   },
+   "Rami Yeni": {
+    "satilik": 46747,
+    "kiralik": 346.74
+   },
+   "Silahtarağa": {
+    "satilik": 64035,
+    "kiralik": 339.19
+   },
+   "Yeşilpınar": {
+    "satilik": 60716,
+    "kiralik": 374.39
+   }
+  },
+  "Fatih": {
+   "Aksaray": {
+    "satilik": 45075,
+    "kiralik": 368.92
+   },
+   "Akşemsettin": {
+    "satilik": 56235,
+    "kiralik": 394.06
+   },
+   "Ali Kuşçu": {
+    "satilik": 66573,
+    "kiralik": 405.46
+   },
+   "Beyazıt": {
+    "satilik": 105259,
+    "kiralik": 556.73
+   },
+   "Cerrahpaşa": {
+    "satilik": 58229,
+    "kiralik": 369.56
+   },
+   "Haseki Sultan": {
+    "satilik": 58114,
+    "kiralik": 371.85
+   },
+   "Karagümrük": {
+    "satilik": 48867,
+    "kiralik": 361.16
+   },
+   "Koca Mustafapaşa": {
+    "satilik": 45375,
+    "kiralik": 364.8
+   },
+   "Mevlanakapı": {
+    "satilik": 46028,
+    "kiralik": 365.7
+   },
+   "Molla Gürani": {
+    "satilik": 58489,
+    "kiralik": 389.83
+   },
+   "Şehremini": {
+    "satilik": 54918,
+    "kiralik": 399.0
+   },
+   "Seyyid Ömer": {
+    "satilik": 47135,
+    "kiralik": 379.9
+   },
+   "Silivrikapı": {
+    "satilik": 50131,
+    "kiralik": 369.06
+   },
+   "Sümbül Efendi": {
+    "satilik": 43754,
+    "kiralik": 341.45
+   },
+   "Yedikule": {
+    "satilik": 45953,
+    "kiralik": 373.51
+   }
+  },
+  "Gaziosmanpaşa": {
+   "Bağlarbaşı": {
+    "satilik": 61090,
+    "kiralik": 329.05
+   },
+   "Barbaros Hayrettinpaşa": {
+    "satilik": 44740,
+    "kiralik": 271.4
+   },
+   "Fevzi Çakmak": {
+    "satilik": 61696,
+    "kiralik": 315.95
+   },
+   "Hürriyet": {
+    "satilik": 45991,
+    "kiralik": 288.8
+   },
+   "Karadeniz": {
+    "satilik": 58887,
+    "kiralik": 447.38
+   },
+   "Karayolları": {
+    "satilik": 78971,
+    "kiralik": 571.47
+   },
+   "Karlıtepe": {
+    "satilik": 42693,
+    "kiralik": 318.06
+   },
+   "Kazım Karabekir": {
+    "satilik": 42869,
+    "kiralik": 262.95
+   },
+   "Merkez": {
+    "satilik": 44826,
+    "kiralik": 308.04
+   },
+   "Mevlana": {
+    "satilik": 73718,
+    "kiralik": 334.59
+   },
+   "Pazariçi": {
+    "satilik": 54098,
+    "kiralik": 286.55
+   },
+   "Sarıgöl": {
+    "satilik": 50410,
+    "kiralik": 340.84
+   },
+   "Şemsipaşa": {
+    "satilik": 45845,
+    "kiralik": 312.67
+   },
+   "Yeni Mahalle": {
+    "satilik": 45891,
+    "kiralik": 270.36
+   },
+   "Yenidoğan": {
+    "satilik": 43927,
+    "kiralik": 286.71
+   },
+   "Yıldıztabya": {
+    "satilik": 46093,
+    "kiralik": 324.52
+   }
+  },
+  "Güngören": {
+   "Abdurrahman Nafiz Gürman": {
+    "satilik": 68604,
+    "kiralik": 417.06
+   },
+   "Akıncılar": {
+    "satilik": 42610,
+    "kiralik": 345.66
+   },
+   "Gençosman": {
+    "satilik": 41520,
+    "kiralik": 336.02
+   },
+   "Güneştepe": {
+    "satilik": 46158,
+    "kiralik": 341.45
+   },
+   "Güven": {
+    "satilik": 61627,
+    "kiralik": 485.08
+   },
+   "Haznedar": {
+    "satilik": 65936,
+    "kiralik": 391.29
+   },
+   "Mareşal Çakmak": {
+    "satilik": 38956,
+    "kiralik": 320.36
+   },
+   "Merkez": {
+    "satilik": 53551,
+    "kiralik": 392.88
+   },
+   "Tozkoparan": {
+    "satilik": 99016,
+    "kiralik": 472.38
+   }
+  },
+  "Kadıköy": {
+   "19 Mayıs": {
+    "satilik": 147674,
+    "kiralik": 718.78
+   },
+   "Acıbadem": {
+    "satilik": 102795,
+    "kiralik": 536.08
+   },
+   "Bostancı": {
+    "satilik": 148256,
+    "kiralik": 751.97
+   },
+   "Caddebostan": {
+    "satilik": 229272,
+    "kiralik": 939.5
+   },
+   "Caferağa": {
+    "satilik": 110890,
+    "kiralik": 691.64
+   },
+   "Dumlupınar": {
+    "satilik": 110414,
+    "kiralik": 637.21
+   },
+   "Eğitim": {
+    "satilik": 97151,
+    "kiralik": 652.7
+   },
+   "Erenköy": {
+    "satilik": 182022,
+    "kiralik": 778.71
+   },
+   "Fenerbahçe": {
+    "satilik": 236969,
+    "kiralik": 958.38
+   },
+   "Feneryolu": {
+    "satilik": 177482,
+    "kiralik": 803.81
+   },
+   "Fikirtepe": {
+    "satilik": 116907,
+    "kiralik": 624.67
+   },
+   "Göztepe": {
+    "satilik": 172972,
+    "kiralik": 833.55
+   },
+   "Hasanpaşa": {
+    "satilik": 87574,
+    "kiralik": 507.18
+   },
+   "Koşuyolu": {
+    "satilik": 114260,
+    "kiralik": 555.0
+   },
+   "Kozyatağı": {
+    "satilik": 149533,
+    "kiralik": 719.88
+   },
+   "Merdivenköy": {
+    "satilik": 129472,
+    "kiralik": 632.91
+   },
+   "Osmanağa": {
+    "satilik": 100158,
+    "kiralik": 737.64
+   },
+   "Rasimpaşa": {
+    "satilik": 80425,
+    "kiralik": 569.65
+   },
+   "Sahrayıcedit": {
+    "satilik": 137199,
+    "kiralik": 671.93
+   },
+   "Suadiye": {
+    "satilik": 191676,
+    "kiralik": 865.73
+   },
+   "Zühtüpaşa": {
+    "satilik": 180508,
+    "kiralik": 744.24
+   }
+  },
+  "Kağıthane": {
+   "Çağlayan": {
+    "satilik": 57260,
+    "kiralik": 438.9
+   },
+   "Çeliktepe": {
+    "satilik": 68308,
+    "kiralik": 480.81
+   },
+   "Emniyet Evleri": {
+    "satilik": 80732,
+    "kiralik": 487.34
+   },
+   "Gültepe": {
+    "satilik": 63654,
+    "kiralik": 396.02
+   },
+   "Gürsel": {
+    "satilik": 60964,
+    "kiralik": 394.95
+   },
+   "Hamidiye": {
+    "satilik": 116490,
+    "kiralik": 581.76
+   },
+   "Harmantepe": {
+    "satilik": 48296,
+    "kiralik": 373.38
+   },
+   "Hürriyet": {
+    "satilik": 51119,
+    "kiralik": 388.19
+   },
+   "Merkez": {
+    "satilik": 84351,
+    "kiralik": 563.36
+   },
+   "Nurtepe": {
+    "satilik": 65012,
+    "kiralik": 392.58
+   },
+   "Ortabayır": {
+    "satilik": 69807,
+    "kiralik": 415.93
+   },
+   "Seyrantepe": {
+    "satilik": 111471,
+    "kiralik": 491.41
+   },
+   "Şirintepe": {
+    "satilik": 55018,
+    "kiralik": 345.87
+   },
+   "Sultan Selim": {
+    "satilik": 63297,
+    "kiralik": 311.27
+   },
+   "Telsizler": {
+    "satilik": 57800,
+    "kiralik": 446.79
+   },
+   "Yahya Kemal": {
+    "satilik": 68619,
+    "kiralik": 445.69
+   },
+   "Yeşilce": {
+    "satilik": 66310,
+    "kiralik": 430.9
+   }
+  },
+  "Kartal": {
+   "Atalar": {
+    "satilik": 97075,
+    "kiralik": 520.22
+   },
+   "Çavuşoğlu": {
+    "satilik": 79159,
+    "kiralik": 492.08
+   },
+   "Cevizli": {
+    "satilik": 85344,
+    "kiralik": 561.56
+   },
+   "Cumhuriyet": {
+    "satilik": 77878,
+    "kiralik": 454.71
+   },
+   "Esentepe": {
+    "satilik": 83549,
+    "kiralik": 513.12
+   },
+   "Gümüşpınar": {
+    "satilik": 60775,
+    "kiralik": 391.96
+   },
+   "Hürriyet": {
+    "satilik": 66549,
+    "kiralik": 360.01
+   },
+   "Karlıktepe": {
+    "satilik": 79962,
+    "kiralik": 525.97
+   },
+   "Kordonboyu": {
+    "satilik": 109534,
+    "kiralik": 554.45
+   },
+   "Orhantepe": {
+    "satilik": 85060,
+    "kiralik": 514.8
+   },
+   "Orta": {
+    "satilik": 68332,
+    "kiralik": 469.21
+   },
+   "Petroliş": {
+    "satilik": 80967,
+    "kiralik": 486.92
+   },
+   "Soğanlık Yeni": {
+    "satilik": 74641,
+    "kiralik": 495.85
+   },
+   "Topselvi": {
+    "satilik": 74787,
+    "kiralik": 417.51
+   },
+   "Uğur Mumcu": {
+    "satilik": 67639,
+    "kiralik": 315.25
+   },
+   "Yakacık Çarşı": {
+    "satilik": 70991,
+    "kiralik": 430.2
+   },
+   "Yakacık Yeni": {
+    "satilik": 73990,
+    "kiralik": 404.42
+   },
+   "Yukarı": {
+    "satilik": 77903,
+    "kiralik": 407.12
+   }
+  },
+  "Küçükçekmece": {
+   "Atakent": {
+    "satilik": 88288,
+    "kiralik": 536.2
+   },
+   "Cennet": {
+    "satilik": 71379,
+    "kiralik": 423.2
+   },
+   "Cumhuriyet": {
+    "satilik": 56403,
+    "kiralik": 362.88
+   },
+   "Fatih": {
+    "satilik": 74900,
+    "kiralik": 496.31
+   },
+   "Fevzi Çakmak": {
+    "satilik": 65575,
+    "kiralik": 413.49
+   },
+   "Gültepe": {
+    "satilik": 56117,
+    "kiralik": 428.0
+   },
+   "Halkalı Merkez": {
+    "satilik": 62017,
+    "kiralik": 448.08
+   },
+   "İnönü": {
+    "satilik": 57230,
+    "kiralik": 387.36
+   },
+   "İstasyon": {
+    "satilik": 55971,
+    "kiralik": 404.77
+   },
+   "Kanarya": {
+    "satilik": 41341,
+    "kiralik": 278.65
+   },
+   "Kartaltepe": {
+    "satilik": 65000,
+    "kiralik": 462.32
+   },
+   "Kemalpaşa": {
+    "satilik": 59789,
+    "kiralik": 281.26
+   },
+   "Söğütlü Çeşme": {
+    "satilik": 41497,
+    "kiralik": 310.41
+   },
+   "Sultan Murat": {
+    "satilik": 54197,
+    "kiralik": 377.43
+   },
+   "Tevfik Bey": {
+    "satilik": 60079,
+    "kiralik": 330.55
+   },
+   "Yeni Mahalle": {
+    "satilik": 50688,
+    "kiralik": 408.91
+   },
+   "Yeşilova": {
+    "satilik": 54173,
+    "kiralik": 356.62
+   }
+  },
+  "Maltepe": {
+   "Altayçeşme": {
+    "satilik": 98220,
+    "kiralik": 560.49
+   },
+   "Altıntepe": {
+    "satilik": 100076,
+    "kiralik": 561.24
+   },
+   "Aydınevler": {
+    "satilik": 79833,
+    "kiralik": 511.5
+   },
+   "Bağlarbaşı": {
+    "satilik": 88356,
+    "kiralik": 498.59
+   },
+   "Başıbüyük": {
+    "satilik": 121112,
+    "kiralik": 507.02
+   },
+   "Cevizli": {
+    "satilik": 93782,
+    "kiralik": 567.92
+   },
+   "Çınar": {
+    "satilik": 106757,
+    "kiralik": 682.05
+   },
+   "Feyzullah": {
+    "satilik": 112666,
+    "kiralik": 603.03
+   },
+   "Fındıklı": {
+    "satilik": 55759,
+    "kiralik": 392.99
+   },
+   "Girne": {
+    "satilik": 68149,
+    "kiralik": 491.45
+   },
+   "İdealtepe": {
+    "satilik": 111751,
+    "kiralik": 592.02
+   },
+   "Küçükyalı": {
+    "satilik": 110857,
+    "kiralik": 627.1
+   },
+   "Yalı": {
+    "satilik": 98658,
+    "kiralik": 538.01
+   },
+   "Zümrütevler": {
+    "satilik": 60930,
+    "kiralik": 433.63
+   }
+  },
+  "Pendik": {
+   "Ahmet Yesevi": {
+    "satilik": 49071,
+    "kiralik": 320.75
+   },
+   "Bahçelievler": {
+    "satilik": 81590,
+    "kiralik": 387.65
+   },
+   "Batı": {
+    "satilik": 100778,
+    "kiralik": 474.01
+   },
+   "Çamçeşme": {
+    "satilik": 56978,
+    "kiralik": 310.45
+   },
+   "Çamlık": {
+    "satilik": 72328,
+    "kiralik": 426.85
+   },
+   "Çınardere": {
+    "satilik": 80749,
+    "kiralik": 400.31
+   },
+   "Doğu": {
+    "satilik": 91041,
+    "kiralik": 441.59
+   },
+   "Dumlupınar": {
+    "satilik": 67756,
+    "kiralik": 339.38
+   },
+   "Esenler": {
+    "satilik": 52632,
+    "kiralik": 321.16
+   },
+   "Esenyalı": {
+    "satilik": 35662,
+    "kiralik": 224.14
+   },
+   "Fevzi Çakmak": {
+    "satilik": 60375,
+    "kiralik": 349.06
+   },
+   "Güzelyalı": {
+    "satilik": 43201,
+    "kiralik": 261.63
+   },
+   "Harmandere": {
+    "satilik": 82788,
+    "kiralik": 463.22
+   },
+   "Kavakpınar": {
+    "satilik": 48586,
+    "kiralik": 264.57
+   },
+   "Kaynarca": {
+    "satilik": 54775,
+    "kiralik": 341.29
+   },
+   "Kurtköy": {
+    "satilik": 70235,
+    "kiralik": 423.38
+   },
+   "Orhangazi": {
+    "satilik": 44639,
+    "kiralik": 239.05
+   },
+   "Sapan Bağları": {
+    "satilik": 82416,
+    "kiralik": 381.35
+   },
+   "Şeyhli": {
+    "satilik": 59485,
+    "kiralik": 348.52
+   },
+   "Velibaba": {
+    "satilik": 63007,
+    "kiralik": 331.95
+   },
+   "Yayalar": {
+    "satilik": 66122,
+    "kiralik": 365.07
+   },
+   "Yeni": {
+    "satilik": 85082,
+    "kiralik": 458.78
+   },
+   "Yenişehir": {
+    "satilik": 80357,
+    "kiralik": 416.6
+   }
   },
   "Sancaktepe": {
-   "kiralik_tlm2": 328.51
-  },
-  "Yavuz Seli̇m": {
-   "satilik_tlm2": 49388,
-   "kiralik_tlm2": 306.01
-  },
-  "Yeni̇gün": {
-   "satilik_tlm2": 36293,
-   "kiralik_tlm2": 298.84
-  },
-  "Yeni̇mahalle": {
-   "satilik_tlm2": 67047,
-   "kiralik_tlm2": 437.52
-  },
-  "Yildiztepe": {
-   "satilik_tlm2": 39544,
-   "kiralik_tlm2": 2412
-  }
- },
- "Bahçeli̇evler": {
-  "Bahçeli̇evler": {
-   "kiralik_tlm2": 669.15
-  },
-  "Çobançeşme": {
-   "satilik_tlm2": 60718,
-   "kiralik_tlm2": 382.1
-  },
-  "Cumhuri̇yet": {
-   "kiralik_tlm2": 365.42
-  },
-  "Fevzi̇ Çakmak": {
-   "satilik_tlm2": 57363,
-   "kiralik_tlm2": 385.42
-  },
-  "Hürri̇yet": {
-   "kiralik_tlm2": 428.43
-  },
-  "Kocasi̇nan Merkez": {
-   "satilik_tlm2": 60321
-  },
-  "Si̇yavuşpaşa": {
-   "satilik_tlm2": 59900
-  },
-  "Soğanli": {
-   "kiralik_tlm2": 440.02
-  },
-  "Yeni̇bosna Merkez": {
-   "satilik_tlm2": 65080
-  },
-  "Zafer": {
-   "satilik_tlm2": 15296,
-   "kiralik_tlm2": 334
-  }
- },
- "Bakirköy": {
-  "Ataköy 2-5-6. Kisim": {
-   "satilik_tlm2": 29753
-  },
-  "Ataköy 1. Kisim": {
-   "satilik_tlm2": 29664,
-   "kiralik_tlm2": 75.44
-  },
-  "Ataköy 7-8-9-10. Kisim": {
-   "satilik_tlm2": 123150,
-   "kiralik_tlm2": 797.48
-  },
-  "Basinköy": {
-   "kiralik_tlm2": 98.24
-  },
-  "Cevi̇zli̇k": {
-   "satilik_tlm2": 75230
-  },
-  "Osmani̇ye": {
-   "kiralik_tlm2": 258
-  }
- },
- "Şi̇le": {
-  "Ağva Merkez": {
-   "satilik_tlm2": 67081,
-   "kiralik_tlm2": 130.65
-  },
-  "Bali̇bey": {
-   "satilik_tlm2": 77409,
-   "kiralik_tlm2": 3857
-  },
-  "Kumbaba": {
-   "satilik_tlm2": 104583
-  }
- },
- "Esenler": {
-  "Bi̇rli̇k": {
-   "kiralik_tlm2": 298.47
-  },
-  "Davutpaşa": {
-   "kiralik_tlm2": 304.35
-  },
-  "Fevzi̇ Çakmak": {
-   "kiralik_tlm2": 331.47
-  },
-  "Kazim Karabeki̇r": {
-   "satilik_tlm2": 84054,
-   "kiralik_tlm2": 265.44
-  },
-  "Menderes": {
-   "kiralik_tlm2": 278.45
-  },
-  "Namik Kemal": {
-   "kiralik_tlm2": 1335.78
-  },
-  "Ni̇ne Hatun": {
-   "satilik_tlm2": 37554,
-   "kiralik_tlm2": 298.63
-  }
- },
- "Esenyurt": {
-  "Akçaburgaz": {
-   "kiralik_tlm2": 200.0
-  },
-  "Ardiçli": {
-   "kiralik_tlm2": 264.7
-  },
-  "Atatürk": {
-   "satilik_tlm2": 28930
-  },
-  "Bağlarçeşme": {
-   "kiralik_tlm2": 203.69
-  },
-  "Cumhuri̇yet": {
-   "satilik_tlm2": 27449,
-   "kiralik_tlm2": 275.03
-  },
-  "Güzelyurt": {
-   "kiralik_tlm2": 2630
-  },
-  "İnönü": {
-   "kiralik_tlm2": 1986
-  },
-  "İsti̇klal": {
-   "kiralik_tlm2": 1648
-  },
-  "Mehterçeşme": {
-   "kiralik_tlm2": 2229
-  },
-  "Namik Kemal": {
-   "kiralik_tlm2": 2540
-  },
-  "Orhan Gazi̇": {
-   "kiralik_tlm2": 2308
-  },
-  "Örnek": {
-   "satilik_tlm2": 28336
-  },
-  "Yeni̇kent": {
-   "kiralik_tlm2": 204
-  }
- },
- "Fati̇h": {
-  "Aksaray": {
-   "satilik_tlm2": 45075,
-   "kiralik_tlm2": 3682
-  },
-  "Akşemsetti̇n": {
-   "satilik_tlm2": 56235,
-   "kiralik_tlm2": 394.06
-  },
-  "Ali̇ Kuşçu": {
-   "satilik_tlm2": 66573
-  },
-  "Beyazit": {
-   "satilik_tlm2": 105259,
-   "kiralik_tlm2": 673
-  },
-  "Cerrahpaşa": {
-   "satilik_tlm2": 58229,
-   "kiralik_tlm2": 369.56
-  },
-  "Karagümrük": {
-   "satilik_tlm2": 48867,
-   "kiralik_tlm2": 306
-  },
-  "Koca Mustafapaşa": {
-   "satilik_tlm2": 45375,
-   "kiralik_tlm2": 340
-  },
-  "Mevlanakapi": {
-   "satilik_tlm2": 46028,
-   "kiralik_tlm2": 365
-  },
-  "Molla Gürani̇": {
-   "satilik_tlm2": 8489,
-   "kiralik_tlm2": 389.83
-  },
-  "Şehremi̇ni̇": {
-   "kiralik_tlm2": 399.0
-  },
-  "Seyyi̇d Ömer": {
-   "kiralik_tlm2": 3990
-  },
-  "Si̇li̇vri̇kapi": {
-   "kiralik_tlm2": 906
-  },
-  "Sümbül Efendi̇": {
-   "kiralik_tlm2": 341.85
-  },
-  "Yedi̇kule": {
-   "satilik_tlm2": 65953,
-   "kiralik_tlm2": 373
-  }
- },
- "Gazi̇osmanpaşa": {
-  "Bağlarbaşi": {
-   "satilik_tlm2": 61090,
-   "kiralik_tlm2": 329.05
-  },
-  "Barbaros Hayretti̇n Paşa": {
-   "satilik_tlm2": 44740,
-   "kiralik_tlm2": 71.4
-  },
-  "Fevzi̇ Çakmak": {
-   "kiralik_tlm2": 3595
-  },
-  "Hürri̇yet": {
-   "satilik_tlm2": 45991,
-   "kiralik_tlm2": 288.8
-  },
-  "Karadeni̇z": {
-   "kiralik_tlm2": 4738
-  },
-  "Karlitepe": {
-   "kiralik_tlm2": 318.06
-  },
-  "Kazim Karabeki̇r": {
-   "kiralik_tlm2": 262.95
-  },
-  "Merkez": {
-   "satilik_tlm2": 44826,
-   "kiralik_tlm2": 3080.94
-  }
- },
- "Maltepe": {
-  "Altintepe": {
-   "satilik_tlm2": 100076,
-   "kiralik_tlm2": 564
-  },
-  "Aydinevler": {
-   "satilik_tlm2": 79833
-  },
-  "Bağlarbaşi": {
-   "kiralik_tlm2": 498.59
-  },
-  "Başibüyük": {
-   "kiralik_tlm2": 507.02
-  },
-  "Cevi̇zli̇": {
-   "satilik_tlm2": 93782,
-   "kiralik_tlm2": 567.92
-  },
-  "Çinar": {
-   "satilik_tlm2": 106757,
-   "kiralik_tlm2": 682.05
-  },
-  "Feyzullah": {
-   "satilik_tlm2": 126066,
-   "kiralik_tlm2": 603.03
-  },
-  "Findikli": {
-   "satilik_tlm2": 55759,
-   "kiralik_tlm2": 392.99
-  },
-  "Gi̇rne": {
-   "satilik_tlm2": 683449,
-   "kiralik_tlm2": 491.45
-  },
-  "İdealtepe": {
-   "kiralik_tlm2": 592.02
-  },
-  "Küçükyali Merkez": {
-   "kiralik_tlm2": 627.1
-  },
-  "Yali": {
-   "satilik_tlm2": 98658,
-   "kiralik_tlm2": 538.01
-  },
-  "Zümrütevler": {
-   "satilik_tlm2": 60930,
-   "kiralik_tlm2": 433.63
-  }
- },
- "Pendi̇k": {
-  "Ahmet Yesevi̇": {
-   "kiralik_tlm2": 320.75
-  },
-  "Bahçeli̇evler": {
-   "satilik_tlm2": 81590,
-   "kiralik_tlm2": 387.65
-  },
-  "Bati": {
-   "satilik_tlm2": 100778
-  },
-  "Çamçeşme": {
-   "satilik_tlm2": 56978,
-   "kiralik_tlm2": 310.45
-  },
-  "Çamlik": {
-   "satilik_tlm2": 72328,
-   "kiralik_tlm2": 426.85
-  },
-  "Çinardere": {
-   "satilik_tlm2": 80749,
-   "kiralik_tlm2": 400.31
-  },
-  "Dumlupinar": {
-   "satilik_tlm2": 61756,
-   "kiralik_tlm2": 3938
-  },
-  "Esenyali": {
-   "satilik_tlm2": 35662
-  },
-  "Fevzi̇ Çakmak": {
-   "satilik_tlm2": 60375,
-   "kiralik_tlm2": 349.06
-  },
-  "Harmandere": {
-   "kiralik_tlm2": 322
-  }
- },
- "Sancaktepe": {
-  "Fati̇h": {
-   "kiralik_tlm2": 333.45
-  },
-  "İnönü": {
-   "kiralik_tlm2": 343.05
-  },
-  "Mecli̇s": {
-   "satilik_tlm2": 52740,
-   "kiralik_tlm2": 332.04
-  },
-  "Mevlana": {
-   "kiralik_tlm2": 255.89
-  },
-  "Osmangazi̇": {
-   "kiralik_tlm2": 379
-  },
-  "Veysel Karani̇": {
-   "satilik_tlm2": 61804,
-   "kiralik_tlm2": 385.44
-  },
-  "Yeni̇doğan": {
-   "satilik_tlm2": 54855,
-   "kiralik_tlm2": 2066
-  }
- },
- "Sariyer": {
-  "Ayazağa": {
-   "satilik_tlm2": 202967,
-   "kiralik_tlm2": 522
-  },
-  "Baltali̇mani": {
-   "satilik_tlm2": 29534,
-   "kiralik_tlm2": 3257
-  },
-  "Darüşşafaka": {
-   "satilik_tlm2": 20721,
-   "kiralik_tlm2": 73.57
-  },
-  "Emi̇rgan": {
-   "satilik_tlm2": 220781,
-   "kiralik_tlm2": 544.8
-  },
-  "İsti̇nye": {
-   "satilik_tlm2": 242666,
-   "kiralik_tlm2": 497.67
-  },
-  "Maslak": {
-   "kiralik_tlm2": 70.88
-  },
-  "Tarabya": {
-   "kiralik_tlm2": 99
-  },
-  "Yeni̇köy": {
-   "satilik_tlm2": 228404,
-   "kiralik_tlm2": 685.79
-  },
-  "Zekeri̇yaköy": {
-   "kiralik_tlm2": 746.02
-  }
- },
- "Bayrampaşa": {
-  "Muratpaşa": {
-   "kiralik_tlm2": 237.0
-  },
-  "Yeni̇doğan": {
-   "satilik_tlm2": 46933,
-   "kiralik_tlm2": 327
-  },
-  "Yildirim": {
-   "satilik_tlm2": 64952,
-   "kiralik_tlm2": 236.15
+   "Abdurrahmangazi": {
+    "satilik": 60342,
+    "kiralik": 398.7
+   },
+   "Akpınar": {
+    "satilik": 57733,
+    "kiralik": 273.72
+   },
+   "Atatürk": {
+    "satilik": 51383,
+    "kiralik": 314.73
+   },
+   "Emek": {
+    "satilik": 72321,
+    "kiralik": 419.36
+   },
+   "Eyüp Sultan": {
+    "satilik": 55542,
+    "kiralik": 308.56
+   },
+   "Fatih": {
+    "satilik": 48211,
+    "kiralik": 333.45
+   },
+   "İnönü": {
+    "satilik": 52585,
+    "kiralik": 343.05
+   },
+   "Kemal Türkler": {
+    "satilik": 51160,
+    "kiralik": 271.18
+   },
+   "Meclis": {
+    "satilik": 52740,
+    "kiralik": 332.04
+   },
+   "Mevlana": {
+    "satilik": 50358,
+    "kiralik": 255.89
+   },
+   "Osmangazi": {
+    "satilik": 55688,
+    "kiralik": 321.09
+   },
+   "Sarıgazi": {
+    "satilik": 54323,
+    "kiralik": 321.79
+   },
+   "Veysel Karani": {
+    "satilik": 61804,
+    "kiralik": 385.44
+   },
+   "Yenidoğan": {
+    "satilik": 54855,
+    "kiralik": 270.66
+   }
+  },
+  "Sarıyer": {
+   "Ayazağa": {
+    "satilik": 202967,
+    "kiralik": 715.22
+   },
+   "Baltalimanı": {
+    "satilik": 295314,
+    "kiralik": 532.57
+   },
+   "Darüşşafaka": {
+    "satilik": 120721,
+    "kiralik": 573.57
+   },
+   "Emirgan": {
+    "satilik": 220781,
+    "kiralik": 544.8
+   },
+   "İstinye": {
+    "satilik": 242666,
+    "kiralik": 497.67
+   },
+   "Maden": {
+    "satilik": 146987,
+    "kiralik": 607.75
+   },
+   "Maslak": {
+    "satilik": 141621,
+    "kiralik": 710.84
+   },
+   "Tarabya": {
+    "satilik": 164394,
+    "kiralik": 517.99
+   },
+   "Yeniköy": {
+    "satilik": 228404,
+    "kiralik": 685.79
+   },
+   "Zekeriyaköy": {
+    "satilik": 106914,
+    "kiralik": 746.02
+   }
+  },
+  "Şile": {
+   "Balibey": {
+    "satilik": 77409,
+    "kiralik": 385.76
+   },
+   "Çavuş": {
+    "satilik": 66967,
+    "kiralik": 390.99
+   },
+   "Kumbaba": {
+    "satilik": 104583,
+    "kiralik": 501.26
+   }
+  },
+  "Silivri": {
+   "Alibey": {
+    "satilik": 27898,
+    "kiralik": 203.77
+   },
+   "Selimpaşa": {
+    "satilik": 41642,
+    "kiralik": 271.44
+   },
+   "Yeni": {
+    "satilik": 47707,
+    "kiralik": 288.36
+   }
+  },
+  "Şişli": {
+   "19 Mayıs": {
+    "satilik": 71400,
+    "kiralik": 482.69
+   },
+   "Bozkurt": {
+    "satilik": 71973,
+    "kiralik": 484.91
+   },
+   "Cumhuriyet": {
+    "satilik": 164629,
+    "kiralik": 763.49
+   },
+   "Esentepe": {
+    "satilik": 200940,
+    "kiralik": 760.59
+   },
+   "Eskişehir": {
+    "satilik": 54738,
+    "kiralik": 410.99
+   },
+   "Feriköy": {
+    "satilik": 75531,
+    "kiralik": 483.98
+   },
+   "Fulya": {
+    "satilik": 96319,
+    "kiralik": 542.08
+   },
+   "Gülbahar": {
+    "satilik": 53665,
+    "kiralik": 443.57
+   },
+   "Halaskargazi": {
+    "satilik": 153767,
+    "kiralik": 826.36
+   },
+   "Halide Edip Adıvar": {
+    "satilik": 64729,
+    "kiralik": 392.89
+   },
+   "Harbiye": {
+    "satilik": 336611,
+    "kiralik": 1115.03
+   },
+   "İnönü": {
+    "satilik": 100468,
+    "kiralik": 539.23
+   },
+   "Mecidiyeköy": {
+    "satilik": 56176,
+    "kiralik": 456.26
+   },
+   "Merkez": {
+    "satilik": 106965,
+    "kiralik": 619.48
+   },
+   "Meşrutiyet": {
+    "satilik": 111346,
+    "kiralik": 620.4
+   },
+   "Paşa": {
+    "satilik": 63931,
+    "kiralik": 404.67
+   },
+   "Teşvikiye": {
+    "satilik": 156652,
+    "kiralik": 760.5
+   },
+   "Yayla": {
+    "satilik": 105227,
+    "kiralik": 419.73
+   }
+  },
+  "Sultanbeyli": {
+   "Adil": {
+    "satilik": 56193,
+    "kiralik": 322.99
+   },
+   "Hasanpaşa": {
+    "satilik": 68528,
+    "kiralik": 284.37
+   },
+   "Mimar Sinan": {
+    "satilik": 52746,
+    "kiralik": 287.87
+   }
+  },
+  "Sultangazi": {
+   "50. Yıl": {
+    "satilik": 44261,
+    "kiralik": 244.92
+   },
+   "Cebeci": {
+    "satilik": 49168,
+    "kiralik": 258.78
+   },
+   "Cumhuriyet": {
+    "satilik": 52694,
+    "kiralik": 247.15
+   },
+   "Esentepe": {
+    "satilik": 38247,
+    "kiralik": 239.19
+   },
+   "Gazi": {
+    "satilik": 42013,
+    "kiralik": 257.28
+   },
+   "Habibler": {
+    "satilik": 50953,
+    "kiralik": 291.68
+   },
+   "İsmetpaşa": {
+    "satilik": 43596,
+    "kiralik": 249.52
+   },
+   "Sultançiftliği": {
+    "satilik": 48210,
+    "kiralik": 274.76
+   },
+   "Uğur Mumcu": {
+    "satilik": 55461,
+    "kiralik": 351.39
+   },
+   "Yunus Emre": {
+    "satilik": 42833,
+    "kiralik": 284.07
+   },
+   "Zübeyde Hanım": {
+    "satilik": 39737,
+    "kiralik": 264.66
+   }
+  },
+  "Tuzla": {
+   "Aydınlı": {
+    "satilik": 59027,
+    "kiralik": 349.79
+   },
+   "Aydıntepe": {
+    "satilik": 77079,
+    "kiralik": 426.57
+   },
+   "Cami": {
+    "satilik": 89501,
+    "kiralik": 421.4
+   },
+   "Evliya Çelebi": {
+    "satilik": 65089,
+    "kiralik": 393.99
+   },
+   "İstasyon": {
+    "satilik": 80260,
+    "kiralik": 417.33
+   },
+   "Mimar Sinan": {
+    "satilik": 52316,
+    "kiralik": 281.29
+   },
+   "Postane": {
+    "satilik": 85039,
+    "kiralik": 462.07
+   },
+   "Şifa": {
+    "satilik": 51545,
+    "kiralik": 280.61
+   },
+   "Yayla": {
+    "satilik": 70239,
+    "kiralik": 378.42
+   }
+  },
+  "Ümraniye": {
+   "Altınşehir": {
+    "satilik": 63455,
+    "kiralik": 386.6
+   },
+   "Armağanevler": {
+    "satilik": 64536,
+    "kiralik": 384.79
+   },
+   "Aşağı Dudullu": {
+    "satilik": 86028,
+    "kiralik": 430.88
+   },
+   "Atakent": {
+    "satilik": 67291,
+    "kiralik": 391.22
+   },
+   "Atatürk": {
+    "satilik": 74959,
+    "kiralik": 400.33
+   },
+   "Çakmak": {
+    "satilik": 63848,
+    "kiralik": 403.49
+   },
+   "Çamlık": {
+    "satilik": 62080,
+    "kiralik": 389.15
+   },
+   "Elmalıkent": {
+    "satilik": 88998,
+    "kiralik": 390.73
+   },
+   "Esenevler": {
+    "satilik": 76613,
+    "kiralik": 472.64
+   },
+   "Esenkent": {
+    "satilik": 60746,
+    "kiralik": 340.04
+   },
+   "Esenşehir": {
+    "satilik": 65136,
+    "kiralik": 472.56
+   },
+   "Ihlamurkuyu": {
+    "satilik": 63308,
+    "kiralik": 287.58
+   },
+   "İnkılap": {
+    "satilik": 74669,
+    "kiralik": 429.03
+   },
+   "İstiklal": {
+    "satilik": 79221,
+    "kiralik": 402.73
+   },
+   "Madenler": {
+    "satilik": 71451,
+    "kiralik": 447.67
+   },
+   "Mehmet Akif": {
+    "satilik": 77249,
+    "kiralik": 445.9
+   },
+   "Namık Kemal": {
+    "satilik": 66904,
+    "kiralik": 406.29
+   },
+   "Necip Fazıl": {
+    "satilik": 79929,
+    "kiralik": 423.7
+   },
+   "Şerifali": {
+    "satilik": 97591,
+    "kiralik": 479.06
+   },
+   "Site": {
+    "satilik": 72999,
+    "kiralik": 439.13
+   },
+   "Tantavi": {
+    "satilik": 100633,
+    "kiralik": 539.84
+   },
+   "Tatlısu": {
+    "satilik": 91074,
+    "kiralik": 513.77
+   },
+   "Yamanevler": {
+    "satilik": 106324,
+    "kiralik": 502.55
+   },
+   "Yukarı Dudullu": {
+    "satilik": 73603,
+    "kiralik": 373.79
+   }
+  },
+  "Üsküdar": {
+   "Acıbadem": {
+    "satilik": 150067,
+    "kiralik": 739.33
+   },
+   "Ahmediye": {
+    "satilik": 66432,
+    "kiralik": 401.13
+   },
+   "Altunizade": {
+    "satilik": 153573,
+    "kiralik": 685.17
+   },
+   "Aziz Mahmut Hüdayi": {
+    "satilik": 105621,
+    "kiralik": 540.83
+   },
+   "Bahçelievler": {
+    "satilik": 106851,
+    "kiralik": 489.34
+   },
+   "Barbaros": {
+    "satilik": 144024,
+    "kiralik": 559.62
+   },
+   "Bulgurlu": {
+    "satilik": 87118,
+    "kiralik": 485.47
+   },
+   "Çengelköy": {
+    "satilik": 132795,
+    "kiralik": 519.49
+   },
+   "Cumhuriyet": {
+    "satilik": 75573,
+    "kiralik": 406.58
+   },
+   "Ferah": {
+    "satilik": 98853,
+    "kiralik": 403.62
+   },
+   "İcadiye": {
+    "satilik": 102852,
+    "kiralik": 507.56
+   },
+   "Kandilli": {
+    "satilik": 168455,
+    "kiralik": 852.83
+   },
+   "Kısıklı": {
+    "satilik": 90870,
+    "kiralik": 390.28
+   },
+   "Mimar Sinan": {
+    "satilik": 97920,
+    "kiralik": 546.74
+   },
+   "Murat Reis": {
+    "satilik": 75984,
+    "kiralik": 399.43
+   },
+   "Salacak": {
+    "satilik": 166975,
+    "kiralik": 543.29
+   },
+   "Selami Ali": {
+    "satilik": 85964,
+    "kiralik": 423.04
+   },
+   "Selimiye": {
+    "satilik": 109895,
+    "kiralik": 510.2
+   },
+   "Sultantepe": {
+    "satilik": 120330,
+    "kiralik": 551.05
+   },
+   "Ünalan": {
+    "satilik": 151260,
+    "kiralik": 601.03
+   },
+   "Valide-i Atik": {
+    "satilik": 64324,
+    "kiralik": 448.18
+   },
+   "Yavuztürk": {
+    "satilik": 67268,
+    "kiralik": 260.14
+   },
+   "Zeynep Kamil": {
+    "satilik": 69838,
+    "kiralik": 425.37
+   }
+  },
+  "Zeytinburnu": {
+   "Beştelsiz": {
+    "satilik": 83224,
+    "kiralik": 582.79
+   },
+   "Çırpıcı": {
+    "satilik": 66026,
+    "kiralik": 489.13
+   },
+   "Gökalp": {
+    "satilik": 79210,
+    "kiralik": 547.06
+   },
+   "Maltepe": {
+    "satilik": 115915,
+    "kiralik": 723.3
+   },
+   "Merkezefendi": {
+    "satilik": 90496,
+    "kiralik": 544.14
+   },
+   "Nuripaşa": {
+    "satilik": 56553,
+    "kiralik": 420.4
+   }
   }
  }
 }

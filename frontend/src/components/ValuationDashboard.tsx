@@ -27,6 +27,8 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
     base_m2_price_historical,
     yas_bandi,
     sifir_konut_prim_pct,
+    kiralik_rayic_tlm2,
+    base_price_source,
   } = valuation;
 
   const monthlyRent = financials?.estimated_monthly_rent || roundEstimatedRent(estimated_total_price);
@@ -87,6 +89,11 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
           <span className="text-[11px] text-slate-600 font-bold mt-2 block border-t border-[#E5E7EB] pt-1">
             Konut Rayici (yaş &amp; bölge bazlı): {base_m2_price.toLocaleString("tr-TR")} ₺/m²
           </span>
+          {typeof base_price_source === "string" && base_price_source.startsWith("Ağustos 2026") && (
+            <span className="text-[10px] text-[#047857] font-semibold mt-0.5 block">
+              📅 Ağustos 2026 güncel piyasa raporu{typeof kiralik_rayic_tlm2 === "number" ? ` · kira rayici: ${kiralik_rayic_tlm2.toLocaleString("tr-TR")} ₺/m²` : ""}
+            </span>
+          )}
           {inflation_factor && inflation_factor > 1.001 && base_m2_price_historical > 0 && (
             <span className="text-[10px] text-[#C2410C] font-semibold mt-0.5 block">
               📈 {base_m2_price_historical.toLocaleString("tr-TR")} ₺/m² ({data_collection_date}) × {inflation_factor.toFixed(2)} TCMB KFE enflasyon = bugünkü rayiç

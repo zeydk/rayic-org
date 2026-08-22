@@ -25,6 +25,7 @@ class ValuationResult(BaseModel):
     base_m2_price_historical: float = 0.0
     yas_bandi: str = "-"
     sifir_konut_prim_pct: Optional[float] = None
+    kiralik_rayic_tlm2: Optional[float] = None
     valuation_breakdown: Dict[str, float]
 
 
@@ -60,6 +61,41 @@ def _load_age_premium() -> Dict[str, Any]:
 _AGE_PREMIUM = _load_age_premium()
 _AGE_GENEL: Dict[str, float] = _AGE_PREMIUM.get("istanbul_geneli_carpan", {})
 _AGE_ILCE: Dict[str, Any] = _AGE_PREMIUM.get("ilceler", {})
+
+
+def _load_piyasa() -> Dict[str, Any]:
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "piyasa_rayic.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+_PIYASA = _load_piyasa()
+PIYASA_RAYIC: Dict[str, Any] = _PIYASA.get("rayic", {})
+PIYASA_META: Dict[str, Any] = _PIYASA.get("meta", {})
+
+
+def _age_multiplier(district: Optional[str], band: str) -> float:
+    for k, v in _AGE_ILCE.items():
+        if _norm_tr(k) == _norm_tr(district or ""):
+            c = v.get("carpanlar", {})
+            if band in c:
+                return c[band]
+    return _AGE_GENEL.get(band, 1.0)
+
+
+def piyasa_kiralik(district: Optional[str], neighborhood: Optional[str]) -> Optional[float]:
+    """Ağustos 2026 raporundan güncel mahalle kira rayici (TL/m²)."""
+    if not district:
+        return None
+    for k, v in PIYASA_RAYIC.items():
+        if _norm_tr(k) == _norm_tr(district):
+            for mk, mv in v.items():
+                if _norm_tr(mk) == _norm_tr(neighborhood or ""):
+                    return mv.get("kiralik")
+    return None
 
 
 def age_premium_info(district: Optional[str], building_age: Optional[int]) -> Dict[str, Any]:
@@ -196,10 +232,47 @@ def _emlakjet_lookup(district: Optional[str], neighborhood: Optional[str], build
     return None
 
 
+def _piyasa_lookup(district: Optional[str], neighborhood: Optional[str], building_age: Optional[int]):
+    """Ağustos 2026 GÜNCEL piyasa raporundan blended satılık rayici; binanın yaş
+    bandına EmlakJet çarpanıyla uyarlanır. (tlm2, source, n=1, age_specific=True)."""
+    if not district:
+        return None
+    dn = _norm_tr(district)
+    dd = None
+    for k, v in PIYASA_RAYIC.items():
+        if _norm_tr(k) == dn:
+            dd = v
+            break
+    if not dd:
+        return None
+    blended = None
+    tag = None
+    if neighborhood:
+        nn = _norm_tr(neighborhood)
+        for mk, mv in dd.items():
+            if _norm_tr(mk) == nn and mv.get("satilik"):
+                blended = float(mv["satilik"])
+                tag = mk
+                break
+    if blended is None:
+        vals = [mv["satilik"] for mv in dd.values() if mv.get("satilik")]
+        if not vals:
+            return None
+        vals.sort()
+        blended = float(vals[len(vals) // 2])
+        tag = "%s ilçe medyanı" % district
+    band = _age_band(building_age)
+    tlm2 = round(blended * _age_multiplier(district, band))
+    return tlm2, "Ağustos 2026 piyasa raporu · %s · %s" % (tag, _AGE_BAND_LABEL[band]), 1, True
+
+
 def get_base_m2_price(district: Optional[str], neighborhood: Optional[str], building_age: Optional[int] = None):
-    """(base_tlm2, source_label, sample_n, age_specific) at the data-collection
-    date. Prefers real age-banded EmlakJet medians, then the legacy static
-    matrix, then a safe default."""
+    """(base_tlm2, source_label, sample_n, age_specific). Önce GÜNCEL Ağustos 2026
+    piyasa raporu (yaş bandına uyarlanmış), sonra yaş-bantlı EmlakJet medyanı,
+    sonra statik matris."""
+    piy = _piyasa_lookup(district, neighborhood, building_age)
+    if piy:
+        return piy
     hit = _emlakjet_lookup(district, neighborhood, building_age)
     if hit:
         return hit
@@ -252,14 +325,19 @@ def calculate_valuation(
     k_age = 1.0 if age_specific else get_age_coefficient(building_age)
     k_floor = get_floor_coefficient(floor_category)
 
-    # CRITICAL: the EmlakJet medians are a snapshot from the data-collection date
-    # (2024-09). Turkey has very high housing inflation, so the base is inflated
-    # to today with the TCMB KFE (live with an EVDS key, else the labelled
-    # reference series). k_tcmb IS this real from-date→today inflation factor.
-    data_date = str(EMLAKJET_META.get("data_collection_date", "2024-09"))
-    infl = get_inflation_factor(data_date)
-    k_tcmb = float(infl.get("factor", 1.0)) if base_n > 0 else round(
-        float(get_tcmb_kfe_summary().get("latest_istanbul_index", 1880.0)) / 1455.5, 3)
+    # Ağustos 2026 piyasa raporu GÜNCEL veridir -> enflasyon uygulanmaz. EmlakJet
+    # medyanları 2024-09 snapshot'ıdır -> TCMB KFE ile bugüne şişirilir (yüksek
+    # konut enflasyonu). k_tcmb bu from-date→bugün faktörüdür.
+    is_current = base_source.startswith("Ağustos 2026")
+    if is_current:
+        data_date = "2026-06"
+        k_tcmb = 1.0
+    elif base_n > 0:
+        data_date = str(EMLAKJET_META.get("data_collection_date", "2024-09"))
+        k_tcmb = float(get_inflation_factor(data_date).get("factor", 1.0))
+    else:
+        data_date = "-"
+        k_tcmb = round(float(get_tcmb_kfe_summary().get("latest_istanbul_index", 1880.0)) / 1455.5, 3)
 
     # Base m² brought to today's level.
     base_m2 = round(base_m2_hist * k_tcmb, 0)
@@ -305,6 +383,7 @@ def calculate_valuation(
         base_m2_price_historical=round(base_m2_hist, 0),
         yas_bandi=_yas_info["yas_bandi"],
         sifir_konut_prim_pct=_yas_info["sifir_konut_prim_pct"],
+        kiralik_rayic_tlm2=piyasa_kiralik(district, neighborhood),
         valuation_breakdown={
             "base_m2": base_m2,
             "net_m2": net_m2,
