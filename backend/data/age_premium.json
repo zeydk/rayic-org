@@ -1,0 +1,400 @@
+{
+ "meta": {
+  "kaynak": "EmlakJet yaş-bantlı medyan (2024-09)",
+  "aciklama": "Sıfır/ikinci el ve yaşa göre konut m² prim farkı (ortalama fiyata çarpan)"
+ },
+ "istanbul_geneli_carpan": {
+  "0-4": 1.094,
+  "5-10": 1.023,
+  "11-20": 0.966,
+  "21+": 0.714
+ },
+ "ilceler": {
+  "Adalar": {
+   "carpanlar": {
+    "11-20": 1.267,
+    "21+": 0.985
+   }
+  },
+  "Arnavutköy": {
+   "sifir_vs_21plus_pct": -9.0,
+   "sifir_vs_ortalama_pct": 1.8,
+   "carpanlar": {
+    "0-4": 1.018,
+    "5-10": 0.93,
+    "11-20": 1.094,
+    "21+": 1.119
+   }
+  },
+  "Ataşehir": {
+   "sifir_vs_21plus_pct": 25.6,
+   "sifir_vs_ortalama_pct": 13.0,
+   "carpanlar": {
+    "0-4": 1.13,
+    "5-10": 1.138,
+    "11-20": 1.042,
+    "21+": 0.9
+   }
+  },
+  "Avcılar": {
+   "sifir_vs_21plus_pct": 107.8,
+   "sifir_vs_ortalama_pct": 12.7,
+   "carpanlar": {
+    "0-4": 1.127,
+    "5-10": 1.115,
+    "11-20": 0.927,
+    "21+": 0.542
+   }
+  },
+  "Bahçelievler": {
+   "sifir_vs_21plus_pct": 97.4,
+   "sifir_vs_ortalama_pct": 31.4,
+   "carpanlar": {
+    "0-4": 1.314,
+    "5-10": 1.048,
+    "11-20": 0.861,
+    "21+": 0.666
+   }
+  },
+  "Bakırköy": {
+   "sifir_vs_21plus_pct": 67.2,
+   "sifir_vs_ortalama_pct": 7.6,
+   "carpanlar": {
+    "0-4": 1.076,
+    "5-10": 1.434,
+    "11-20": 1.296,
+    "21+": 0.644
+   }
+  },
+  "Bayrampaşa": {
+   "sifir_vs_21plus_pct": 28.2,
+   "sifir_vs_ortalama_pct": 7.9,
+   "carpanlar": {
+    "0-4": 1.079,
+    "5-10": 1.026,
+    "11-20": 0.86,
+    "21+": 0.842
+   }
+  },
+  "Bağcılar": {
+   "sifir_vs_21plus_pct": 96.5,
+   "sifir_vs_ortalama_pct": 9.3,
+   "carpanlar": {
+    "0-4": 1.093,
+    "5-10": 1.311,
+    "11-20": 0.757,
+    "21+": 0.556
+   }
+  },
+  "Başakşehir": {
+   "sifir_vs_21plus_pct": -18.6,
+   "sifir_vs_ortalama_pct": -5.6,
+   "carpanlar": {
+    "0-4": 0.944,
+    "5-10": 1.166,
+    "11-20": 0.988,
+    "21+": 1.16
+   }
+  },
+  "Beykoz": {
+   "sifir_vs_21plus_pct": 112.6,
+   "sifir_vs_ortalama_pct": 51.8,
+   "carpanlar": {
+    "0-4": 1.518,
+    "5-10": 1.0,
+    "11-20": 0.967,
+    "21+": 0.714
+   }
+  },
+  "Beylikdüzü": {
+   "sifir_vs_21plus_pct": -19.7,
+   "sifir_vs_ortalama_pct": -3.0,
+   "carpanlar": {
+    "0-4": 0.97,
+    "5-10": 0.978,
+    "11-20": 1.286,
+    "21+": 1.208
+   }
+  },
+  "Beyoğlu": {
+   "sifir_vs_21plus_pct": 15.2,
+   "sifir_vs_ortalama_pct": 3.9,
+   "carpanlar": {
+    "0-4": 1.039,
+    "5-10": 0.329,
+    "11-20": 1.195,
+    "21+": 0.902
+   }
+  },
+  "Beşiktaş": {
+   "sifir_vs_21plus_pct": 58.4,
+   "sifir_vs_ortalama_pct": 22.7,
+   "carpanlar": {
+    "0-4": 1.227,
+    "5-10": 1.064,
+    "11-20": 1.367,
+    "21+": 0.775
+   }
+  },
+  "Büyükçekmece": {
+   "sifir_vs_21plus_pct": 57.6,
+   "sifir_vs_ortalama_pct": 14.7,
+   "carpanlar": {
+    "0-4": 1.147,
+    "5-10": 1.032,
+    "11-20": 1.125,
+    "21+": 0.728
+   }
+  },
+  "Esenler": {
+   "sifir_vs_21plus_pct": 143.6,
+   "sifir_vs_ortalama_pct": 24.7,
+   "carpanlar": {
+    "0-4": 1.247,
+    "5-10": 0.842,
+    "11-20": 0.842,
+    "21+": 0.512
+   }
+  },
+  "Esenyurt": {
+   "sifir_vs_21plus_pct": -35.2,
+   "sifir_vs_ortalama_pct": 0.0,
+   "carpanlar": {
+    "0-4": 1.0,
+    "5-10": 1.005,
+    "11-20": 0.962,
+    "21+": 1.543
+   }
+  },
+  "Eyüpsultan": {
+   "sifir_vs_21plus_pct": 91.3,
+   "sifir_vs_ortalama_pct": 35.2,
+   "carpanlar": {
+    "0-4": 1.352,
+    "5-10": 0.804,
+    "11-20": 0.75,
+    "21+": 0.707
+   }
+  },
+  "Fatih": {
+   "sifir_vs_21plus_pct": 59.1,
+   "sifir_vs_ortalama_pct": 47.5,
+   "carpanlar": {
+    "0-4": 1.475,
+    "5-10": 1.525,
+    "11-20": 1.096,
+    "21+": 0.928
+   }
+  },
+  "Gaziosmanpaşa": {
+   "sifir_vs_21plus_pct": 58.4,
+   "sifir_vs_ortalama_pct": 8.0,
+   "carpanlar": {
+    "0-4": 1.08,
+    "5-10": 1.755,
+    "11-20": 0.791,
+    "21+": 0.682
+   }
+  },
+  "Güngören": {
+   "sifir_vs_21plus_pct": 93.8,
+   "sifir_vs_ortalama_pct": 38.9,
+   "carpanlar": {
+    "0-4": 1.389,
+    "5-10": 1.022,
+    "11-20": 1.019,
+    "21+": 0.717
+   }
+  },
+  "Kadıköy": {
+   "sifir_vs_21plus_pct": 73.2,
+   "sifir_vs_ortalama_pct": 4.9,
+   "carpanlar": {
+    "0-4": 1.049,
+    "5-10": 1.038,
+    "11-20": 1.101,
+    "21+": 0.606
+   }
+  },
+  "Kartal": {
+   "sifir_vs_21plus_pct": 90.4,
+   "sifir_vs_ortalama_pct": 6.8,
+   "carpanlar": {
+    "0-4": 1.068,
+    "5-10": 0.939,
+    "11-20": 0.991,
+    "21+": 0.561
+   }
+  },
+  "Kağıthane": {
+   "sifir_vs_21plus_pct": 90.9,
+   "sifir_vs_ortalama_pct": 21.1,
+   "carpanlar": {
+    "0-4": 1.211,
+    "5-10": 0.835,
+    "11-20": 0.739,
+    "21+": 0.634
+   }
+  },
+  "Küçükçekmece": {
+   "sifir_vs_21plus_pct": 137.3,
+   "sifir_vs_ortalama_pct": 13.9,
+   "carpanlar": {
+    "0-4": 1.139,
+    "5-10": 1.237,
+    "11-20": 1.017,
+    "21+": 0.48
+   }
+  },
+  "Maltepe": {
+   "sifir_vs_21plus_pct": 62.6,
+   "sifir_vs_ortalama_pct": 8.2,
+   "carpanlar": {
+    "0-4": 1.082,
+    "5-10": 0.864,
+    "11-20": 0.787,
+    "21+": 0.666
+   }
+  },
+  "Pendik": {
+   "sifir_vs_21plus_pct": 67.5,
+   "sifir_vs_ortalama_pct": 15.1,
+   "carpanlar": {
+    "0-4": 1.151,
+    "5-10": 0.932,
+    "11-20": 0.928,
+    "21+": 0.687
+   }
+  },
+  "Sancaktepe": {
+   "sifir_vs_21plus_pct": 47.9,
+   "sifir_vs_ortalama_pct": 2.3,
+   "carpanlar": {
+    "0-4": 1.023,
+    "5-10": 0.951,
+    "11-20": 1.095,
+    "21+": 0.692
+   }
+  },
+  "Sarıyer": {
+   "sifir_vs_21plus_pct": 182.1,
+   "sifir_vs_ortalama_pct": 26.9,
+   "carpanlar": {
+    "0-4": 1.269,
+    "5-10": 1.164,
+    "11-20": 0.964,
+    "21+": 0.45
+   }
+  },
+  "Silivri": {
+   "sifir_vs_21plus_pct": 12.9,
+   "sifir_vs_ortalama_pct": 5.5,
+   "carpanlar": {
+    "0-4": 1.055,
+    "5-10": 0.935,
+    "11-20": 0.966,
+    "21+": 0.935
+   }
+  },
+  "Sultanbeyli": {
+   "sifir_vs_21plus_pct": 107.4,
+   "sifir_vs_ortalama_pct": 0.0,
+   "carpanlar": {
+    "0-4": 1.0,
+    "5-10": 1.17,
+    "11-20": 0.666,
+    "21+": 0.482
+   }
+  },
+  "Sultangazi": {
+   "sifir_vs_21plus_pct": 62.6,
+   "sifir_vs_ortalama_pct": 23.6,
+   "carpanlar": {
+    "0-4": 1.236,
+    "5-10": 1.024,
+    "11-20": 0.908,
+    "21+": 0.76
+   }
+  },
+  "Tuzla": {
+   "sifir_vs_21plus_pct": 35.6,
+   "sifir_vs_ortalama_pct": 2.6,
+   "carpanlar": {
+    "0-4": 1.026,
+    "5-10": 0.907,
+    "11-20": 0.745,
+    "21+": 0.757
+   }
+  },
+  "Zeytinburnu": {
+   "sifir_vs_21plus_pct": 97.1,
+   "sifir_vs_ortalama_pct": 9.4,
+   "carpanlar": {
+    "0-4": 1.094,
+    "5-10": 1.579,
+    "11-20": 0.778,
+    "21+": 0.555
+   }
+  },
+  "Çatalca": {
+   "sifir_vs_21plus_pct": -11.0,
+   "sifir_vs_ortalama_pct": 0.0,
+   "carpanlar": {
+    "0-4": 1.0,
+    "5-10": 0.769,
+    "11-20": 1.478,
+    "21+": 1.124
+   }
+  },
+  "Çekmeköy": {
+   "sifir_vs_21plus_pct": 28.9,
+   "sifir_vs_ortalama_pct": 1.7,
+   "carpanlar": {
+    "0-4": 1.017,
+    "5-10": 0.89,
+    "11-20": 0.903,
+    "21+": 0.789
+   }
+  },
+  "Ümraniye": {
+   "sifir_vs_21plus_pct": 54.2,
+   "sifir_vs_ortalama_pct": 13.9,
+   "carpanlar": {
+    "0-4": 1.139,
+    "5-10": 0.977,
+    "11-20": 0.844,
+    "21+": 0.738
+   }
+  },
+  "Üsküdar": {
+   "sifir_vs_21plus_pct": 69.0,
+   "sifir_vs_ortalama_pct": 11.2,
+   "carpanlar": {
+    "0-4": 1.112,
+    "5-10": 1.228,
+    "11-20": 0.703,
+    "21+": 0.658
+   }
+  },
+  "Şile": {
+   "sifir_vs_21plus_pct": 54.0,
+   "sifir_vs_ortalama_pct": 8.3,
+   "carpanlar": {
+    "0-4": 1.083,
+    "5-10": 0.755,
+    "11-20": 1.066,
+    "21+": 0.703
+   }
+  },
+  "Şişli": {
+   "sifir_vs_21plus_pct": 124.8,
+   "sifir_vs_ortalama_pct": 90.8,
+   "carpanlar": {
+    "0-4": 1.908,
+    "5-10": 1.251,
+    "11-20": 1.023,
+    "21+": 0.848
+   }
+  }
+ }
+}

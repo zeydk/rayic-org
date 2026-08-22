@@ -26,7 +26,9 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from services.imar_service import fetch_imar_durumu, _cache_key, _IMAR_CACHE, MUNICIPAL_WEBGIS, _norm  # noqa: E402
+from services.imar_service import (  # noqa: E402
+    fetch_imar_durumu, bulk_fetch_arcgis, _cache_key, _IMAR_CACHE, MUNICIPAL_WEBGIS, _norm,
+)
 
 
 def _parse_range(spec: str):
@@ -60,8 +62,16 @@ def main():
     ap.add_argument("--limit", type=int, default=0, help="max deneme (0=sınırsız)")
     args = ap.parse_args()
 
-    if _norm(args.district) not in MUNICIPAL_WEBGIS:
+    cfg = MUNICIPAL_WEBGIS.get(_norm(args.district))
+    if not cfg:
         print(f"[!] {args.district} desteklenen ilçelerde değil. Desteklenen: {sorted(MUNICIPAL_WEBGIS)}")
+        return
+
+    # ArcGIS ilçelerinde TOPLU (spatial-join) mod — çok hızlı, ıskasız.
+    if cfg["platform"] == "arcgis_kentrehberi":
+        print(f"[ArcGIS toplu mod] {args.district} — tüm parseller + plan adaları çekiliyor...")
+        n = bulk_fetch_arcgis(args.district, progress=lambda m: print("  " + m, flush=True))
+        print(f"\nBitti. {args.district}: {n} parsel stoklandı | Toplam stok={len(_IMAR_CACHE)}")
         return
 
     tried = hit = skipped = 0

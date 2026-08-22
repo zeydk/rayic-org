@@ -17,3 +17,6 @@ yarn-error.log*
 
 # Claude Code local dir
 .claude/
+
+# İmar stok önbelleği (bulk-fetch ile üretilir; git için büyük)
+backend/data/imar_cache.json

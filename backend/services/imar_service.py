@@ -312,8 +312,11 @@ def _query_arcgis_kentrehberi(cfg: Dict[str, str], district: str, ada: str, pars
                "spatialRel": "esriSpatialRelIntersects", "outFields": "*", "returnGeometry": "false"})
     pf = pj.get("features", [])
     plan = pf[0]["attributes"] if pf else {}
+    return _build_arcgis_record(cfg, district, ada, parsel, a, plan, _arcgis_domains(gis), cy, cx)
 
-    dom = _arcgis_domains(gis)
+
+def _build_arcgis_record(cfg, district, ada, parsel, a, plan, dom, lat, lng):
+    """ArcGIS parsel + plan öznitelikelrinden normalize imar kaydı üretir."""
     kod = plan.get("KULLANIM")
     fonksiyon = (dom.get("KULLANIM", {}).get(kod) or _KULLANIM_FALLBACK.get(kod))
     nizam = dom.get("YAPIDUZENI", {}).get(plan.get("YAPIDUZENI"))
@@ -329,7 +332,7 @@ def _query_arcgis_kentrehberi(cfg: Dict[str, str], district: str, ada: str, pars
         "pafta": a.get("PAFTANO"),
         "parsel_alani": ("%.2f m²" % a["ALANI"]) if a.get("ALANI") else None,
         "kaynak_url": "%s#/imardurum?id=%s" % (cfg.get("eharita", ""), a.get("ID", "")),
-        "_lat": cy, "_lng": cx,
+        "_lat": lat, "_lng": lng,
     }
     if fonksiyon:
         out["fonksiyon"] = fonksiyon
@@ -342,14 +345,12 @@ def _query_arcgis_kentrehberi(cfg: Dict[str, str], district: str, ada: str, pars
         v = val(plan.get(col))
         if v is not None:
             out[key] = v
-    # ham alanlar (algoritmalar için) — kodları çözülmüş etiketlerle
     tum = {}
     for k, v in plan.items():
         if val(v) is not None and not k.startswith(("SHAPE", "OBJECTID", "GLOBALID")):
             tum[k] = dom.get(k, {}).get(v, v)
     if tum:
         out["tum_alanlar"] = tum
-    # imar verisi gerçekten geldiyse döndür
     return out if (fonksiyon or "taks" in out or "kat_adedi" in out) else None
 
 
@@ -370,6 +371,100 @@ def _query_live(district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]
         return adapter(cfg, district, ada, parsel)
     except Exception:
         return None
+
+
+def _pip(x: float, y: float, ring) -> bool:
+    """Ray-casting point-in-polygon."""
+    inside = False
+    n = len(ring)
+    j = n - 1
+    for i in range(n):
+        xi, yi = ring[i][0], ring[i][1]
+        xj, yj = ring[j][0], ring[j][1]
+        if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi + 1e-12) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+def _agq_all(url: str, out_fields: str, want_geom: bool):
+    """Sayfalı olarak bir ArcGIS katmanının TÜM kayıtlarını çeker."""
+    feats = []
+    offset = 0
+    while True:
+        p = {"where": "1=1", "outFields": out_fields, "returnGeometry": str(want_geom).lower(),
+             "outSR": "4326", "resultOffset": offset, "resultRecordCount": 2000,
+             "orderByFields": "OBJECTID", "f": "json"}
+        j = requests.get(url, params=p, timeout=25, verify=False).json()
+        fs = j.get("features", [])
+        feats.extend(fs)
+        if len(fs) < 2000 or not j.get("exceededTransferLimit", len(fs) == 2000):
+            if len(fs) < 2000:
+                break
+        offset += 2000
+        if offset > 200000:
+            break
+    return feats
+
+
+def bulk_fetch_arcgis(district: str, progress=None) -> int:
+    """ArcGIS 'Kent Rehberi' ilçesi için TÜM parsellerin imar verisini toplu çeker:
+    tüm plan adaları + tüm parseller alınır, yerel point-in-polygon ile eşleştirilir
+    ve stoka yazılır. Per-parsel sunucu sorgusu YOK -> çok hızlı. Stoklanan sayı."""
+    cfg = MUNICIPAL_WEBGIS.get(_norm(district))
+    if not cfg or cfg["platform"] != "arcgis_kentrehberi":
+        return 0
+    gis = cfg["gis"]
+    dom = _arcgis_domains(gis)
+
+    # 1) tüm plan adaları (imar + geometri)
+    plan_feats = _agq_all(gis + "/PlanBinaYok/MapServer/221/query",
+                          "KULLANIM,ALTKULLANIM,YAPIDUZENI,TAKS,KAKS,ONBAHCEMESAFESI,"
+                          "YANBAHCEMESAFESI,ARKABAHCEMESAFESI,KATADEDI,MAKSBINAYUKSEKLIK,"
+                          "MAKSDERINLIK,MINCEPHE", True)
+    plans = []
+    for pf in plan_feats:
+        rings = pf.get("geometry", {}).get("rings")
+        if not rings:
+            continue
+        ring = rings[0]
+        xs = [p[0] for p in ring]
+        ys = [p[1] for p in ring]
+        plans.append((min(xs), min(ys), max(xs), max(ys), ring, pf["attributes"]))
+    if progress:
+        progress("plan adaları: %d" % len(plans))
+
+    # 2) tüm parseller (ada/parsel + geometri)
+    par_feats = _agq_all(gis + "/AdaParsel/MapServer/1/query",
+                         "ID,ADANO,ADINUMARASI,MAHALLE,PAFTANO,ALANI", True)
+    if progress:
+        progress("parseller: %d" % len(par_feats))
+
+    stocked = 0
+    for pf in par_feats:
+        a = pf["attributes"]
+        ada = a.get("ADANO"); parsel = a.get("ADINUMARASI")
+        rings = pf.get("geometry", {}).get("rings")
+        if not ada or not parsel or not rings:
+            continue
+        ring = rings[0]
+        cx = sum(p[0] for p in ring) / len(ring)
+        cy = sum(p[1] for p in ring) / len(ring)
+        # bbox ile filtrele, sonra PIP
+        plan = None
+        for mnx, mny, mxx, mxy, pring, pattr in plans:
+            if mnx <= cx <= mxx and mny <= cy <= mxy and _pip(cx, cy, pring):
+                plan = pattr
+                break
+        if plan is None:
+            continue
+        rec = _build_arcgis_record(cfg, district, str(ada), str(parsel), a, plan, dom, cy, cx)
+        if rec:
+            key = _cache_key(district, str(ada), str(parsel))
+            _IMAR_CACHE[key] = rec
+            stocked += 1
+    _save_cache()
+    return stocked
 
 
 def fetch_imar_durumu(district: str, ada: str, parsel: str,

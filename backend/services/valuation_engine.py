@@ -23,6 +23,8 @@ class ValuationResult(BaseModel):
     data_collection_date: str = "-"
     inflation_factor: float = 1.0
     base_m2_price_historical: float = 0.0
+    yas_bandi: str = "-"
+    sifir_konut_prim_pct: Optional[float] = None
     valuation_breakdown: Dict[str, float]
 
 
@@ -44,6 +46,44 @@ def _load_emlakjet_prices() -> Dict[str, Any]:
 _EMLAKJET = _load_emlakjet_prices()
 EMLAKJET_PRICES: Dict[str, Any] = _EMLAKJET.get("prices", {})
 EMLAKJET_META: Dict[str, Any] = _EMLAKJET.get("meta", {})
+
+
+def _load_age_premium() -> Dict[str, Any]:
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "age_premium.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+_AGE_PREMIUM = _load_age_premium()
+_AGE_GENEL: Dict[str, float] = _AGE_PREMIUM.get("istanbul_geneli_carpan", {})
+_AGE_ILCE: Dict[str, Any] = _AGE_PREMIUM.get("ilceler", {})
+
+
+def age_premium_info(district: Optional[str], building_age: Optional[int]) -> Dict[str, Any]:
+    """Sıfır (0-4 yaş) konutun, bu binanın yaş bandına göre m² prim farkı.
+    EmlakJet yaş-bantlı verisinden; ilçe verisi yoksa İstanbul geneli çarpan."""
+    band = _age_band(building_age)
+    mult = None
+    ilce = None
+    for k, v in _AGE_ILCE.items():
+        if _norm_tr(k) == _norm_tr(district or ""):
+            ilce = v
+            break
+    carp = (ilce or {}).get("carpanlar") if ilce else None
+    if carp and band in carp and "0-4" in carp:
+        this_m = carp[band]
+        new_m = carp["0-4"]
+    else:
+        this_m = _AGE_GENEL.get(band)
+        new_m = _AGE_GENEL.get("0-4")
+    prim = None
+    if this_m and new_m:
+        prim = round((new_m / this_m - 1) * 100, 1)
+    labels = {"0-4": "0-4 yaş (Sıfır/Yeni)", "5-10": "5-10 yaş", "11-20": "11-20 yaş", "21+": "21+ yaş (Eski)"}
+    return {"yas_bandi": labels.get(band, band), "sifir_konut_prim_pct": prim}
 
 
 def _norm_tr(s: Optional[str]) -> str:
@@ -205,6 +245,7 @@ def calculate_valuation(
     neighborhood: Optional[str] = "Caddebostan",
     k_facade: float = 1.0
 ) -> ValuationResult:
+    _yas_info = age_premium_info(district, building_age)
     base_m2_hist, base_source, base_n, age_specific = get_base_m2_price(district, neighborhood, building_age)
     # If the base already encodes the building's age band, don't re-apply k_age
     # (that would double-count age). Otherwise fall back to the age coefficient.
@@ -262,6 +303,8 @@ def calculate_valuation(
         data_collection_date=data_date,
         inflation_factor=round(k_tcmb, 3),
         base_m2_price_historical=round(base_m2_hist, 0),
+        yas_bandi=_yas_info["yas_bandi"],
+        sifir_konut_prim_pct=_yas_info["sifir_konut_prim_pct"],
         valuation_breakdown={
             "base_m2": base_m2,
             "net_m2": net_m2,
