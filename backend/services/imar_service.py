@@ -14,6 +14,7 @@ karşılanır — böylece hem hızlı hem de kaynak adres değişse/çökse bil
 """
 import os
 import re
+import io
 import json
 import html as _html
 import threading
@@ -41,6 +42,11 @@ MUNICIPAL_WEBGIS: Dict[str, Dict[str, str]] = {
     "uskudar":    {"platform": "arcgis_kentrehberi",
                    "gis": "https://harita.uskudar.bel.tr/server/rest/services/KENTREHBERI",
                    "eharita": "https://cbs.uskudar.bel.tr/eharita/"},
+    # GiSoft GIS platformu (anonim JWT + entity/report + PDF imar belgesi).
+    "beylikduzu": {"platform": "gisoft",
+                   "base": "https://cbs.beylikduzu.istanbul/GiSoftGis",
+                   "app": "GISOFT_GIS_WEB_CLIENT",
+                   "eharita": "https://cbs.beylikduzu.istanbul/GiSoftGis/#/ezoning"},
 }
 
 # ArcGIS KULLANIM kodları için yedek eşleme (domain yoksa).
@@ -227,6 +233,22 @@ def fetch_parcel_geometry(district: str, ada: str, parsel: str) -> Optional[Dict
         except Exception:
             return None
 
+    # GiSoft: imar PDF'inden coğrafi koordinat (geometri poligonu yok, nokta var).
+    if cfg["platform"] == "gisoft":
+        try:
+            rec = _query_gisoft(cfg, district, ada, parsel)
+            if rec and rec.get("_lat") and rec.get("_lng"):
+                o = 0.00035
+                lat, lng = rec["_lat"], rec["_lng"]
+                geom = {"type": "Polygon", "coordinates": [[
+                    [lng - o, lat - o], [lng + o, lat - o],
+                    [lng + o, lat + o], [lng - o, lat + o], [lng - o, lat - o]]]}
+                return {"lat": lat, "lng": lng, "geometry": geom,
+                        "tapu_mahalle": rec.get("tapu_mahalle", "")}
+            return None
+        except Exception:
+            return None
+
     if cfg["platform"] != "netgis":
         return None
     base = cfg["base"]
@@ -354,9 +376,179 @@ def _build_arcgis_record(cfg, district, ada, parsel, a, plan, dom, lat, lng):
     return out if (fonksiyon or "taks" in out or "kat_adedi" in out) else None
 
 
+# ---------------------------------------------------------------------------
+# GiSoft GIS platformu (Beylikdüzü) — anonim JWT + entity/report + PDF belgesi
+# ---------------------------------------------------------------------------
+#   1) GET  rest/application?applicationCode=...  -> `X-Auth-Token` yanıt başlığı
+#            (her çağrı taze bir ANONİM JWT üretir; ayrı login gerekmez)
+#   2) POST rest/entity/cache/list  {parcel, filterValue:"ada/parsel"} -> entity id
+#   3) GET  rest/entity/report/parcel/2/{id}  -> ["ImarDurumuRaporu_<ts>.pdf"]
+#   4) GET  rest/file/download/{ad}?isAttachment=false  (X-Auth-Token başlığı) -> PDF
+#   5) PDF'ten TÜM alanları ayıkla (iki sütunlu anahtar/değer tablosu + koordinat)
+
+def _gisoft_token(s: requests.Session, cfg: Dict[str, str]) -> Optional[str]:
+    r = s.get(cfg["base"] + "/rest/application", params={"applicationCode": cfg["app"]},
+              timeout=12, verify=False)
+    return r.headers.get("x-auth-token") or r.headers.get("X-Auth-Token")
+
+
+def _dms_to_dec(d: str, m: str, sec: str, hemi: str) -> float:
+    v = int(d) + int(m) / 60.0 + float(sec) / 3600.0
+    return round(-v if hemi in ("S", "W") else v, 6)
+
+
+def _extract_gisoft_pdf(pdf_bytes: bytes) -> Dict[str, Any]:
+    """GiSoft imar durumu PDF'inden TÜM alanları ayıklar (iki sütunlu tablo +
+    coğrafi koordinat + plan notları). pdfplumber kelime konumları ile."""
+    import pdfplumber  # lazy: sadece gisoft ilçesinde gerekli
+    out: Dict[str, Any] = {}
+    tum: Dict[str, str] = {}
+    try:
+        pdf = pdfplumber.open(io.BytesIO(pdf_bytes))
+    except Exception:
+        return out
+
+    alltext = " ".join((p.extract_text() or "") for p in pdf.pages)
+    if "İmar Durumu Bilgisi bulunamadı" in alltext:
+        out["imar_durumu_yok"] = True
+
+    # Coğrafi koordinat (41°0'40"N 28°39'0"E) -> ondalık; konum snap için.
+    mc = re.search(r'(\d+)°(\d+)\'([\d.]+)"?\s*([NS])\s+(\d+)°(\d+)\'([\d.]+)"?\s*([EW])', alltext)
+    if mc:
+        out["_lat"] = _dms_to_dec(mc.group(1), mc.group(2), mc.group(3), mc.group(4))
+        out["_lng"] = _dms_to_dec(mc.group(5), mc.group(6), mc.group(7), mc.group(8))
+
+    grid = next((p for p in pdf.pages if "İmar Durumu Bilgileri" in (p.extract_text() or "")), None)
+    if grid is None:
+        return out
+
+    # Plan notları (grid'in üstündeki numaralı liste "1 - ... 2 - ...").
+    gtext = grid.extract_text() or ""
+    mnot = re.search(r'(1\s*-\s*.+?)(?:\d{2}/\d{2}/\d{4}\s+Tarihli İmar Durumu|Tarihli İmar Durumu)',
+                     gtext, re.DOTALL)
+    if mnot:
+        notes = re.sub(r'\s+', ' ', mnot.group(1)).strip()
+        if len(notes) > 30:
+            out["plan_notlari"] = notes[:2000]
+
+    rows: Dict[int, list] = {}
+    for w in grid.extract_words():
+        if w["top"] < 560:        # tablo, plan notlarının altında başlıyor
+            continue
+        k = round(w["top"] / 3) * 3
+        rows.setdefault(k, []).append((w["x0"], w["text"]))
+
+    def clean(v: str) -> str:
+        v = re.sub(r"\s+", " ", v).strip()
+        return "" if v in ("-", "*", "") else v
+
+    # İki sütunlu tablo: sol değer kolonu x∈[188,300), sağ değer kolonu x≥455.
+    LEFTMAP = {"Kat Adedi": "kat_adedi", "Taks": "taks", "Ön Bahçe Mesafesi": "on_bahce",
+               "Arka Bahçe Mesafesi": "arka_bahce", "Hmaks": "hmaks", "Plan Ölçeği": "plan_olcegi"}
+    RIGHTMAP = {"Maks Kat Adedi": "maks_kat_adedi", "Kaks": "kaks", "Emsal": "emsal",
+                "Yan Bahçe Mesafesi": "yan_bahce", "İnşaat Nizamı": "insaat_nizami",
+                "Tasdik Tarihi": "tasdik_tarihi"}
+
+    for _, toks in sorted(rows.items()):
+        toks = sorted(toks)
+        line = " ".join(t for _, t in toks)
+        # Başlık değer satırı: "MAHALLE PAFTA ADA PARSEL ALAN m²"
+        if line.endswith("m²") and "Mahalle" not in line and "Fonksiyon" not in line:
+            mh = re.match(r'^(.*?)\s+(\S+)\s+(\d+)\s+(\d+)\s+([\d.,]+)\s*m²$', line)
+            if mh:
+                out["tapu_mahalle"] = re.sub(r'\(.*?\)', '', mh.group(1)).strip()
+                out["pafta"] = mh.group(2)
+                out["ada_no"] = mh.group(3)
+                out["parsel_no"] = mh.group(4)
+                out["parsel_alani"] = mh.group(5) + " m²"
+                tum["Mahalle"] = mh.group(1)
+                continue
+        if line.startswith("Plan Adı"):
+            v = clean(line[len("Plan Adı"):])
+            if v:
+                out["plan_adi"] = v
+                tum["Plan Adı"] = v
+            continue
+        if line.startswith("Fonksiyon Adı"):
+            rest = re.sub(r'\s*-?\s*[\d.,]+\s*m²\s*$', '', line[len("Fonksiyon Adı"):])
+            v = clean(rest.strip(" -"))
+            if v:
+                out["fonksiyon"] = v
+                tum["Fonksiyon Adı"] = v
+            continue
+        if "İdari Mahalle" in line or line.startswith("KADASTRO") or line.startswith("Kapı"):
+            continue
+        # Genel eşli satır: sol/sağ etiket + değer.
+        ll = " ".join(t for x, t in toks if x < 188).strip()
+        lv = clean(" ".join(t for x, t in toks if 188 <= x < 300))
+        rl = " ".join(t for x, t in toks if 300 <= x < 455).strip()
+        rv = clean(" ".join(t for x, t in toks if x >= 455))
+        if ll in LEFTMAP and lv:
+            out[LEFTMAP[ll]] = lv
+            tum[ll] = lv
+        if rl in RIGHTMAP and rv:
+            out[RIGHTMAP[rl]] = rv
+            tum[rl] = rv
+
+    if tum:
+        out["tum_alanlar"] = tum
+    return out
+
+
+def _gisoft_parcel_id(s: requests.Session, cfg: Dict[str, str], tok: str,
+                      ada: str, parsel: str) -> Optional[str]:
+    body = {"entityAliasItemIndexMap": {"parcel": 0},
+            "filterValue": f"{ada}/{parsel}", "maxResultCount": 20,
+            "includeDeletedRecords": False}
+    r = s.post(cfg["base"] + "/rest/entity/cache/list", data=json.dumps(body),
+               headers={"X-Auth-Token": tok, "Content-Type": "application/json",
+                        "Referer": cfg["base"] + "/"}, timeout=12, verify=False)
+    lst = r.json().get("entityCacheModelList", [])
+    if not lst:
+        return None
+    pref = f"{ada}/{parsel} "
+    for e in lst:
+        if e.get("entityAlias") == "parcel" and str(e.get("label", "")).startswith(pref):
+            return e.get("id")
+    return lst[0].get("id")
+
+
+def _query_gisoft(cfg: Dict[str, str], district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]]:
+    s = requests.Session()
+    s.headers.update({"User-Agent": _UA})
+    tok = _gisoft_token(s, cfg)
+    if not tok:
+        return None
+    eid = _gisoft_parcel_id(s, cfg, tok, ada, parsel)
+    if not eid:
+        return None
+    hdr = {"X-Auth-Token": tok, "Referer": cfg["base"] + "/"}
+    fn = s.get(cfg["base"] + f"/rest/entity/report/parcel/2/{eid}",
+               headers=hdr, timeout=25, verify=False).json()
+    if not isinstance(fn, list) or not fn:
+        return None
+    pdf = s.get(cfg["base"] + f"/rest/file/download/{fn[0]}",
+                params={"isAttachment": "false"}, headers=hdr, timeout=25, verify=False)
+    if pdf.status_code != 200 or "pdf" not in pdf.headers.get("content-type", ""):
+        return None
+    fields = _extract_gisoft_pdf(pdf.content)
+    if not fields or (fields.get("imar_durumu_yok") and "fonksiyon" not in fields):
+        # Parsel bir imar planı içinde değil (koordinat yine de dönebilir).
+        if not fields.get("_lat"):
+            return None
+    return {
+        "supported": True,
+        "belediye": district.strip().title() + " Belediyesi",
+        "ada_parsel": f"{ada}/{parsel}",
+        "kaynak_url": cfg.get("eharita", ""),
+        **fields,
+    }
+
+
 _ADAPTERS = {
     "netgis": _query_netgis,
     "arcgis_kentrehberi": _query_arcgis_kentrehberi,
+    "gisoft": _query_gisoft,
 }
 
 
