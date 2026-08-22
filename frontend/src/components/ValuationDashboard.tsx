@@ -22,6 +22,9 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
     k_age,
     k_floor,
     k_tcmb,
+    data_collection_date,
+    inflation_factor,
+    base_m2_price_historical,
   } = valuation;
 
   const monthlyRent = financials?.estimated_monthly_rent || roundEstimatedRent(estimated_total_price);
@@ -80,8 +83,13 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
             {estimated_total_price.toLocaleString("tr-TR")} ₺
           </span>
           <span className="text-[11px] text-slate-600 font-bold mt-2 block border-t border-[#E5E7EB] pt-1">
-            Mahalle Rayici: {base_m2_price.toLocaleString("tr-TR")} ₺/m²
+            Konut Rayici (yaş &amp; bölge bazlı): {base_m2_price.toLocaleString("tr-TR")} ₺/m²
           </span>
+          {inflation_factor && inflation_factor > 1.001 && base_m2_price_historical > 0 && (
+            <span className="text-[10px] text-[#C2410C] font-semibold mt-0.5 block">
+              📈 {base_m2_price_historical.toLocaleString("tr-TR")} ₺/m² ({data_collection_date}) × {inflation_factor.toFixed(2)} TCMB KFE enflasyon = bugünkü rayiç
+            </span>
+          )}
         </div>
 
         {/* Estimated Monthly Rent */}

@@ -1,11 +1,22 @@
 import math
-import hashlib
-import re
 import requests
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
-from .earthquake_service import get_district_amplification, compute_mmi, calculate_liquefaction_safety_factor, calculate_damage_probabilities
+from .earthquake_service import (
+    get_district_amplification,
+    calculate_liquefaction_safety_factor,
+    calculate_damage_probabilities,
+    distance_to_fault_km,
+    scenario_pga_g,
+    pga_to_mmi,
+    distance_to_coast_km,
+    fetch_elevation_m,
+    estimate_tsunami_risk,
+    estimate_ground_class,
+    ground_class_to_n,
+)
 from .data_loader import ibb_loader
+from .imar_service import fetch_imar_durumu, fetch_parcel_geometry
 
 class POIItem(BaseModel):
     id: str
@@ -70,7 +81,10 @@ class TKGMCadastreInfo(BaseModel):
     precise_lng: float
     polygon_geometry: Optional[Dict[str, Any]] = None
     oznitelik: Optional[TKGMOznitelikInfo] = None
+    kat_mulkiyeti_durumu: str = "-"
     bb_listesi: List[TKGMBagimsizBolumItem] = []
+    bb_veri_durumu: str = ""
+    imar_durumu: Optional[Dict[str, Any]] = None
 
 class SpatialCheckupResult(BaseModel):
     property_lat: float
@@ -86,6 +100,8 @@ class SpatialCheckupResult(BaseModel):
     district_amplification: float
     fault_distance_km: float
     tsunami_risk: Optional[str] = "Düşük (Bilinmiyor)"
+    tsunami_depth_m: float = 0.0
+    tsunami_flood_pct: float = 0.0
     damage_probabilities: Dict[str, float]
     pois_within_1km: List[POIItem]
     poi_summary: Dict[str, int]
@@ -94,30 +110,6 @@ class SpatialCheckupResult(BaseModel):
     score_transformation_activity: int
     safety_report: SafetyReportResult
     education_report: EducationReportResult
-
-# Authentic Cadastre Database Mapping for Known Istanbul Addresses
-REAL_CADASTRE_DB: Dict[str, Dict[str, Any]] = {
-    "maltepe_çınar_cumhuriyet_36": {
-        "ada": "1542", "parsel": "38", "pafta": "154-38-M",
-        "nitelik": "Kargir 6 Katlı Bitişik Nizam Konut Yapısı",
-        "area": 2185.50, "lat": 40.9453, "lng": 29.1104
-    },
-    "kadıköy_erenköy_mehmet ertem alp_4": {
-        "ada": "1420", "parsel": "12", "pafta": "243-12-A",
-        "nitelik": "Kargir 6 Katlı Bitişik Nizam Apartman ve Arsası",
-        "area": 2415.80, "lat": 40.9700, "lng": 29.0785
-    },
-    "kadıköy_caddebostan_bağdat_280": {
-        "ada": "1105", "parsel": "6", "pafta": "110-06-C",
-        "nitelik": "Kargir Apartman ve Arsası",
-        "area": 2800.00, "lat": 40.9675, "lng": 29.0652
-    },
-    "beşiktaş_bebek_cevdet paşa_45": {
-        "ada": "480", "parsel": "3", "pafta": "48-03-B",
-        "nitelik": "Kargir Lüks Konut Yapısı",
-        "area": 3200.00, "lat": 41.0760, "lng": 29.0430
-    }
-}
 
 # Neighborhood Centers Coordinates Map
 NEIGHBORHOOD_CENTERS = {
@@ -142,75 +134,6 @@ SPATIAL_POIS = [
     {"id": "t1", "name": "Kentsel Dönüşüm Projesi", "category": "transformation", "lat": 40.9680, "lng": 29.0660}
 ]
 
-def calculate_deterministic_cadastre(district: str, neighborhood: str, full_address: Optional[str] = None):
-    """Calculates highly realistic Ada and Parsel numbers based on address text features."""
-    addr = (full_address or "").lower()
-    
-    # Try extracting building door number
-    door_match = re.search(r'(?:no|bina|kapı|n)[:\s]*(\d+)', addr)
-    door_num = door_match.group(1) if door_match else "36"
-
-    # Try extracting street name
-    street_match = re.search(r'([a-zçğıöşü\s]+)(?:caddesi|cad|sokak|sok|bulvarı|blv)', addr)
-    street_name = street_match.group(1).strip() if street_match else "main"
-
-    db_key = f"{district.lower()}_{neighborhood.lower()}_{street_name}_{door_num}"
-    if db_key in REAL_CADASTRE_DB:
-        return REAL_CADASTRE_DB[db_key]
-
-    # Deterministic hash formula based on building door number and street name
-    raw_str = f"{district}_{neighborhood}_{street_name}_{door_num}"
-    h = int(hashlib.md5(raw_str.encode('utf-8')).hexdigest()[:8], 16)
-
-    ada = str((h % 2800) + 1200)
-    parsel = str((int(door_num) * 3 + (h % 35)) % 120 + 1)
-    pafta = f"{ada[:3]}-{parsel.zfill(2)}-M"
-
-    return {
-        "ada": ada,
-        "parsel": parsel,
-        "pafta": pafta,
-        "nitelik": f"Kargir {min(int(door_num) % 5 + 4, 8)} Katlı Bitişik Nizam Apartman ve Arsası",
-        "area": round(1800.0 + (h % 1200), 2),
-        "lat": NEIGHBORHOOD_CENTERS.get(neighborhood, {}).get("lat", 40.9483),
-        "lng": NEIGHBORHOOD_CENTERS.get(neighborhood, {}).get("lng", 29.1303)
-    }
-
-def generate_tkgm_bb_list(ada_no: str, parsel_no: str, total_m2: float) -> List[TKGMBagimsizBolumItem]:
-    bb_items = []
-    ada_num = int(ada_no) if ada_no.isdigit() else 1542
-    parsel_num = int(parsel_no) if parsel_no.isdigit() else 38
-    total_units = ((ada_num + parsel_num) % 6) + 8
-    
-    bb_items.append(TKGMBagimsizBolumItem(
-        bb_no="1", daire_no="1", bb_tipi="Dükkan / Mağaza", kat_no="Giriş / Zemin Kat", arsa_pay_payda="20/240", blok_no="A Blok"
-    ))
-    bb_items.append(TKGMBagimsizBolumItem(
-        bb_no="2", daire_no="2", bb_tipi="Dükkan / Mağaza", kat_no="Giriş / Zemin Kat", arsa_pay_payda="20/240", blok_no="A Blok"
-    ))
-
-    floors = ["1. Kat", "2. Kat", "3. Kat", "4. Kat", "5. Kat"]
-    bb_counter = 3
-    for floor_idx in range(min(total_units // 2, len(floors))):
-        floor_name = floors[floor_idx]
-        for d_idx in range(1, 3):
-            d_no = str(bb_counter - 2)
-            bb_items.append(TKGMBagimsizBolumItem(
-                bb_no=str(bb_counter),
-                daire_no=d_no,
-                bb_tipi="Mesken (Daire)",
-                kat_no=floor_name,
-                arsa_pay_payda="15/240",
-                blok_no="A Blok"
-            ))
-            bb_counter += 1
-
-    bb_items.append(TKGMBagimsizBolumItem(
-        bb_no=str(bb_counter), daire_no=str(bb_counter - 2), bb_tipi="Dubleks Mesken", kat_no="Çatı Katı", arsa_pay_payda="25/240", blok_no="A Blok"
-    ))
-
-    return bb_items
-
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     R = 6371000  # Radius of Earth in meters
@@ -223,114 +146,310 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
 
-def geocode_arcgis(address: str):
+# ---------------------------------------------------------------------------
+# Geocoding: address -> candidate lat/lng points across multiple providers.
+# We deliberately collect SEVERAL candidates and disambiguate them later against
+# the live TKGM cadastre, so a point that lands on a road/void is rejected in
+# favour of the real building parcel.
+# ---------------------------------------------------------------------------
+
+GEOCODER_SOURCE_PRIORITY = {"arcgis": 3, "nominatim": 2, "photon": 1}
+
+# Rough bounding box for Istanbul (min_lat, max_lat, min_lng, max_lng).
+ISTANBUL_BOUNDS = (40.70, 41.45, 28.40, 29.70)
+
+
+def _normalize_tr(text: Optional[str]) -> str:
+    s = (text or "").strip().lower()
+    for a, b in (("ı", "i"), ("İ", "i"), ("ş", "s"), ("ğ", "g"), ("ü", "u"),
+                 ("ö", "o"), ("ç", "c"), ("â", "a"), ("î", "i"), ("û", "u")):
+        s = s.replace(a, b)
+    return s
+
+
+def _in_istanbul(lat: float, lng: float) -> bool:
+    mnla, mxla, mnlo, mxlo = ISTANBUL_BOUNDS
+    return mnla <= lat <= mxla and mnlo <= lng <= mxlo
+
+
+def geocode_arcgis(address: str) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
     try:
         url = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates"
-        params = {"singleLine": address, "f": "json", "maxLocations": 1}
+        params = {"singleLine": address, "f": "json", "maxLocations": 3, "countryCode": "TUR"}
         resp = requests.get(url, params=params, timeout=5)
         if resp.status_code == 200:
-            data = resp.json()
-            if "candidates" in data and len(data["candidates"]) > 0:
-                loc = data["candidates"][0]["location"]
-                return {"lat": float(loc["y"]), "lng": float(loc["x"]), "source": "arcgis"}
+            for c in resp.json().get("candidates", [])[:3]:
+                loc = c.get("location", {})
+                if "y" in loc and "x" in loc:
+                    out.append({"lat": float(loc["y"]), "lng": float(loc["x"]),
+                                "source": "arcgis", "score": float(c.get("score", 0) or 0)})
     except Exception:
         pass
-    return None
+    return out
 
-def geocode_nominatim(address: str):
+
+def geocode_photon(address: str) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    try:
+        url = "https://photon.komoot.io/api/"
+        params = {"q": address, "limit": 3}
+        resp = requests.get(url, params=params, timeout=5)
+        if resp.status_code == 200:
+            for f in resp.json().get("features", [])[:3]:
+                co = f.get("geometry", {}).get("coordinates")
+                if co and len(co) >= 2:
+                    out.append({"lat": float(co[1]), "lng": float(co[0]),
+                                "source": "photon", "score": 50.0})
+    except Exception:
+        pass
+    return out
+
+
+def geocode_nominatim(address: str) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
     try:
         url = "https://nominatim.openstreetmap.org/search"
-        params = {"q": address, "format": "json", "limit": 1}
+        params = {"q": address, "format": "json", "limit": 3, "countrycodes": "tr"}
         headers = {"User-Agent": "rayic-org/1.0"}
         resp = requests.get(url, params=params, headers=headers, timeout=5)
         if resp.status_code == 200:
-            data = resp.json()
-            if len(data) > 0:
-                return {"lat": float(data[0]["lat"]), "lng": float(data[0]["lon"]), "source": "nominatim"}
+            for r in resp.json()[:3]:
+                out.append({"lat": float(r["lat"]), "lng": float(r["lon"]),
+                            "source": "nominatim", "score": float(r.get("importance", 0) or 0) * 100})
     except Exception:
         pass
-    return None
+    return out
 
-def geocode_photon(address: str):
-    try:
-        url = "https://photon.komoot.io/api/"
-        params = {"q": address, "limit": 1}
-        resp = requests.get(url, params=params, timeout=5)
-        if resp.status_code == 200:
-            data = resp.json()
-            if "features" in data and len(data["features"]) > 0:
-                coords = data["features"][0]["geometry"]["coordinates"]
-                return {"lat": float(coords[1]), "lng": float(coords[0]), "source": "photon"}
-    except Exception:
-        pass
-    return None
+
+def geocode_address_candidates(address: str) -> List[Dict[str, Any]]:
+    """Query every provider and return de-duplicated, in-region candidate points."""
+    cands: List[Dict[str, Any]] = []
+    for fn in (geocode_arcgis, geocode_photon, geocode_nominatim):
+        cands.extend(fn(address))
+    cands = [c for c in cands if _in_istanbul(c["lat"], c["lng"])]
+    deduped: List[Dict[str, Any]] = []
+    for c in cands:
+        if not any(haversine_distance(c["lat"], c["lng"], d["lat"], d["lng"]) < 8 for d in deduped):
+            deduped.append(c)
+    return deduped
+
 
 def geocode_address_to_latlng(address: str) -> Optional[Dict[str, float]]:
-    # Waterfall priority: 1. ArcGIS, 2. Photon, 3. Nominatim
-    
-    res1 = geocode_arcgis(address)
-    if res1: return res1
-    
-    res2 = geocode_photon(address)
-    if res2: return res2
-    
-    res3 = geocode_nominatim(address)
-    if res3: return res3
-    
-    return None
-        
-    # Consensus building
-    # Find two points that are within 1000 meters of each other
-    for i in range(len(results)):
-        for j in range(i + 1, len(results)):
-            dist = haversine_distance(results[i]["lat"], results[i]["lng"], results[j]["lat"], results[j]["lng"])
-            if dist < 1000:
-                # Average them
-                return {
-                    "lat": (results[i]["lat"] + results[j]["lat"]) / 2,
-                    "lng": (results[i]["lng"] + results[j]["lng"]) / 2,
-                    "source": f"consensus({results[i]['source']}+{results[j]['source']})"
-                }
-                
-    # If no consensus, fallback to ArcGIS (if it exists) or first result
-    for r in results:
-        if r["source"] == "arcgis":
-            return r
-    return results[0]
+    """Back-compat single-point helper: best-effort first candidate."""
+    cands = geocode_address_candidates(address)
+    return cands[0] if cands else None
 
 
-def fetch_tkgm_parcel_by_coords(lat: float, lng: float) -> Optional[Dict[str, Any]]:
+# ---------------------------------------------------------------------------
+# TKGM MEGSIS cadastre lookup (coords -> real ada/parsel + parcel geometry).
+# ---------------------------------------------------------------------------
+
+# Parcel "nitelik" values that are NOT a building (roads, parks, voids...).
+ROAD_LIKE_NITELIK = {
+    "yol", "yeşil alan", "park", "dere", "kanal", "tescil harici",
+    "otopark alanı", "meydan", "kaldırım", "spor alanı", "mezarlık",
+}
+
+
+def _spiral_offsets() -> List[tuple]:
+    """Offsets in degrees (~up to 30 m) used to escape a point that landed on a
+    road/void and snap onto the nearest real building parcel."""
+    offs = [(0.0, 0.0)]
+    for radius in (0.00012, 0.00025):
+        for ang in range(0, 360, 45):
+            offs.append((radius * math.cos(math.radians(ang)), radius * math.sin(math.radians(ang))))
+    return offs
+
+
+_SPIRAL_OFFSETS = _spiral_offsets()
+
+
+def _polygon_centroid(geom: Optional[Dict[str, Any]]) -> Optional[tuple]:
+    """Return (lat, lng) centroid (vertex average of the outer ring)."""
+    if not geom:
+        return None
+    gtype = geom.get("type")
+    coords = geom.get("coordinates")
+    if not coords:
+        return None
+    if gtype == "Polygon":
+        ring = coords[0]
+    elif gtype == "MultiPolygon":
+        ring = coords[0][0]
+    else:
+        return None
+    if not ring:
+        return None
+    xs = [pt[0] for pt in ring]
+    ys = [pt[1] for pt in ring]
+    return (sum(ys) / len(ys), sum(xs) / len(xs))
+
+
+def _is_road_parcel(props: Dict[str, Any]) -> bool:
+    nit = (props.get("nitelik") or "").strip().lower()
+    if not nit:
+        return False
+    return nit in ROAD_LIKE_NITELIK or nit.startswith("yol")
+
+
+def _parse_tkgm_parcel(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    props = data.get("properties")
+    if not props:
+        return None
+    ada = str(props.get("adaNo", "")).strip()
+    parsel = str(props.get("parselNo", "")).strip()
+    if not ada or not parsel:
+        return None
+    raw_alan = props.get("alan", 0)
+    if isinstance(raw_alan, str):
+        raw_alan = raw_alan.replace(",", "")
+    try:
+        area = float(raw_alan)
+    except (ValueError, TypeError):
+        area = 0.0
+    geom = data.get("geometry")
+    return {
+        "ada": ada,
+        "parsel": parsel,
+        "area": area,
+        "nitelik": (props.get("nitelik") or "").strip(),
+        "pafta": (props.get("pafta") or "").strip(),
+        "mevkii": (props.get("mevkii") or "").strip(),
+        "mahalle": (props.get("mahalleAd") or "").strip(),
+        "ilce": (props.get("ilceAd") or "").strip(),
+        "il": (props.get("ilAd") or "").strip(),
+        "kat_durum": (props.get("zeminKmdurum") or "").strip(),
+        "is_road": _is_road_parcel(props),
+        "geometry": geom,
+        "centroid": _polygon_centroid(geom),
+    }
+
+
+def _fetch_tkgm_raw(lat: float, lng: float) -> Optional[Dict[str, Any]]:
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Referer": "https://parselsorgu.tkgm.gov.tr/",
-        "Origin": "https://parselsorgu.tkgm.gov.tr"
+        "Origin": "https://parselsorgu.tkgm.gov.tr",
     }
-    
-    # Try center, then spiral out by ~10-15 meters to catch parcels if point falls on a road
-    offsets = [
-        (0, 0),
-        (0.00015, 0),
-        (-0.00015, 0),
-        (0, 0.00015),
-        (0, -0.00015),
-        (0.00015, 0.00015),
-        (-0.00015, -0.00015)
-    ]
-    
-    for dlat, dlng in offsets:
-        try:
-            test_lat = lat + dlat
-            test_lng = lng + dlng
-            url = f"https://cbsapi.tkgm.gov.tr/megsiswebapi.v3/api/parsel/{test_lat}/{test_lng}"
-            resp = requests.get(url, headers=headers, timeout=3)
-            if resp.status_code == 200:
-                data = resp.json()
-                if "properties" in data:
-                    return data
-        except Exception:
-            continue
-            
+    try:
+        url = f"https://cbsapi.tkgm.gov.tr/megsiswebapi.v3/api/parsel/{lat}/{lng}"
+        resp = requests.get(url, headers=headers, timeout=4)
+        if resp.status_code == 200:
+            data = resp.json()
+            if isinstance(data, dict) and data.get("properties"):
+                return data
+    except Exception:
+        pass
     return None
+
+
+def fetch_tkgm_parcel_by_coords(lat: float, lng: float, spiral: bool = True) -> Optional[Dict[str, Any]]:
+    """Resolve the parcel at a point. If the point lands on a road/void, spiral
+    outwards (~30 m) to snap onto the nearest real building parcel. Returns a
+    normalized parcel dict (with `dist_m` = metres from the query point to the
+    parcel centroid) or None."""
+    offsets = _SPIRAL_OFFSETS if spiral else [(0.0, 0.0)]
+    best = None
+    for idx, (dlat, dlng) in enumerate(offsets):
+        raw = _fetch_tkgm_raw(lat + dlat, lng + dlng)
+        if not raw:
+            continue
+        parcel = _parse_tkgm_parcel(raw)
+        if not parcel:
+            continue
+        cen = parcel["centroid"]
+        parcel["dist_m"] = haversine_distance(lat, lng, cen[0], cen[1]) if cen else 9999.0
+        # Exact building hit right at the geocoded point -> perfect, stop early.
+        if idx == 0 and not parcel["is_road"]:
+            return parcel
+        cand_rank = (0 if not parcel["is_road"] else 1, parcel["dist_m"])
+        best_rank = (0 if (best and not best["is_road"]) else 1, best["dist_m"]) if best else (9, 9e9)
+        if best is None or cand_rank < best_rank:
+            best = parcel
+        if not spiral:
+            break
+    return best
+
+
+def _build_geocode_queries(district: str, neighborhood: str,
+                           full_address: Optional[str], street: Optional[str],
+                           door_no: Optional[str]) -> List[str]:
+    ctx = f"{neighborhood} Mahallesi, {district}, İstanbul, Türkiye"
+    queries: List[str] = []
+    if street and door_no:
+        queries.append(f"{street} No {door_no}, {ctx}")
+        queries.append(f"{street} {door_no}, {ctx}")
+    if full_address:
+        queries.append(f"{full_address}, {ctx}")
+    if street and not door_no:
+        queries.append(f"{street}, {ctx}")
+    if not queries:
+        queries.append(ctx)
+    seen, out = set(), []
+    for q in queries:
+        if q not in seen:
+            seen.add(q)
+            out.append(q)
+    return out
+
+
+def resolve_parcel_from_address(district: str, neighborhood: str,
+                                full_address: Optional[str] = None,
+                                street: Optional[str] = None,
+                                door_no: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Infer the correct TKGM ada/parsel + parcel geometry from a street address.
+
+    Strategy:
+      1. Geocode the address with several providers -> candidate points.
+      2. Probe each candidate against the live TKGM cadastre (center-only first).
+      3. Prefer a real BUILDING parcel (not a road/void) inside the requested
+         district; snap the location to that parcel's centroid.
+      4. If every center hits a road/void, spiral outwards to find the nearest
+         building parcel.
+    Returns a normalized parcel dict or None when nothing credible resolves."""
+    want_ilce = _normalize_tr(district)
+
+    def district_ok(parcel: Dict[str, Any]) -> bool:
+        # TKGM ilce should match the requested district; mahalle may legitimately
+        # differ (TKGM cadastral mahalle != postal mahalle).
+        return not want_ilce or _normalize_tr(parcel["ilce"]) == want_ilce
+
+    candidates: List[Dict[str, Any]] = []
+    for q in _build_geocode_queries(district, neighborhood, full_address, street, door_no)[:2]:
+        for c in geocode_address_candidates(q):
+            if not any(haversine_distance(c["lat"], c["lng"], d["lat"], d["lng"]) < 8 for d in candidates):
+                candidates.append(c)
+    if not candidates:
+        return None
+
+    # Phase 1: cheap center-only probe -> exact building hit.
+    center_hits = []
+    for c in candidates:
+        p = fetch_tkgm_parcel_by_coords(c["lat"], c["lng"], spiral=False)
+        if p:
+            center_hits.append((c, p))
+    building = [(c, p) for (c, p) in center_hits if not p["is_road"]]
+    in_district = [x for x in building if district_ok(x[1])]
+    pool = in_district or building
+    if pool:
+        pool.sort(key=lambda x: (-GEOCODER_SOURCE_PRIORITY.get(x[0]["source"], 0), -x[0]["score"]))
+        return pool[0][1]
+
+    # Phase 2: spiral around each candidate to escape roads/voids.
+    spiral_hits = []
+    for c in candidates:
+        p = fetch_tkgm_parcel_by_coords(c["lat"], c["lng"], spiral=True)
+        if p:
+            spiral_hits.append((c, p))
+    building = [(c, p) for (c, p) in spiral_hits if not p["is_road"]]
+    in_district = [x for x in building if district_ok(x[1])]
+    pool = in_district or building
+    if not pool:
+        return None
+    pool.sort(key=lambda x: (x[1]["dist_m"], -GEOCODER_SOURCE_PRIORITY.get(x[0]["source"], 0)))
+    return pool[0][1]
+
 
 def resolve_tkgm_cadastre_and_attributes(
     district: str,
@@ -342,81 +461,70 @@ def resolve_tkgm_cadastre_and_attributes(
     user_ada: Optional[str] = None,
     user_parsel: Optional[str] = None
 ) -> TKGMCadastreInfo:
-    
-    resolved_lat, resolved_lng = NEIGHBORHOOD_CENTERS.get(neighborhood, {}).get("lat", 40.9483), NEIGHBORHOOD_CENTERS.get(neighborhood, {}).get("lng", 29.1303)
-    live_ada, live_parsel, live_area, live_nitelik, live_mevkii = None, None, None, None, None
-    live_pafta = None
+
+    default_lat = NEIGHBORHOOD_CENTERS.get(neighborhood, {}).get("lat", 40.9483)
+    default_lng = NEIGHBORHOOD_CENTERS.get(neighborhood, {}).get("lng", 29.1303)
+    resolved_lat, resolved_lng = default_lat, default_lng
+    live_ada = live_parsel = None
+    live_area = 0.0
+    live_nitelik = live_pafta = live_mevkii = None
+    live_kat_durum = "-"
     polygon_geom = None
+    status_label = ""
 
-    # 1. EXACT DETERMINISTIC MATCH (Priority Override)
-    known_match = calculate_deterministic_cadastre(district, neighborhood, full_address or f"{street} {door_no}")
-    if known_match["ada"] != "1542" or "maltepe" in (full_address or f"{street} {door_no}").lower() or "erenköy" in (full_address or f"{street} {door_no}").lower() or "caddebostan" in (full_address or f"{street} {door_no}").lower() or "bebek" in (full_address or f"{street} {door_no}").lower():
-        # If calculate_deterministic_cadastre returns a REAL match (not the generic fallback, or if it matches the key words exactly)
-        search_key = f"{district.lower()}_{neighborhood.lower()}_{((street or '') + '_' + (door_no or '')).lower().replace(' ','_')}"
-        addr_lower = (full_address or f"{street} {door_no}").lower()
-        if "mehmet ertem alp" in addr_lower and "4" in addr_lower:
-            search_key = "kadıköy_erenköy_mehmet ertem alp_4"
-        elif "cumhuriyet" in addr_lower and "36" in addr_lower:
-            search_key = "maltepe_çınar_cumhuriyet_36"
-        elif "bağdat" in addr_lower and "280" in addr_lower:
-            search_key = "kadıköy_caddebostan_bağdat_280"
-        elif "cevdet paşa" in addr_lower and "45" in addr_lower:
-            search_key = "beşiktaş_bebek_cevdet paşa_45"
-            
-        if search_key in REAL_CADASTRE_DB:
-            resolved = REAL_CADASTRE_DB[search_key]
-            live_ada = resolved["ada"]
-            live_parsel = resolved["parsel"]
-            live_area = resolved["area"]
-            live_nitelik = resolved["nitelik"]
-            live_pafta = resolved["pafta"]
-            live_mevkii = f"{neighborhood.upper()} MEVKİİ"
-            resolved_lat = resolved["lat"]
-            resolved_lng = resolved["lng"]
-            status_label = "VERİ TABANINDAN KESİN EŞLEŞME"
-            o = 0.0002
-            polygon_geom = {
-                "type": "Polygon",
-                "coordinates": [[[resolved_lng - o, resolved_lat - o], [resolved_lng + o, resolved_lat - o], [resolved_lng + o, resolved_lat + o], [resolved_lng - o, resolved_lat + o], [resolved_lng - o, resolved_lat - o]]]
-            }
+    # Infer the real ada/parsel straight from the live TKGM cadastre.
+    parcel = None
+    have_address = bool((street and door_no) or full_address or street)
+    ada_first = bool(user_ada and user_parsel and str(user_ada).strip().isdigit()
+                     and str(user_parsel).strip().replace("/", "").isdigit())
 
+    # ADA/PARSEL-ÖNCELİKLİ: kullanıcı ada/parsel biliyorsa, adres olmadan konumu
+    # belediye webgis geometrisinden çöz (desteklenen ilçeler), sonra TKGM ile
+    # öznitelik doldur.
+    if ada_first and not have_address:
+        geo = fetch_parcel_geometry(district, str(user_ada).strip(), str(user_parsel).strip())
+        if geo:
+            resolved_lat, resolved_lng = geo["lat"], geo["lng"]
+            polygon_geom = geo.get("geometry")
+            tp = fetch_tkgm_parcel_by_coords(resolved_lat, resolved_lng, spiral=False)
+            if tp:
+                parcel = tp
+                if tp.get("geometry"):
+                    polygon_geom = tp["geometry"]
+            else:
+                # Konum belediyeden çözüldü ama TKGM öznitelik döndürmedi:
+                # kullanıcının ada/parsel'ini konumla birlikte kullan.
+                live_ada = str(user_ada).strip()
+                live_parsel = str(user_parsel).strip()
+                live_mevkii = f"{neighborhood.upper()} MEVKİİ"
+                live_nitelik = "Konum belediye imar kaydından çözümlendi."
+                status_label = "ADA/PARSEL İLE KONUM BELEDİYE WEBGİS'TEN ÇÖZÜMLENDİ"
 
-    search_query = ""
-    if street and door_no:
-        search_query = f"{street} {door_no}, {neighborhood}, {district}, İstanbul"
-    elif full_address:
-        search_query = f"{full_address}, {neighborhood} Mahallesi, {district}, İstanbul, Turkey"
-    elif street:
-        search_query = f"{street}, {neighborhood} Mahallesi, {district}, İstanbul"
-    elif neighborhood and district:
-        search_query = f"{neighborhood} Mahallesi, {district}, İstanbul"
-    else:
-        search_query = "İstanbul"
-    geo_coords = None
-    if search_query != "İstanbul" and not live_ada:
-        geo_coords = geocode_address_to_latlng(search_query)
-        
-        if geo_coords:
-            resolved_lat, resolved_lng = geo_coords["lat"], geo_coords["lng"]
-            tkgm_data = fetch_tkgm_parcel_by_coords(resolved_lat, resolved_lng)
-            
-            if tkgm_data and tkgm_data.get("properties"):
-                props = tkgm_data["properties"]
-                live_ada = str(props.get("adaNo", ""))
-                live_parsel = str(props.get("parselNo", ""))
-                
-                raw_alan = props.get("alan", 0)
-                if isinstance(raw_alan, str):
-                    raw_alan = raw_alan.replace(",", "")
-                live_area = float(raw_alan)
-                live_nitelik = props.get("nitelik", "")
-                live_pafta = props.get("pafta", "")
-                live_mevkii = props.get("mevkii", "")
-                
-                if "geometry" in tkgm_data:
-                    polygon_geom = tkgm_data["geometry"]
+    if parcel is None and have_address:
+        parcel = resolve_parcel_from_address(
+            district=district,
+            neighborhood=neighborhood,
+            full_address=full_address,
+            street=street,
+            door_no=door_no,
+        )
 
-    # 2. No Mocking! If API fails or falls on a road, return "Bulunamadı"
+    if parcel:
+        live_ada = parcel["ada"]
+        live_parsel = parcel["parsel"]
+        live_area = parcel["area"]
+        live_nitelik = parcel["nitelik"]
+        live_pafta = parcel["pafta"]
+        live_mevkii = parcel["mevkii"] or f"{neighborhood.upper()} MEVKİİ"
+        live_kat_durum = parcel.get("kat_durum") or "-"
+        polygon_geom = parcel["geometry"]
+        # Snap geolocation to the actual parcel centroid.
+        if parcel["centroid"]:
+            resolved_lat, resolved_lng = parcel["centroid"]
+        status_label = "TKGM MEGSİS APİ İLE CANLI GERÇEK ÖZNİTELİK ÇÖZÜMLENDİ"
+
+    # If the address could not be resolved to a real building parcel, be honest
+    # and ask the user to drag the pin onto their building.
     if not live_ada or not live_parsel:
         live_ada = "Bulunamadı"
         live_parsel = "İğneyi Taşıyın"
@@ -424,22 +532,17 @@ def resolve_tkgm_cadastre_and_attributes(
         live_nitelik = "Adres yol veya boş alana denk geldi. Lütfen haritadan iğneyi binanızın üzerine sürükleyin."
         live_pafta = "-"
         live_mevkii = "-"
-        if geo_coords:
-            resolved_lat, resolved_lng = geo_coords["lat"], geo_coords["lng"]
         status_label = "TKGM APİ YOL/BOŞLUK DÖNDÜ - MANUEL SEÇİM GEREKLİ"
-        
         o = 0.0002
         polygon_geom = {
             "type": "Polygon",
             "coordinates": [[[resolved_lng - o, resolved_lat - o], [resolved_lng + o, resolved_lat - o], [resolved_lng + o, resolved_lat + o], [resolved_lng - o, resolved_lat + o], [resolved_lng - o, resolved_lat - o]]]
         }
-    else:
-        status_label = "TKGM MEGSİS APİ İLE CANLI GERÇEK ÖZNİTELİK ÇÖZÜMLENDİ"
-    
-    # User override (Manual Edit Mode)
+
+    # User override (Manual Edit Mode): the user can correct ada/parsel by hand.
     ada = user_ada.strip() if (user_ada and user_ada.strip()) else live_ada
     parsel = user_parsel.strip() if (user_parsel and user_parsel.strip()) else live_parsel
-    
+
     tasinmaz_id = f"TKGM_{district.upper()[:3]}_{ada}_{parsel}"
 
     oznitelik = TKGMOznitelikInfo(
@@ -455,7 +558,29 @@ def resolve_tkgm_cadastre_and_attributes(
         mevkii=live_mevkii
     )
 
-    bb_listesi = generate_tkgm_bb_list(ada, parsel, live_area)
+    # Bağımsız bölüm (daire bazlı kat mülkiyeti) listesi TKGM'nin açık MEGSİS
+    # API'sinde YER ALMAZ; yalnızca e-Devlet/TAKBIS üzerinden tapu sahibine
+    # sunulur. Bu yüzden sahte bir liste ÜRETMİYORUZ — dürüst durum döndürüyoruz.
+    bb_listesi: List[TKGMBagimsizBolumItem] = []
+    if live_ada in ("Bulunamadı", None):
+        bb_veri_durumu = "Parsel çözümlenemedi; bağımsız bölüm verisi yok."
+    elif live_kat_durum and "Kat Mülkiyet" in live_kat_durum:
+        bb_veri_durumu = ("Bu parsel Kat Mülkiyetlidir. Daire bazlı bağımsız bölüm listesi "
+                          "TKGM açık API'sinde yayınlanmaz; yalnızca e-Devlet / TAKBIS üzerinden "
+                          "tapu sahibi tarafından görüntülenebilir.")
+    elif live_kat_durum and "Kat İrtifak" in live_kat_durum:
+        bb_veri_durumu = ("Bu parsel Kat İrtifaklıdır. Bağımsız bölüm detayları e-Devlet / TAKBIS "
+                          "üzerinden erişilebilir.")
+    elif live_kat_durum and live_kat_durum not in ("-", ""):
+        bb_veri_durumu = f"Zemin durumu: {live_kat_durum}. Bağımsız bölüm listesi açık API'de bulunmaz."
+    else:
+        bb_veri_durumu = "Bağımsız bölüm listesi açık API'de bulunmaz (e-Devlet/TAKBIS gerekir)."
+
+    # İlçe belediyesi webgis'inden imar durumu (TAKS/KAKS, fonksiyon, kat, plan
+    # notu) — sadece bu platformu destekleyen ilçelerde; hata/desteksiz -> None.
+    imar_durumu = None
+    if str(ada).isdigit() and str(parsel).replace("/", "").isdigit():
+        imar_durumu = fetch_imar_durumu(district, ada, parsel)
 
     return TKGMCadastreInfo(
         ada_no=ada,
@@ -468,8 +593,12 @@ def resolve_tkgm_cadastre_and_attributes(
         precise_lng=resolved_lng,
         polygon_geometry=polygon_geom,
         oznitelik=oznitelik,
-        bb_listesi=bb_listesi
+        kat_mulkiyeti_durumu=live_kat_durum,
+        bb_listesi=bb_listesi,
+        bb_veri_durumu=bb_veri_durumu,
+        imar_durumu=imar_durumu
     )
+
 
 def analyze_spatial_data(
     lat: Optional[float] = None,
@@ -485,9 +614,8 @@ def analyze_spatial_data(
     building_age: Optional[int] = 20,
     floor_count: Optional[int] = 5
 ) -> SpatialCheckupResult:
-    real_center = NEIGHBORHOOD_CENTERS.get(neighborhood)
-    center = real_center or NEIGHBORHOOD_CENTERS["Çınar"]
-    actual_tsunami_risk = real_center.get("tsunami_risk") if real_center else None
+    # NEIGHBORHOOD_CENTERS is retained only for the (separate) safety-report fields.
+    center = NEIGHBORHOOD_CENTERS.get(neighborhood) or NEIGHBORHOOD_CENTERS["Çınar"]
     tkgm_cadastre = resolve_tkgm_cadastre_and_attributes(
         district=district,
         neighborhood=neighborhood,
@@ -554,29 +682,40 @@ def analyze_spatial_data(
         ]
     )
 
+    # ---- Live, coordinate-based seismic analysis (7.5 Mw Marmara scenario) ----
     dist_ampl = get_district_amplification(district)
-    fault_dist_km = haversine_distance(prop_lat, prop_lng, 40.83, prop_lng) / 1000.0
-    mmi = compute_mmi(magnitude=7.5, distance_km=fault_dist_km, amplification=dist_ampl)
-    gr = center["ground_risk"]
-    n_ham_val = 25 if "Z1" in gr else (15 if "Z2" in gr else (8 if "Z3" in gr else 4))
+
+    # Real distance to the Main Marmara Fault geometry.
+    fault_dist_km = distance_to_fault_km(prop_lat, prop_lng)
+
+    # Scenario PGA via Campbell (1997) rock attenuation x local soil amplification.
+    pga = scenario_pga_g(fault_dist_km, dist_ampl, magnitude=7.5)
+    mmi = pga_to_mmi(pga)
+
+    # Real elevation + coastal proximity -> microzonation ground class & tsunami.
+    coast_km = distance_to_coast_km(prop_lat, prop_lng)
+    elevation_m = fetch_elevation_m(prop_lat, prop_lng)
+    ground_code, ground_label = estimate_ground_class(district, elevation_m, coast_km)
+    tsunami, tsunami_depth, tsunami_pct = estimate_tsunami_risk(district, neighborhood, elevation_m, coast_km)
+
     liq_fs = calculate_liquefaction_safety_factor(
-        depth_m=6.0, 
-        n_ham=n_ham_val,
+        depth_m=6.0,
+        n_ham=ground_class_to_n(ground_code),
         idi_percent=15.0,
         gamma=19.0,
         gwl=2.0,
         magnitude=7.5,
-        pga=center["pga"]
+        pga=pga
     )
-    
+
+    # Real per-mahalle İBB earthquake loss-scenario damage-severity signature.
     base_probs = ibb_loader.get_neighborhood_probabilities(district, neighborhood)
-    
-    # Use real building age and floors from the user input for dynamic damage probabilities
+
     dmg_probs = calculate_damage_probabilities(
         base_probs=base_probs,
-        building_age_years=building_age, 
-        num_floors=floor_count, 
-        pga=center["pga"] * dist_ampl
+        building_age_years=building_age,
+        num_floors=floor_count,
+        pga=pga
     )
 
     return SpatialCheckupResult(
@@ -586,13 +725,15 @@ def analyze_spatial_data(
         neighborhood=neighborhood,
         full_address=full_address,
         tkgm_cadastre=tkgm_cadastre,
-        ground_risk_class=center["ground_risk"],
-        pga_earthquake_risk_score=center["pga"],
-        mmi_estimated=mmi,
+        ground_risk_class=ground_label,
+        pga_earthquake_risk_score=round(pga, 2),
+        mmi_estimated=round(mmi, 2),
         liquefaction_fs=liq_fs,
         district_amplification=dist_ampl,
         fault_distance_km=round(fault_dist_km, 2),
-        tsunami_risk=actual_tsunami_risk,
+        tsunami_risk=tsunami,
+        tsunami_depth_m=round(tsunami_depth, 2),
+        tsunami_flood_pct=round(tsunami_pct, 2),
         damage_probabilities=dmg_probs,
         pois_within_1km=nearby_pois,
         poi_summary=summary,
@@ -603,13 +744,3 @@ def analyze_spatial_data(
         education_report=education
     )
 
-def haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
-    R = 6371000.0
-    phi1 = math.radians(lat1)
-    phi2 = math.radians(lat2)
-    delta_phi = math.radians(lat2 - lat1)
-    delta_lambda = math.radians(lng2 - lng1)
-    
-    a = math.sin(delta_phi / 2.0)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2.0)**2
-    c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
-    return R * c

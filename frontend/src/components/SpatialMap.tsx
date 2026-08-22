@@ -55,21 +55,37 @@ export default function SpatialMap({ spatial, onNavigateToReport }: SpatialMapPr
       {/* Grid: Map + Infrastructure POI Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* OpenStreetMap View */}
-        <div className="lg:col-span-2 h-80 border-2 border-[#111827] rounded-2xl relative bg-[#FAF8F5] overflow-hidden shadow-sm">
+        {/* Static duotone "keepsake" location map — zoom/pan disabled */}
+        <div className="lg:col-span-2 h-80 border-2 border-[#111827] rounded-2xl relative bg-[#0B1F33] overflow-hidden shadow-sm">
           {mounted && (
             <iframe
-              title="Kentsel Altyapı Haritası"
+              title="Taşınmaz Konum Hatırası (Statik)"
               width="100%"
               height="100%"
               frameBorder="0"
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=${property_lng - 0.012}%2C${property_lat - 0.012}%2C${property_lng + 0.012}%2C${property_lat + 0.012}&layer=mapnik&marker=${property_lat}%2C${property_lng}`}
-              className="w-full h-full filter contrast-105"
+              scrolling="no"
+              tabIndex={-1}
+              aria-hidden="true"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${property_lng - 0.008}%2C${property_lat - 0.008}%2C${property_lng + 0.008}%2C${property_lat + 0.008}&layer=mapnik&marker=${property_lat}%2C${property_lng}`}
+              className="w-full h-full pointer-events-none select-none"
+              style={{ filter: "grayscale(100%) sepia(90%) hue-rotate(175deg) saturate(150%) contrast(92%) brightness(1.05)" }}
             />
           )}
 
+          {/* Duotone tint + vignette to complete the keepsake look; also seals the map from interaction */}
+          <div className="absolute inset-0 z-10 pointer-events-auto bg-gradient-to-t from-[#0B1F33]/40 via-transparent to-[#0B1F33]/15" />
+          <div className="absolute inset-0 z-10 pointer-events-auto shadow-[inset_0_0_60px_rgba(11,31,51,0.5)]" />
+
+          {/* Center location pin (static) */}
+          <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+            <MapPin className="w-9 h-9 text-[#F97316] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] -translate-y-2" fill="#F97316" />
+          </div>
+
           <div className="absolute top-2 left-2 z-20 bg-[#111827] text-white px-3 py-1 rounded-lg text-xs font-mono font-bold">
             {district} / {neighborhood} (Taşınmaz Konumu)
+          </div>
+          <div className="absolute bottom-2 right-2 z-20 bg-[#FAF8F5]/90 text-[#0B1F33] px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider">
+            Statik Konum Hatırası
           </div>
         </div>
 

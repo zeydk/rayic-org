@@ -1,6 +1,8 @@
+import os
+import json
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
-from services.tcmb_service import get_tcmb_kfe_summary
+from services.tcmb_service import get_tcmb_kfe_summary, get_inflation_factor
 
 class ValuationResult(BaseModel):
     base_m2_price: float
@@ -16,7 +18,40 @@ class ValuationResult(BaseModel):
     k_facade: float
     k_tcmb: float
     tcmb_macro_impact_tl: float
+    base_price_source: str = "-"
+    base_price_sample_n: int = 0
+    data_collection_date: str = "-"
+    inflation_factor: float = 1.0
+    base_m2_price_historical: float = 0.0
     valuation_breakdown: Dict[str, float]
+
+
+# ---------------------------------------------------------------------------
+# Real market base prices: median second-hand TL/m² per district & mahalle,
+# aggregated from ~14k scraped EmlakJet İstanbul listings (methodology adapted
+# from the EmlakJet house-price-prediction projects). Loaded from
+# data/emlakjet_m2_prices.json.
+# ---------------------------------------------------------------------------
+def _load_emlakjet_prices() -> Dict[str, Any]:
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "emlakjet_m2_prices.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"meta": {}, "prices": {}}
+
+
+_EMLAKJET = _load_emlakjet_prices()
+EMLAKJET_PRICES: Dict[str, Any] = _EMLAKJET.get("prices", {})
+EMLAKJET_META: Dict[str, Any] = _EMLAKJET.get("meta", {})
+
+
+def _norm_tr(s: Optional[str]) -> str:
+    s = (s or "").strip().lower()
+    for a, b in (("ı", "i"), ("İ", "i"), ("ş", "s"), ("ğ", "g"), ("ü", "u"),
+                 ("ö", "o"), ("ç", "c"), ("â", "a")):
+        s = s.replace(a, b)
+    return s
 
 # Comprehensive baseline matrix for ALL 39 Istanbul Districts (TL / Net m2)
 DISTRICT_BASE_PRICES: Dict[str, Dict[str, float]] = {
@@ -62,14 +97,81 @@ DISTRICT_BASE_PRICES: Dict[str, Dict[str, float]] = {
     "Bayrampaşa": {"Kartaltepe": 48000.0, "default": 45000.0}
 }
 
-def get_base_m2_price(district: Optional[str], neighborhood: Optional[str]) -> float:
+_AGE_BAND_LABEL = {"0-4": "0-4 yaş", "5-10": "5-10 yaş", "11-20": "11-20 yaş", "21+": "21+ yaş"}
+
+
+def _age_band(age: Optional[int]) -> str:
+    a = 20 if age is None else age
+    if a <= 4:
+        return "0-4"
+    if a <= 10:
+        return "5-10"
+    if a <= 20:
+        return "11-20"
+    return "21+"
+
+
+def _pick_band(bands: Dict[str, Any], band: str):
+    """From a {band: {tlm2,n}, 'all': {...}} dict pick the age band, else 'all'.
+    Returns (tlm2, n, age_specific) or None."""
+    if band in bands:
+        return float(bands[band]["tlm2"]), int(bands[band]["n"]), True
+    if "all" in bands:
+        return float(bands["all"]["tlm2"]), int(bands["all"]["n"]), False
+    return None
+
+
+def _emlakjet_lookup(district: Optional[str], neighborhood: Optional[str], building_age: Optional[int]):
+    """Age-aware lookup of the real EmlakJet median TL/m² (at data-collection date).
+    Returns (tlm2, source_label, sample_n, age_specific) or None."""
+    if not district:
+        return None
+    dn = _norm_tr(district)
+    d_entry = None
+    for k, v in EMLAKJET_PRICES.items():
+        if _norm_tr(k) == dn:
+            d_entry = v
+            break
+    if not d_entry:
+        return None
+    band = _age_band(building_age)
+    band_lbl = _AGE_BAND_LABEL[band]
+
+    if neighborhood:
+        nn = _norm_tr(neighborhood)
+        for mk, mv in d_entry.items():
+            if mk != "default" and _norm_tr(mk) == nn and isinstance(mv, dict):
+                picked = _pick_band(mv, band)
+                if picked:
+                    tlm2, n, age_spec = picked
+                    tag = band_lbl if age_spec else "tüm yaşlar"
+                    return tlm2, f"Bölge piyasa medyanı · {mk} · {tag} ({n} ilan)", n, age_spec
+    dd = d_entry.get("default")
+    if isinstance(dd, dict):
+        picked = _pick_band(dd, band)
+        if picked:
+            tlm2, n, age_spec = picked
+            tag = band_lbl if age_spec else "tüm yaşlar"
+            return tlm2, f"Bölge piyasa medyanı · {district} · {tag} ({n} ilan)", n, age_spec
+    return None
+
+
+def get_base_m2_price(district: Optional[str], neighborhood: Optional[str], building_age: Optional[int] = None):
+    """(base_tlm2, source_label, sample_n, age_specific) at the data-collection
+    date. Prefers real age-banded EmlakJet medians, then the legacy static
+    matrix, then a safe default."""
+    hit = _emlakjet_lookup(district, neighborhood, building_age)
+    if hit:
+        return hit
+
+    # Legacy static fallback (kept for districts/mahalles not in the dataset).
     dist = district or "Kadıköy"
     neigh = neighborhood or "Caddebostan"
-    
     dist_dict = DISTRICT_BASE_PRICES.get(dist, DISTRICT_BASE_PRICES["Kadıköy"])
     if isinstance(dist_dict, dict):
-        return dist_dict.get(neigh, dist_dict.get("default", 60000.0))
-    return 60000.0
+        price = dist_dict.get(neigh, dist_dict.get("default", 60000.0))
+        return float(price), "Statik referans matrisi (yedek)", 0, False
+    return 60000.0, "Varsayılan (yedek)", 0, False
 
 def get_age_coefficient(age: Optional[int]) -> float:
     if age is None:
@@ -103,18 +205,27 @@ def calculate_valuation(
     neighborhood: Optional[str] = "Caddebostan",
     k_facade: float = 1.0
 ) -> ValuationResult:
-    base_m2 = get_base_m2_price(district, neighborhood)
-    k_age = get_age_coefficient(building_age)
+    base_m2_hist, base_source, base_n, age_specific = get_base_m2_price(district, neighborhood, building_age)
+    # If the base already encodes the building's age band, don't re-apply k_age
+    # (that would double-count age). Otherwise fall back to the age coefficient.
+    k_age = 1.0 if age_specific else get_age_coefficient(building_age)
     k_floor = get_floor_coefficient(floor_category)
-    
-    tcmb_data = get_tcmb_kfe_summary()
-    latest_kfe = tcmb_data.get("latest_istanbul_index", 1880.0)
-    base_kfe = 1455.5
-    
-    k_tcmb = round(latest_kfe / base_kfe, 3)
-    raw_estimated_price = base_m2 * net_m2 * k_age * k_floor * k_facade * k_tcmb
-    tcmb_impact_tl = raw_estimated_price - (base_m2 * net_m2 * k_age * k_floor * k_facade)
-    
+
+    # CRITICAL: the EmlakJet medians are a snapshot from the data-collection date
+    # (2024-09). Turkey has very high housing inflation, so the base is inflated
+    # to today with the TCMB KFE (live with an EVDS key, else the labelled
+    # reference series). k_tcmb IS this real from-date→today inflation factor.
+    data_date = str(EMLAKJET_META.get("data_collection_date", "2024-09"))
+    infl = get_inflation_factor(data_date)
+    k_tcmb = float(infl.get("factor", 1.0)) if base_n > 0 else round(
+        float(get_tcmb_kfe_summary().get("latest_istanbul_index", 1880.0)) / 1455.5, 3)
+
+    # Base m² brought to today's level.
+    base_m2 = round(base_m2_hist * k_tcmb, 0)
+    price_before_inflation = base_m2_hist * net_m2 * k_age * k_floor * k_facade
+    raw_estimated_price = base_m2 * net_m2 * k_age * k_floor * k_facade
+    tcmb_impact_tl = raw_estimated_price - price_before_inflation
+
     deviation = ((price_advertised - raw_estimated_price) / raw_estimated_price) * 100.0
     
     if deviation < -10.0:
@@ -146,6 +257,11 @@ def calculate_valuation(
         k_facade=k_facade,
         k_tcmb=k_tcmb,
         tcmb_macro_impact_tl=round(tcmb_impact_tl, 2),
+        base_price_source=base_source,
+        base_price_sample_n=base_n,
+        data_collection_date=data_date,
+        inflation_factor=round(k_tcmb, 3),
+        base_m2_price_historical=round(base_m2_hist, 0),
         valuation_breakdown={
             "base_m2": base_m2,
             "net_m2": net_m2,

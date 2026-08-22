@@ -30,7 +30,7 @@ const priceToText = (val: string) => {
 };
 
 interface ParsedData {
-  user_role: "buyer" | "seller" | "investor";
+  user_role: "buyer" | "renter" | "seller";
   price: number;
   net_m2: number;
   gross_m2: number;
@@ -105,99 +105,12 @@ export const ISTANBUL_DISTRICTS: Record<string, string[]> = {
   "Zeytinburnu": ["Beşitelsiz", "Çırpıcı", "Gökalp", "Kazlıçeşme", "Maltepe", "Merkezefendi", "Nuripaşa", "Seyitnizam", "Sümer", "Telsiz", "Veliefendi", "Yenidoğan", "Yeşiltepe"]
 };
 
-// Deterministic Cadastre Resolution Engine (Kolayİmar Style)
-const calculateAddressCadastre = (district: string, neighborhood: string, fullAddress: string) => {
-  const addr = (fullAddress || "").toLowerCase();
-  
-  // Extract door number if written
-  const doorMatch = addr.match(/(?:no|bina|kapı|n)[:\s]*(\d+)/i);
-  const doorNum = doorMatch ? parseInt(doorMatch[1]) : 36;
-
-  if (district === "Maltepe" && neighborhood === "Çınar" && doorNum === 36) {
-    return {
-      ada: "1542",
-      parsel: "38",
-      pafta: "154-38-M",
-      nitelik: "Kargir 6 Katlı Bitişik Nizam Konut Yapısı",
-      tasinmazId: "TKGM_MAL_1542_38",
-      area: 2185.50
-    };
-  }
-
-  if (district === "Kadıköy" && neighborhood === "Erenköy" && doorNum === 4) {
-    return {
-      ada: "1420",
-      parsel: "12",
-      pafta: "243-12-A",
-      nitelik: "Kargir 6 Katlı Bitişik Nizam Apartman ve Arsası",
-      tasinmazId: "TKGM_KAD_1420_12",
-      area: 2415.80
-    };
-  }
-
-  // Calculate realistic Ada & Parsel based on hash
-  let hashVal = 0;
-  const strToHash = `${district}_${neighborhood}_${addr}`;
-  for (let i = 0; i < strToHash.length; i++) {
-    hashVal = (hashVal << 5) - hashVal + strToHash.charCodeAt(i);
-    hashVal |= 0;
-  }
-  const absHash = Math.abs(hashVal);
-
-  const ada = String((absHash % 2400) + 1100);
-  const parsel = String((doorNum * 2 + (absHash % 40)) % 110 + 1);
-  const pafta = `${ada.substring(0, 3)}-${parsel.padStart(2, "0")}-M`;
-  const tasinmazId = `TKGM_${district.substring(0, 3).toUpperCase()}_${ada}_${parsel}`;
-
-  return {
-    ada,
-    parsel,
-    pafta,
-    nitelik: `Kargir ${Math.min((doorNum % 4) + 4, 7)} Katlı Bina ve Arsası`,
-    tasinmazId,
-    area: Math.round(1800.0 + (absHash % 1200))
-  };
-};
-
-const generateDynamicBBList = (ada: string, parsel: string) => {
-  const adaNum = parseInt(ada) || 1542;
-  const parselNum = parseInt(parsel) || 38;
-  const totalUnits = ((adaNum + parselNum) % 6) + 8;
-
-  const bbItems = [];
-  bbItems.push({ bbNo: "1", daireNo: "1", bbTipi: "Dükkan / Mağaza", katNo: "Giriş / Zemin Kat", arsaPay: "20/240", floorCat: "giris" });
-  bbItems.push({ bbNo: "2", daireNo: "2", bbTipi: "Dükkan / Mağaza", katNo: "Giriş / Zemin Kat", arsaPay: "20/240", floorCat: "giris" });
-
-  for (let i = 3; i < totalUnits; i++) {
-    const floorIndex = Math.floor((i - 1) / 2);
-    bbItems.push({
-      bbNo: String(i),
-      daireNo: String(i - 2),
-      bbTipi: "Mesken (Daire)",
-      katNo: `${floorIndex}. Kat`,
-      arsaPay: "15/240",
-      floorCat: "ara_kat"
-    });
-  }
-
-  bbItems.push({
-    bbNo: String(totalUnits),
-    daireNo: String(totalUnits - 2),
-    bbTipi: "Dubleks Mesken",
-    katNo: "Çatı Katı",
-    arsaPay: "25/240",
-    floorCat: "en_ust"
-  });
-
-  return bbItems;
-};
-
 export default function AdInputParser({ onComplete, loading }: StepFormProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // User Role Choice
-  const [userRole, setUserRole] = useState<"buyer" | "seller" | "investor">("buyer");
+  const [userRole, setUserRole] = useState<"buyer" | "renter" | "seller">("buyer");
 
   // Step 1: MANDATORY DROPDOWNS FOR DISTRICT & NEIGHBORHOOD
   const [district, setDistrict] = useState("");
@@ -216,7 +129,10 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
   const [roomCount, setRoomCount] = useState("");
 
   const [bbList, setBbList] = useState<any[]>([]);
-  
+  const [katMulkiyetiDurumu, setKatMulkiyetiDurumu] = useState<string>("");
+  const [bbVeriDurumu, setBbVeriDurumu] = useState<string>("");
+  const [imarDurumu, setImarDurumu] = useState<any>(null);
+
   // Geocoded Coordinates and Confirmation State
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
   const [isAddressFound, setIsAddressFound] = useState(false);
@@ -255,17 +171,72 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
     setIsConfirmed(false);
   };
 
-  // Dynamic Refresh Handler when Ada/Parsel is edited manually or searched!
+  // Manual Ada/Parsel edit: we cannot fabricate a bağımsız bölüm list — the
+  // per-unit (daire) data is only available via e-Devlet/TAKBIS.
   const refreshCadastreAndBBList = (newAda: string, newParsel: string) => {
     setAdaNo(newAda);
     setParselNo(newParsel);
-    const generatedBBs = generateDynamicBBList(newAda, newParsel);
-    setBbList(generatedBBs);
+    setBbList([]);
     setSelectedBBNo("");
+    setBbVeriDurumu("Ada/Parsel elle değiştirildi. Daire bazlı bağımsız bölüm listesi TKGM açık API'sinde bulunmaz (e-Devlet/TAKBIS gerekir).");
     setTasinmazId(`TKGM_${district.substring(0, 3).toUpperCase()}_${newAda}_${newParsel}`);
   };
 
   // REAL LIVE CADASTRE LOOKUP VIA BACKEND API
+  // ADA/PARSEL-ÖNCELİKLİ SORGU: kullanıcı ada/parsel biliyorsa adres olmadan sorgular
+  const handleExecuteAdaParselSearch = () => {
+    if (!district || !neighborhood) {
+      setErrorMsg("Lütfen önce İlçe ve Mahalle seçin.");
+      return;
+    }
+    if (!adaNo.trim() || !parselNo.trim()) {
+      setErrorMsg("Lütfen Ada ve Parsel numaralarını girin.");
+      return;
+    }
+    setIsSearchingAddress(true);
+    setErrorMsg(null);
+    setTimeout(async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/v1/cadastre-lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            district, neighborhood,
+            user_ada: adaNo.trim(),
+            user_parsel: parselNo.trim(),
+          }),
+        });
+        if (res.ok) {
+          const tkgmInfo = await res.json();
+          setAdaNo(tkgmInfo.ada_no);
+          setParselNo(tkgmInfo.parsel_no);
+          if (tkgmInfo.total_land_area_m2 && tkgmInfo.total_land_area_m2 > 0) {
+            setTotalLandM2(String(tkgmInfo.total_land_area_m2));
+          }
+          if (tkgmInfo.oznitelik) {
+            setPaftaNo(tkgmInfo.oznitelik.pafta_no);
+            setNitelik(tkgmInfo.oznitelik.nitelik);
+            setTasinmazId(tkgmInfo.oznitelik.tasinmaz_id);
+          }
+          setImarDurumu(tkgmInfo.imar_durumu || null);
+          setPinLat(tkgmInfo.precise_lat);
+          setPinLng(tkgmInfo.precise_lng);
+          setPolygonGeoJson(tkgmInfo.polygon_geometry);
+        } else {
+          setErrorMsg("Ada/Parsel ile konum çözümlenemedi. Bilmiyorsanız adresinizi girin.");
+          setImarDurumu(null);
+        }
+      } catch (err) {
+        setErrorMsg("Sunucuya ulaşılamadı, TKGM verisi alınamadı.");
+        setImarDurumu(null);
+      } finally {
+        setIsSearchingAddress(false);
+        setIsAddressFound(true);
+        setIsConfirmed(false);
+      }
+    }, 300);
+  };
+
   const handleExecuteAddressSearch = () => {
     if (!district) {
       setErrorMsg("Lütfen önce İlçe Seçimini yapın.");
@@ -310,42 +281,41 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
               setTotalLandM2(String(tkgmInfo.oznitelik.alani_m2));
             }
           }
-          if (tkgmInfo.bb_listesi && tkgmInfo.bb_listesi.length > 0) {
-            setBbList(tkgmInfo.bb_listesi.map((b: any) => ({
-              bbNo: b.bb_no,
-              daireNo: b.daire_no,
-              bbTipi: b.bb_tipi,
-              katNo: b.kat_no,
-              arsaPay: b.arsa_pay_payda,
-              floorCat: b.kat_no.includes("Zemin") ? "giris" : b.kat_no.includes("Çatı") ? "en_ust" : "ara_kat"
-            })));
-          }
+          // Bağımsız bölüm (daire) listesi TKGM açık API'sinde yer almaz; backend
+          // sahte liste üretmez. Gerçek kat mülkiyeti durumunu ve bilgi notunu göster.
+          const realBB = (tkgmInfo.bb_listesi || []).map((b: any) => ({
+            bbNo: b.bb_no,
+            daireNo: b.daire_no,
+            bbTipi: b.bb_tipi,
+            katNo: b.kat_no,
+            arsaPay: b.arsa_pay_payda,
+            floorCat: b.kat_no.includes("Zemin") ? "giris" : b.kat_no.includes("Çatı") ? "en_ust" : "ara_kat"
+          }));
+          setBbList(realBB);
+          setSelectedBBNo("");
+          setKatMulkiyetiDurumu(tkgmInfo.kat_mulkiyeti_durumu || "");
+          setBbVeriDurumu(tkgmInfo.bb_veri_durumu || "");
+          setImarDurumu(tkgmInfo.imar_durumu || null);
           setPinLat(tkgmInfo.precise_lat);
           setPinLng(tkgmInfo.precise_lng);
             setPolygonGeoJson(tkgmInfo.polygon_geometry);
         } else {
-          const resolvedCad = calculateAddressCadastre(district, neighborhood, fullAddress || `${street} ${doorNo}`);
-          setAdaNo(resolvedCad.ada);
-          setParselNo(resolvedCad.parsel);
-          setPaftaNo(resolvedCad.pafta);
-          setNitelik(resolvedCad.nitelik);
-          setTasinmazId(resolvedCad.tasinmazId);
-          if (resolvedCad.area) {
-            setTotalLandM2(String(resolvedCad.area));
-          }
-          setBbList(generateDynamicBBList(resolvedCad.ada, resolvedCad.parsel));
+          // No mock fallback: surface an honest "veri alınamadı" state.
+          setErrorMsg(`TKGM sorgusu başarısız oldu (sunucu yanıtı: ${res.status}). Lütfen tekrar deneyin.`);
+          setBbList([]);
+          setSelectedBBNo("");
+          setKatMulkiyetiDurumu("");
+          setBbVeriDurumu("TKGM verisine ulaşılamadı.");
+          setImarDurumu(null);
         }
       } catch (err) {
-        const resolvedCad = calculateAddressCadastre(district, neighborhood, fullAddress || `${street} ${doorNo}`);
-        setAdaNo(resolvedCad.ada);
-        setParselNo(resolvedCad.parsel);
-        setPaftaNo(resolvedCad.pafta);
-        setNitelik(resolvedCad.nitelik);
-        setTasinmazId(resolvedCad.tasinmazId);
-        if (resolvedCad.area) {
-          setTotalLandM2(String(resolvedCad.area));
-        }
-        setBbList(generateDynamicBBList(resolvedCad.ada, resolvedCad.parsel));
+        // Backend unreachable -> honest error, never fabricate ada/parsel/BB data.
+        setErrorMsg("Sunucuya ulaşılamadı, TKGM verisi alınamadı. Analiz motorunun (backend) çalıştığından emin olun.");
+        setBbList([]);
+        setSelectedBBNo("");
+        setKatMulkiyetiDurumu("");
+        setBbVeriDurumu("TKGM verisine ulaşılamadı.");
+        setImarDurumu(null);
       } finally {
         setIsSearchingAddress(false);
         setIsAddressFound(true);
@@ -526,9 +496,24 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
                     : "bg-[#FAF8F5] text-[#111827] border-[#E5E7EB] hover:border-[#111827]"
                 }`}
               >
-                <div className="text-sm font-extrabold mb-0.5">🔑 ALICI VEYA KİRACIYIM</div>
+                <div className="text-sm font-extrabold mb-0.5">🔑 Konut Alacağım</div>
                 <div className={`text-[11px] font-medium ${userRole === "buyer" ? "text-slate-300" : "text-slate-500"}`}>
-                  Ev satın alma veya kiralama için piyasa rayicini inceleyeceğim.
+                  Satın almayı düşündüğüm evin gerçek değerini, deprem ve mahalle risklerini öğreneceğim.
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setUserRole("renter")}
+                className={`p-3.5 rounded-xl border text-left transition-all ${
+                  userRole === "renter"
+                    ? "bg-[#111827] text-white border-[#111827] shadow-sm"
+                    : "bg-[#FAF8F5] text-[#111827] border-[#E5E7EB] hover:border-[#111827]"
+                }`}
+              >
+                <div className="text-sm font-extrabold mb-0.5">🏠 Konut Kiralayacağım</div>
+                <div className={`text-[11px] font-medium ${userRole === "renter" ? "text-slate-300" : "text-slate-500"}`}>
+                  Kiralamayı düşündüğüm evin rayiç kirasını ve mahalle bilgilerini inceleyeceğim.
                 </div>
               </button>
 
@@ -537,28 +522,13 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
                 onClick={() => setUserRole("seller")}
                 className={`p-3.5 rounded-xl border text-left transition-all ${
                   userRole === "seller"
-                    ? "bg-[#111827] text-[#111827] shadow-sm"
-                    : "bg-[#FAF8F5] text-[#111827] border-[#E5E7EB] hover:border-[#111827]"
-                }`}
-              >
-                <div className="text-sm font-extrabold mb-0.5">🏠 SATICI VEYA KİRAYA VERENİM</div>
-                <div className={`text-[11px] font-medium ${userRole === "seller" ? "text-slate-300" : "text-slate-500"}`}>
-                  Evimi satmak veya kiraya vermek istiyorum, gerçek değeri öğreneceğim.
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setUserRole("investor")}
-                className={`p-3.5 rounded-xl border text-left transition-all ${
-                  userRole === "investor"
                     ? "bg-[#111827] text-white border-[#111827] shadow-sm"
                     : "bg-[#FAF8F5] text-[#111827] border-[#E5E7EB] hover:border-[#111827]"
                 }`}
               >
-                <div className="text-sm font-extrabold mb-0.5">💼 YATIRIMCIYIM</div>
-                <div className={`text-[11px] font-medium ${userRole === "investor" ? "text-slate-300" : "text-slate-500"}`}>
-                  Kira getirisi ve amortisman süresi odaklı yatırım analizi istiyorum.
+                <div className="text-sm font-extrabold mb-0.5">💼 Satıcı veya Kiraya Verenim</div>
+                <div className={`text-[11px] font-medium ${userRole === "seller" ? "text-slate-300" : "text-slate-500"}`}>
+                  Evimi satmak veya kiraya vermek istiyorum, gerçek değerini öğreneceğim.
                 </div>
               </button>
 
@@ -624,12 +594,56 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
 
           </div>
 
-          {/* STEP 1.2: OPEN ADDRESS ENTRY & SEARCH BUTTON */}
+          {/* STEP 1.2a: ADA/PARSEL-ÖNCELİKLİ (en doğru, birincil yöntem) */}
+          <div className="p-4 bg-[#F0FDF4] rounded-xl border-2 border-[#047857] space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-extrabold text-[#047857]">
+              <Layers className="w-4 h-4" />
+              <span>5. ADA / PARSELİNİZİ BİLİYOR MUSUNUZ? (En doğru yöntem)</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">Ada No</label>
+                <input
+                  type="text"
+                  placeholder="Örn: 2983"
+                  value={adaNo}
+                  onChange={(e) => setAdaNo(e.target.value)}
+                  className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#047857]"
+                />
+              </div>
+              <div>
+                <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">Parsel No</label>
+                <input
+                  type="text"
+                  placeholder="Örn: 142"
+                  value={parselNo}
+                  onChange={(e) => setParselNo(e.target.value)}
+                  className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#047857]"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={handleExecuteAdaParselSearch}
+                  disabled={isSearchingAddress}
+                  className="w-full py-3 px-4 rounded-xl bg-[#047857] hover:bg-[#065f46] text-white text-xs font-extrabold flex items-center justify-center space-x-1.5 transition-all shadow-md uppercase"
+                >
+                  <Search className="w-4 h-4 text-white" />
+                  <span>Ada/Parsel ile Sorgula</span>
+                </button>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium">
+              Ada/parselinizi tapunuzda bulabilirsiniz. Bilmiyorsanız aşağıdan adresinizi girin, sizin için bulalım.
+            </p>
+          </div>
+
+          {/* STEP 1.2b: ADRESTEN BULMA (ada/parsel bilinmiyorsa yedek yöntem) */}
           <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E5E7EB] space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-xs font-bold text-[#111827]">
                 <MapPin className="w-4 h-4 text-[#047857]" />
-                <span>5. AÇIK ADRESİ GİRİN VEYA SORGULAYIN</span>
+                <span>veya — BİLMİYORSANIZ ADRESİNİZİ GİRİN</span>
               </div>
             </div>
 
@@ -742,31 +756,53 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
                   <span className="font-bold text-[#111827]">{nitelik || "Kargir 6 Katlı Bitişik Nizam Konut Yapısı"}</span>
                 </div>
 
-                {/* TKGM BİNA BAĞIMSIZ BÖLÜM (BB) LİSTESİ (DYNAMICALLY REFRESHED FOR CURRENT ADA/PARSEL) */}
-                {bbList.length > 0 && (
+                {/* İMAR DURUMU (İLÇE BELEDİYESİ WEBGİS) — alıcı için kritik */}
+                {imarDurumu && imarDurumu.supported && (
                   <div className="pt-2 border-t border-[#E5E7EB] space-y-2">
                     <label className="text-[#111827] flex items-center justify-between uppercase text-[10px] font-extrabold">
                       <span className="flex items-center space-x-1.5">
-                        <Home className="w-3.5 h-3.5 text-[#047857]" />
-                        <span>TKGM BİNA BAĞIMSIZ BÖLÜM (BB) LİSTESİNDEN DAİRENİZİ SEÇİN (Opsiyonel)</span>
+                        <Layers className="w-3.5 h-3.5 text-[#C2410C]" />
+                        <span>İmar Durumu ({imarDurumu.belediye})</span>
                       </span>
-                      <span className="text-[#047857] font-mono font-extrabold">
-                        Ada: {adaNo} / Parsel: {parselNo} ({bbList.length} BB Bulundu)
-                      </span>
+                      <a href={imarDurumu.kaynak_url} target="_blank" rel="noopener noreferrer" className="text-[#0284C7] font-mono font-bold hover:underline">
+                        Resmi Belge →
+                      </a>
                     </label>
-
-                    <select
-                      value={selectedBBNo}
-                      onChange={(e) => handleSelectBBItem(e.target.value)}
-                      className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-                    >
-                      <option value="">-- TKGM Bina Bağımsız Bölüm (BB) Listesi ({bbList.length} Bağımsız Bölüm Listelendi) --</option>
-                      {bbList.map((bb) => (
-                        <option key={bb.bbNo} value={bb.bbNo}>
-                          Bağımsız Bölüm No: {bb.bbNo} — Daire: {bb.daireNo} ({bb.katNo}) — {bb.bbTipi} — Arsa Payı: {bb.arsaPay}
-                        </option>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {([
+                        ["Fonksiyon", imarDurumu.fonksiyon],
+                        ["İnşaat Nizamı", imarDurumu.insaat_nizami],
+                        ["Emsal (KAKS)", imarDurumu.kaks || imarDurumu.emsal],
+                        ["TAKS", imarDurumu.taks],
+                        ["Bina Yüksekliği", imarDurumu.bina_yuksekligi || imarDurumu.maks_yukseklik_m],
+                        ["Kat Adedi", imarDurumu.kat_adedi || imarDurumu.maks_kat],
+                        ["Ön Bahçe", imarDurumu.on_bahce],
+                        ["Yan Bahçe", imarDurumu.yan_bahce],
+                        ["Arka Bahçe", imarDurumu.arka_bahce],
+                        ["Bina Derinliği", imarDurumu.bina_derinligi],
+                        ["Bina Genişliği", imarDurumu.bina_genisligi],
+                        ["Pafta", imarDurumu.pafta],
+                        ["Parsel Alanı", imarDurumu.parsel_alani],
+                      ] as [string, string | undefined][]).filter(([, v]) => v).map(([label, v]) => (
+                        <div key={label} className="p-2 bg-[#FAF8F5] border border-[#E5E7EB] rounded-lg">
+                          <span className="text-[9px] text-slate-500 uppercase block font-bold">{label}</span>
+                          <span className="text-xs text-[#111827] font-extrabold break-words">{v}</span>
+                        </div>
                       ))}
-                    </select>
+                    </div>
+                    {imarDurumu.plan_notlari && (
+                      <details className="text-[10px] text-slate-600">
+                        <summary className="cursor-pointer font-bold text-[#0284C7]">📋 Plan Notları ve İmar Planı Geçmişi</summary>
+                        <p className="mt-1 font-medium leading-relaxed max-h-40 overflow-y-auto bg-[#FAF8F5] border border-[#E5E7EB] rounded-lg p-2">
+                          {imarDurumu.plan_notlari}
+                        </p>
+                        {imarDurumu.imar_plani && (
+                          <p className="mt-1 text-[9px] text-slate-500 leading-relaxed">
+                            <strong>Meri İmar Planı:</strong> {imarDurumu.imar_plani}
+                          </p>
+                        )}
+                      </details>
+                    )}
                   </div>
                 )}
 
@@ -810,29 +846,6 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
                 </div>
               </div>
 
-              {/* MAP LOCATION PICKER PIN FOCUS */}
-              <div className="space-y-2 mt-4">
-                <div className="flex items-center justify-between text-xs font-bold text-[#111827]">
-                  <div className="flex items-center space-x-1.5">
-                    <MapPin className="w-4 h-4 text-[#047857]" />
-                    <span>HARİTADAN BİNANIZIN HASSAS KONUMUNU İĞNE İLE DÜZELTİN <span className="text-red-500">*</span></span>
-                  </div>
-                  <span className="text-[11px] font-mono text-[#047857] bg-white px-2 py-0.5 border border-[#E5E7EB] rounded-md">
-                    Hassas Konum: {pinLat?.toFixed(4)}, {pinLng?.toFixed(4)}
-                  </span>
-                </div>
-                <div className="h-72 w-full border-2 border-[#111827] rounded-2xl relative overflow-hidden bg-[#FAF8F5] shadow-inner">
-                  <LeafletPolygonMap
-                    lat={pinLat || 40.9483}
-                    lng={pinLng || 29.1303}
-                    polygonGeoJson={polygonGeoJson}
-                    zoom={19}
-                  />
-                  <div className="absolute top-2 left-2 z-20 bg-[#111827] text-white px-3 py-1 rounded-lg text-xs font-mono font-bold shadow-md">
-                    {district} / {neighborhood} (Kadastro Parsel Sınırı)
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 

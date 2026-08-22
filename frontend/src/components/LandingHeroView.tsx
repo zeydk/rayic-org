@@ -36,10 +36,10 @@ export default function LandingHeroView({ onNavigate, onOpenWizard }: LandingHer
 
           <div className="space-y-3 w-full">
             <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-[#0F172A] tracking-tight font-display leading-[1.4] pb-1">
-              Konutunuz Hakkında Bilmeniz Gereken Her Şey
+              Konut Alırken Bilmeniz Gereken Her Şey
             </h1>
             <p className="text-sm text-slate-800 font-medium leading-relaxed w-full">
-              Piyasa rayici, tahmini kira verimi, deprem risk sınıfı, mahalle asayiş skoru ve kentsel dönüşüm primini anında analiz edin.
+              Almayı düşündüğünüz evi satın almadan önce görün: gerçek piyasa değeri, deprem &amp; zemin riski, tsunami tehlikesi, mahalle güvenliği ve kentsel dönüşüm potansiyeli — hepsi tek raporda.
             </p>
           </div>
 

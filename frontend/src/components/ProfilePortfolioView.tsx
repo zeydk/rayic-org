@@ -5,7 +5,7 @@ import { User, Building, Trash2, ArrowRight, Bookmark, Plus } from "lucide-react
 
 export interface SavedProperty {
   id: string;
-  userRole?: "buyer" | "seller" | "investor";
+  userRole?: "buyer" | "renter" | "seller";
   district: string;
   neighborhood: string;
   price?: number;

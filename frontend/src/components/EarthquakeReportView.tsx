@@ -13,6 +13,13 @@ interface EarthquakeReportViewProps {
   onOpenParser?: () => void;
 }
 
+// Format a number to at most 2 decimals, stripping floating-point artifacts
+// (e.g. 78.05000000000001 -> "78.05", 5 -> "5", 21.9 -> "21.9").
+const fmt2 = (n: number): string => {
+  if (typeof n !== "number" || !isFinite(n)) return "0";
+  return String(Math.round(n * 100) / 100);
+};
+
 // Mini gauge component for the cockpit dashboard
 const CockpitGauge = ({ label, value, max, colorClass, suffix = "" }: { label: string, value: number, max: number, colorClass: string, suffix?: string }) => {
   const dashArray = 157.08;
@@ -46,7 +53,7 @@ const CockpitGauge = ({ label, value, max, colorClass, suffix = "" }: { label: s
         </svg>
       </div>
       <div className="font-mono font-black text-xl text-[#111827] mt-1">
-        {value}{suffix}
+        {fmt2(value)}{suffix}
       </div>
     </div>
   );
@@ -89,6 +96,8 @@ export default function EarthquakeReportView({ data, spatial, onOpenParser }: Ea
     district_amplification = 1.3,
     fault_distance_km = 11.4,
     tsunami_risk = "Düşük (Bilinmiyor)",
+    tsunami_depth_m = 0,
+    tsunami_flood_pct = 0,
     damage_probabilities = {
       hasarsiz: 10,
       hafif: 25,
@@ -324,7 +333,7 @@ export default function EarthquakeReportView({ data, spatial, onOpenParser }: Ea
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <h5 className="text-[11px] font-extrabold text-[#111827] uppercase">Pik Yer İvmesi (PGA)</h5>
-                  <span className="font-mono font-black text-[#111827] text-lg">{pga_earthquake_risk_score} g</span>
+                  <span className="font-mono font-black text-[#111827] text-lg">{fmt2(pga_earthquake_risk_score)} g</span>
                 </div>
                 <div className="relative h-4 w-full bg-slate-200 rounded-full overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-yellow-400 to-[#991B1B]" />
@@ -339,7 +348,7 @@ export default function EarthquakeReportView({ data, spatial, onOpenParser }: Ea
                   <span>0.1g</span><span>0.4g</span><span>0.8g</span><span>1.0g+</span>
                 </div>
                 <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Deprem anında zeminin bir saniyedeki maksimum hızlanmasıdır. AFAD Tehlike Haritası ve yerel zemin büyütme katsayınız ({district_amplification}x) dahil edilerek hesaplanan pik yer ivmeniz <strong>{pga_earthquake_risk_score} g</strong> düzeyindedir.
+                  Deprem anında zeminin bir saniyedeki maksimum hızlanmasıdır. AFAD Tehlike Haritası ve yerel zemin büyütme katsayınız ({district_amplification}x) dahil edilerek hesaplanan pik yer ivmeniz <strong>{fmt2(pga_earthquake_risk_score)} g</strong> düzeyindedir.
                 </p>
               </div>
 
@@ -393,17 +402,35 @@ export default function EarthquakeReportView({ data, spatial, onOpenParser }: Ea
                 </p>
               </div>
 
-              {/* Tsunami Risk Metric */}
+              {/* Tsunami Su Basma Riski (MeTHuVA) — full-width bar metric */}
               {tsunami_risk && !tsunami_risk.includes("Bilinmiyor") && (
-                <div className="col-span-1 md:col-span-2 space-y-3 bg-[#F0F9FF] border border-[#BAE6FD] p-5 rounded-xl mt-4">
+                <div className="col-span-1 md:col-span-2 space-y-3 mt-2">
                   <div className="flex justify-between items-center">
-                    <h5 className="text-[11px] font-extrabold text-[#0284C7] uppercase">Tsunami Su Basma Riski (MeTHuVA)</h5>
-                    <span className="font-mono font-black text-[#0284C7] text-lg">{tsunami_risk}</span>
+                    <h5 className="text-[11px] font-extrabold text-[#111827] uppercase">Tsunami Su Basma Riski (MeTHuVA)</h5>
+                    <span className={`font-mono font-black text-lg ${tsunami_depth_m >= 3 ? "text-[#B91C1C]" : tsunami_depth_m >= 1 ? "text-amber-500" : "text-[#047857]"}`}>
+                      {tsunami_depth_m > 0 ? `${fmt2(tsunami_depth_m)} m` : "Yok"}
+                    </span>
                   </div>
-                  <p className="text-[11px] text-[#0369A1] leading-relaxed font-medium">
-                    {tsunami_risk.includes("Yüksek") 
-                      ? "İBB'nin resmi Tsunami Risk Analizi (MeTHuVA) raporuna göre, binanızın bulunduğu mahalle olası bir tsunamide su basması tehlikesi taşıyan kıyı bandındadır. Afet anında sahil şeridinden hızla uzaklaşılması ve yüksek kesimlere (Tahliye Alanlarına) geçilmesi hayati önem taşır."
-                      : "İBB'nin Tsunami Risk Analizi'ne (MeTHuVA) göre, binanız kıyı şeridinden ve riskli kottan yeterince uzakta veya yüksekte yer almaktadır. Olası bir Marmara tsunamisinde doğrudan su basma riski altında değilsiniz."
+                  {/* Gradient depth scale (0 - 8 m) */}
+                  <div className="relative h-4 w-full bg-slate-200 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-amber-400 to-[#B91C1C]" />
+                  </div>
+                  <div className="relative w-full">
+                    <div
+                      className="absolute top-[-24px] w-4 h-4 bg-[#111827] border-2 border-white rounded-full shadow-md transform -translate-x-1/2"
+                      style={{ left: `${Math.min((tsunami_depth_m / 8) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-500 font-bold mt-1">
+                    <span>Su Yok (0m)</span>
+                    <span>Orta (3m)</span>
+                    <span>Yüksek (6m)</span>
+                    <span>8m+</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    {tsunami_depth_m >= 1
+                      ? <>İBB'nin resmi Tsunami Risk Analizi (MeTHuVA, 2018) modeline göre, olası bir Marmara depremi (Orta Marmara Fayı) kaynaklı tsunamide mahallenizde karada <strong>maksimum ~{fmt2(tsunami_depth_m)} m</strong> su basma derinliği modellenmiştir{tsunami_flood_pct > 0 ? <> (mahalle alanının yaklaşık <strong>%{fmt2(tsunami_flood_pct)}</strong>'i su altında)</> : null}. Afet anında sahil şeridinden hızla uzaklaşılması ve yüksek kesimlere (Tahliye Alanlarına) geçilmesi hayati önem taşır.</>
+                      : <>İBB'nin Tsunami Risk Analizi'ne (MeTHuVA, 2018) göre mahalleniz modellenen su baskını alanının dışındadır; olası bir Marmara tsunamisinde doğrudan su basma riski öngörülmemektedir.</>
                     }
                   </p>
                 </div>

@@ -21,7 +21,8 @@ class IbbDamageScenarioLoader:
             print(f"Warning: CSV not found at {csv_path}")
             return
             
-        with open(csv_path, mode="r", encoding="utf-8") as f:
+        # The IBB dataset is published in ISO-8859-9 (Turkish Latin-5), not UTF-8.
+        with open(csv_path, mode="r", encoding="iso-8859-9") as f:
             reader = csv.DictReader(f, delimiter=";")
             for row in reader:
                 ilce = normalize_string(row.get("ilce_adi", ""))

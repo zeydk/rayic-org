@@ -30,6 +30,7 @@ export default function Home() {
   // API Backend Results
   const [valuationData, setValuationData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Hydrate saved properties from localStorage
   useEffect(() => {
@@ -51,12 +52,12 @@ export default function Home() {
 
   const runFullCheckup = async (input: any) => {
     setLoading(true);
+    setApiError(null);
     try {
       const payload = {
         price: input.price,
         net_m2: input.net_m2,
         gross_m2: input.gross_m2,
-        building_age: input.building_age,
         floor: input.floor,
         room_count: input.room_count,
         total_land_m2: input.total_land_m2,
@@ -120,92 +121,15 @@ export default function Home() {
       // Auto-navigate to Valuation Dashboard
       setActiveMenu("valuation");
     } catch (err) {
+      // Backend unreachable -> surface an honest "veri alınamadı" state instead
+      // of fabricating mock valuation / risk data.
       console.error("Valuation engine connection error:", err);
-      const mockResult = {
-        valuation: {
-          estimated_value_tl: Math.round(input.price * 1.05),
-          estimated_total_price: Math.round(input.price * 1.05),
-          advertised_price: input.price,
-          price_per_m2_advertised: Math.round(input.price / input.net_m2),
-          base_m2_price: Math.round((input.price * 1.05) / input.net_m2),
-          deviation_percent: 5,
-          deal_status: "makul",
-          status_label: "FİYAT MAKUL",
-          k_age: 1.0,
-          k_floor: 1.0,
-          k_tcmb: 1.0,
-          estimated_rent_tl: Math.round((input.price * 1.05) / 240),
-          min_value_tl: Math.round(input.price * 0.98),
-          max_value_tl: Math.round(input.price * 1.12),
-          confidence_score: 91,
-          valuation_version: "1.2.0 (Mock Fallback)",
-          district: input.district,
-          neighborhood: input.neighborhood,
-          net_m2: input.net_m2,
-          room_count: input.room_count
-        },
-        spatial: {
-          property_lat: 40.9483,
-          property_lng: 29.1303,
-          district: input.district,
-          neighborhood: input.neighborhood,
-          tkgm_cadastre: {
-            ada_no: input.ada_no || "2104",
-            parsel_no: input.parsel_no || "15",
-            is_auto_matched: true,
-            match_accuracy_percent: 99.4,
-            tkgm_status_label: "TKGM PARSEL SORGU ALGORİTMASI İLE EŞLEŞTİRİLDİ",
-            precise_lat: 40.9483,
-            precise_lng: 29.1303
-          },
-          ground_risk_class: "Z2 (Orta Sağlam Zemin)",
-          pga_earthquake_risk_score: 0.28,
-          poi_summary: { metro: 2, metrobus: 1, hospital: 3, transformation: 4 }
-        },
-        urban_transformation: {
-          district: input.district,
-          neighborhood: input.neighborhood,
-          ada_no: input.ada_no || "2104",
-          parsel_no: input.parsel_no || "15",
-          existing_net_m2: input.net_m2,
-          existing_gross_m2: input.gross_m2,
-          building_age: input.building_age,
-          contractor_share_ratio: 0.50,
-          new_apartment_net_m2: Math.round(input.net_m2 * 0.90),
-          new_apartment_gross_m2: Math.round(input.gross_m2 * 0.90),
-          new_building_estimated_value_tl: Math.round(input.price * 1.65),
-          value_increase_tl: Math.round(input.price * 0.65),
-          value_increase_percent: 65.0
-        }
-      };
-
-      const newProperty = {
-        id: `prop_${Date.now()}`,
-        date: new Date().toLocaleDateString("tr-TR"),
-        district: input.district,
-        neighborhood: input.neighborhood,
-        ada_no: input.ada_no || "2104",
-        parsel_no: input.parsel_no || "15",
-        room_count: input.room_count,
-        user_role: input.user_role || "buyer",
-        inputData: input,
-        valuationData: mockResult
-      };
-
-      setSavedProperties((prev) => {
-        const updated = [newProperty, ...prev.filter(p => p.id !== newProperty.id)];
-        try {
-          localStorage.setItem("rayic_saved_properties", JSON.stringify(updated));
-        } catch (e) {}
-        return updated;
-      });
-
-      setSelectedPropertyId(newProperty.id);
-      
-      setValuationData(mockResult as any);
+      setValuationData(null);
       setParsedInput(input);
-      
-      setActiveMenu("valuation");
+      setApiError(
+        "Sunucuya ulaşılamadı, veri alınamadı. Analiz motoru (backend) şu an çalışmıyor olabilir. Lütfen bağlantınızı kontrol edip tekrar deneyin."
+      );
+      setActiveMenu("add_property" as any);
     } finally {
       setLoading(false);
     }
@@ -279,7 +203,27 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 py-6 w-full">
-        
+
+        {/* Global "veri alınamadı" error banner (backend unreachable) */}
+        {apiError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start justify-between gap-4">
+            <div className="flex items-start space-x-3">
+              <span className="text-red-600 font-black text-lg leading-none mt-0.5">⚠</span>
+              <div className="text-sm">
+                <h5 className="font-extrabold text-red-800">Veri Alınamadı</h5>
+                <p className="text-red-700 font-medium">{apiError}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setApiError(null)}
+              className="text-red-400 hover:text-red-600 text-xl leading-none shrink-0"
+              aria-label="Kapat"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         {/* MENU 0: LANDING HERO VIEW */}
         {activeMenu === "home" && (
           <LandingHeroView

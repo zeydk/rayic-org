@@ -1,0 +1,766 @@
+{
+ "SILIVRI": {
+  "PIRI MEHMET PASA": {
+   "max_depth": 6.19,
+   "avg_depth": 2.64,
+   "flood_pct": 45.12
+  },
+  "MIMAR SINAN": {
+   "max_depth": 6.54,
+   "avg_depth": 1.43,
+   "flood_pct": 10.92
+  },
+  "SEMIZKUMLAR": {
+   "max_depth": 7.74,
+   "avg_depth": 2.49,
+   "flood_pct": 4.06
+  },
+  "FATIH": {
+   "max_depth": 4.85,
+   "avg_depth": 2.32,
+   "flood_pct": 3.87
+  },
+  "SANCAKTEPE": {
+   "max_depth": 6.26,
+   "avg_depth": 1.67,
+   "flood_pct": 3.67
+  },
+  "CUMHURIYET": {
+   "max_depth": 6.04,
+   "avg_depth": 2.32,
+   "flood_pct": 3.31
+  },
+  "SELIM PASA": {
+   "max_depth": 7.89,
+   "avg_depth": 1.99,
+   "flood_pct": 2.9
+  },
+  "BALABAN": {
+   "max_depth": 5.83,
+   "avg_depth": 1.79,
+   "flood_pct": 1.59
+  },
+  "GUMUSYAKA": {
+   "max_depth": 7.51,
+   "avg_depth": 2.24,
+   "flood_pct": 1.09
+  },
+  "ALIPASA": {
+   "max_depth": 2.51,
+   "avg_depth": 0.22,
+   "flood_pct": 0.13
+  },
+  "ALIBEY": {
+   "max_depth": 0.88,
+   "avg_depth": 0.46,
+   "flood_pct": 0.2
+  },
+  "CELTIK": {
+   "max_depth": 3.81,
+   "avg_depth": 1.16,
+   "flood_pct": 0.03
+  }
+ },
+ "BUYUKCEKMECE": {
+  "FATIH": {
+   "max_depth": 5.24,
+   "avg_depth": 1.32,
+   "flood_pct": 17.12
+  },
+  "MIMAR SINAN MERKEZ": {
+   "max_depth": 6.32,
+   "avg_depth": 1.25,
+   "flood_pct": 17.0
+  },
+  "ATATURK": {
+   "max_depth": 6.25,
+   "avg_depth": 1.82,
+   "flood_pct": 14.08
+  },
+  "KUMBURGAZ": {
+   "max_depth": 6.02,
+   "avg_depth": 2.08,
+   "flood_pct": 4.64
+  },
+  "DIZDARIYE": {
+   "max_depth": 3.7,
+   "avg_depth": 0.61,
+   "flood_pct": 4.52
+  },
+  "SINANOBA": {
+   "max_depth": 5.23,
+   "avg_depth": 1.37,
+   "flood_pct": 3.61
+  },
+  "EKINOBA": {
+   "max_depth": 5.92,
+   "avg_depth": 1.85,
+   "flood_pct": 2.7
+  },
+  "MIMAROBA": {
+   "max_depth": 5.71,
+   "avg_depth": 1.63,
+   "flood_pct": 1.78
+  },
+  "GUZELCE": {
+   "max_depth": 5.17,
+   "avg_depth": 1.89,
+   "flood_pct": 1.39
+  },
+  "BAHCELIEVLER": {
+   "max_depth": 8.59,
+   "avg_depth": 2.35,
+   "flood_pct": 1.1
+  },
+  "KAMILOBA": {
+   "max_depth": 5.7,
+   "avg_depth": 2.29,
+   "flood_pct": 1.07
+  },
+  "PINARTEPE": {
+   "max_depth": 3.48,
+   "avg_depth": 0.77,
+   "flood_pct": 1.03
+  },
+  "CELALIYE": {
+   "max_depth": 4.46,
+   "avg_depth": 1.55,
+   "flood_pct": 0.53
+  },
+  "ULUS": {
+   "max_depth": 1.66,
+   "avg_depth": 0.78,
+   "flood_pct": 0.08
+  },
+  "MAYIS": {
+   "max_depth": 11.78,
+   "avg_depth": 4.11,
+   "flood_pct": 1.21
+  }
+ },
+ "BEYLIKDUZU": {
+  "GURPINAR": {
+   "max_depth": 5.11,
+   "avg_depth": 1.46,
+   "flood_pct": 6.17
+  },
+  "DEREAGZI": {
+   "max_depth": 4.37,
+   "avg_depth": 1.7,
+   "flood_pct": 4.76
+  },
+  "MARMARA": {
+   "max_depth": 3.69,
+   "avg_depth": 0.61,
+   "flood_pct": 3.63
+  },
+  "SAHIL": {
+   "max_depth": 4.71,
+   "avg_depth": 2.44,
+   "flood_pct": 3.29
+  },
+  "YAKUPLU": {
+   "max_depth": 3.59,
+   "avg_depth": 0.83,
+   "flood_pct": 1.89
+  },
+  "KAVAKLI": {
+   "max_depth": 5.67,
+   "avg_depth": 1.25,
+   "flood_pct": 0.14
+  }
+ },
+ "AVCILAR": {
+  "DENIZKOSKLER": {
+   "max_depth": 11.11,
+   "avg_depth": 4.11,
+   "flood_pct": 27.77
+  },
+  "GUMUSPALA": {
+   "max_depth": 5.91,
+   "avg_depth": 1.69,
+   "flood_pct": 20.16
+  },
+  "AMBARLI": {
+   "max_depth": 17.99,
+   "avg_depth": 4.29,
+   "flood_pct": 17.91
+  },
+  "FIRUZKOY": {
+   "max_depth": 0.8,
+   "avg_depth": 0.24,
+   "flood_pct": 0.41
+  },
+  "TAHTAKALE": {
+   "max_depth": 0.55,
+   "avg_depth": 0.2,
+   "flood_pct": 0.2
+  },
+  "UNIVERSITE": {
+   "max_depth": 1.42,
+   "avg_depth": 0.55,
+   "flood_pct": 0.18
+  },
+  "YESILKENT": {
+   "max_depth": 1.11,
+   "avg_depth": 0.58,
+   "flood_pct": 0.26
+  }
+ },
+ "KUCUKCEKMECE": {
+  "FATIH": {
+   "max_depth": 5.38,
+   "avg_depth": 1.91,
+   "flood_pct": 55.23
+  },
+  "CENNET": {
+   "max_depth": 0.23,
+   "avg_depth": 0.19,
+   "flood_pct": 0.03
+  },
+  "YARIMBURGAZ": {
+   "max_depth": 0.19,
+   "avg_depth": 0.13,
+   "flood_pct": 0.01
+  },
+  "KANARYA": {
+   "max_depth": 0.27,
+   "avg_depth": 0.17,
+   "flood_pct": 0.01
+  },
+  "ISTASYON": {
+   "max_depth": 3.33,
+   "avg_depth": 0.48,
+   "flood_pct": 2.96
+  }
+ },
+ "BAKIRKOY": {
+  "SAKIZAGACI": {
+   "max_depth": 6.1,
+   "avg_depth": 1.15,
+   "flood_pct": 57.54
+  },
+  "KISIM": {
+   "max_depth": 6.41,
+   "avg_depth": 0.62,
+   "flood_pct": 29.65
+  },
+  "YESILYURT": {
+   "max_depth": 5.99,
+   "avg_depth": 1.06,
+   "flood_pct": 27.13
+  },
+  "ZEYTINLIK": {
+   "max_depth": 3.86,
+   "avg_depth": 1.32,
+   "flood_pct": 12.63
+  },
+  "CEVIZLIK": {
+   "max_depth": 4.59,
+   "avg_depth": 0.91,
+   "flood_pct": 9.38
+  },
+  "BASINKOY": {
+   "max_depth": 4.42,
+   "avg_depth": 1.55,
+   "flood_pct": 4.76
+  },
+  "YESILKOY": {
+   "max_depth": 5.27,
+   "avg_depth": 1.2,
+   "flood_pct": 2.31
+  },
+  "SENLIKKOY": {
+   "max_depth": 4.11,
+   "avg_depth": 1.72,
+   "flood_pct": 1.61
+  },
+  "OSMANIYE": {
+   "max_depth": 2.08,
+   "avg_depth": 0.82,
+   "flood_pct": 0.11
+  },
+  "KARTALTEPE": {
+   "max_depth": 2.98,
+   "avg_depth": 1.05,
+   "flood_pct": 4.23
+  },
+  "ZUHURATBABA": {
+   "max_depth": 3.61,
+   "avg_depth": 2.37,
+   "flood_pct": 0.45
+  }
+ },
+ "ZEYTINBURNU": {
+  "KAZLICESME": {
+   "max_depth": 5.95,
+   "avg_depth": 0.83,
+   "flood_pct": 16.97
+  },
+  "SUMER": {
+   "max_depth": 1.96,
+   "avg_depth": 0.81,
+   "flood_pct": 0.14
+  },
+  "VELIEFENDI": {
+   "max_depth": 2.99,
+   "avg_depth": 1.73,
+   "flood_pct": 0.64
+  }
+ },
+ "FATIH": {
+  "MUHSINE HATUN": {
+   "max_depth": 4.36,
+   "avg_depth": 1.23,
+   "flood_pct": 30.47
+  },
+  "BALAT": {
+   "max_depth": 2.94,
+   "avg_depth": 1.18,
+   "flood_pct": 11.06
+  },
+  "AKSARAY": {
+   "max_depth": 3.24,
+   "avg_depth": 0.95,
+   "flood_pct": 41.91
+  },
+  "AYVANSARAY": {
+   "max_depth": 2.87,
+   "avg_depth": 0.96,
+   "flood_pct": 17.51
+  },
+  "SARIDEMIR": {
+   "max_depth": 2.35,
+   "avg_depth": 0.63,
+   "flood_pct": 23.13
+  },
+  "HOBYAR": {
+   "max_depth": 2.14,
+   "avg_depth": 0.52,
+   "flood_pct": 12.61
+  },
+  "NISANCA": {
+   "max_depth": 5.01,
+   "avg_depth": 0.67,
+   "flood_pct": 23.49
+  },
+  "CERRAHPASA": {
+   "max_depth": 7.02,
+   "avg_depth": 1.56,
+   "flood_pct": 45.18
+  },
+  "RUSTEMPASA": {
+   "max_depth": 2.22,
+   "avg_depth": 0.53,
+   "flood_pct": 12.05
+  },
+  "KATIP KASIM": {
+   "max_depth": 5.29,
+   "avg_depth": 0.91,
+   "flood_pct": 36.6
+  },
+  "CIBALI": {
+   "max_depth": 2.5,
+   "avg_depth": 0.75,
+   "flood_pct": 6.19
+  },
+  "KOCA MUSTAFAPASA": {
+   "max_depth": 6.49,
+   "avg_depth": 2.42,
+   "flood_pct": 21.97
+  },
+  "CANKURTARAN": {
+   "max_depth": 4.37,
+   "avg_depth": 0.84,
+   "flood_pct": 3.99
+  },
+  "KUCUK AYASOFYA": {
+   "max_depth": 4.97,
+   "avg_depth": 0.7,
+   "flood_pct": 24.41
+  },
+  "HOCAPASA": {
+   "max_depth": 2.32,
+   "avg_depth": 0.3,
+   "flood_pct": 3.22
+  },
+  "YEDIKULE": {
+   "max_depth": 5.04,
+   "avg_depth": 0.74,
+   "flood_pct": 19.6
+  }
+ },
+ "BEYOGLU": {
+  "CAMIIKEBIR": {
+   "max_depth": 3.04,
+   "avg_depth": 0.8,
+   "flood_pct": 17.05
+  },
+  "BEDRETTIN": {
+   "max_depth": 2.52,
+   "avg_depth": 0.56,
+   "flood_pct": 14.81
+  },
+  "ARAP CAMI": {
+   "max_depth": 2.16,
+   "avg_depth": 0.45,
+   "flood_pct": 13.98
+  },
+  "KEMANKES KARAMUSTAFA PASA": {
+   "max_depth": 1.9,
+   "avg_depth": 0.53,
+   "flood_pct": 13.7
+  },
+  "PIRIPASA": {
+   "max_depth": 2.55,
+   "avg_depth": 0.74,
+   "flood_pct": 9.64
+  },
+  "OMER AVNI": {
+   "max_depth": 2.34,
+   "avg_depth": 0.5,
+   "flood_pct": 7.4
+  },
+  "SUTLUCE": {
+   "max_depth": 2.54,
+   "avg_depth": 0.78,
+   "flood_pct": 3.51
+  },
+  "PURTELAS HASAN EFENDI": {
+   "max_depth": 2.24,
+   "avg_depth": 0.75,
+   "flood_pct": 2.74
+  },
+  "ORNEKTEPE": {
+   "max_depth": 1.94,
+   "avg_depth": 0.57,
+   "flood_pct": 2.0
+  },
+  "KECECIPIRI": {
+   "max_depth": 2.32,
+   "avg_depth": 0.68,
+   "flood_pct": 1.98
+  },
+  "HALICIOGLU": {
+   "max_depth": 2.03,
+   "avg_depth": 0.59,
+   "flood_pct": 1.93
+  },
+  "KILICALI PASA": {
+   "max_depth": 2.36,
+   "avg_depth": 0.67,
+   "flood_pct": 0.29
+  },
+  "YAHYA KAHYA": {
+   "max_depth": 0.7,
+   "avg_depth": 0.36,
+   "flood_pct": 1.11
+  },
+  "CATMA MESCIT": {
+   "max_depth": 0.97,
+   "avg_depth": 0.49,
+   "flood_pct": 1.1
+  },
+  "KADIMEHMET": {
+   "max_depth": 0.98,
+   "avg_depth": 0.6,
+   "flood_pct": 0.23
+  }
+ },
+ "BESIKTAS": {
+  "ARNAVUTKOY": {
+   "max_depth": 2.95,
+   "avg_depth": 0.68,
+   "flood_pct": 7.71
+  },
+  "SINANPASA": {
+   "max_depth": 2.15,
+   "avg_depth": 0.49,
+   "flood_pct": 5.83
+  },
+  "BEBEK": {
+   "max_depth": 3.19,
+   "avg_depth": 1.21,
+   "flood_pct": 5.47
+  },
+  "VISNEZADE": {
+   "max_depth": 2.56,
+   "avg_depth": 0.41,
+   "flood_pct": 3.46
+  },
+  "KURUCESME": {
+   "max_depth": 2.53,
+   "avg_depth": 0.59,
+   "flood_pct": 3.4
+  },
+  "YILDIZ": {
+   "max_depth": 2.16,
+   "avg_depth": 0.32,
+   "flood_pct": 1.5
+  },
+  "ORTAKOY": {
+   "max_depth": 1.67,
+   "avg_depth": 0.5,
+   "flood_pct": 0.77
+  },
+  "MECIDIYE": {
+   "max_depth": 1.61,
+   "avg_depth": 0.34,
+   "flood_pct": 0.56
+  }
+ },
+ "USKUDAR": {
+  "MIMAR SINAN": {
+   "max_depth": 2.68,
+   "avg_depth": 0.54,
+   "flood_pct": 5.91
+  },
+  "KANDILLI": {
+   "max_depth": 3.37,
+   "avg_depth": 1.1,
+   "flood_pct": 5.52
+  },
+  "BEYLERBEYI": {
+   "max_depth": 2.46,
+   "avg_depth": 0.73,
+   "flood_pct": 1.44
+  },
+  "SELIMIYE": {
+   "max_depth": 3.23,
+   "avg_depth": 0.43,
+   "flood_pct": 1.42
+  },
+  "CENGELKOY": {
+   "max_depth": 2.4,
+   "avg_depth": 0.9,
+   "flood_pct": 1.17
+  },
+  "SALACAK": {
+   "max_depth": 2.45,
+   "avg_depth": 1.04,
+   "flood_pct": 1.15
+  },
+  "KULELI": {
+   "max_depth": 2.11,
+   "avg_depth": 0.58,
+   "flood_pct": 0.53
+  },
+  "AZIZ MAHMUT HUDAYI": {
+   "max_depth": 2.31,
+   "avg_depth": 1.77,
+   "flood_pct": 0.35
+  },
+  "KUZGUNCUK": {
+   "max_depth": 2.13,
+   "avg_depth": 0.88,
+   "flood_pct": 0.32
+  }
+ },
+ "KADIKOY": {
+  "FENERBAHCE": {
+   "max_depth": 7.79,
+   "avg_depth": 1.6,
+   "flood_pct": 26.47
+  },
+  "ZUHTUPASA": {
+   "max_depth": 4.23,
+   "avg_depth": 0.85,
+   "flood_pct": 21.42
+  },
+  "CADDEBOSTAN": {
+   "max_depth": 6.46,
+   "avg_depth": 1.99,
+   "flood_pct": 17.72
+  },
+  "BOSTANCI": {
+   "max_depth": 7.23,
+   "avg_depth": 2.06,
+   "flood_pct": 12.88
+  },
+  "OSMANAGA": {
+   "max_depth": 3.26,
+   "avg_depth": 0.89,
+   "flood_pct": 12.13
+  },
+  "CAFERAGA": {
+   "max_depth": 5.25,
+   "avg_depth": 0.84,
+   "flood_pct": 11.77
+  },
+  "RASIMPASA": {
+   "max_depth": 3.43,
+   "avg_depth": 0.49,
+   "flood_pct": 6.91
+  }
+ },
+ "MALTEPE": {
+  "YALI": {
+   "max_depth": 6.97,
+   "avg_depth": 1.27,
+   "flood_pct": 57.58
+  },
+  "IDEALTEPE": {
+   "max_depth": 4.66,
+   "avg_depth": 1.28,
+   "flood_pct": 23.88
+  },
+  "CINAR": {
+   "max_depth": 4.06,
+   "avg_depth": 1.6,
+   "flood_pct": 22.59
+  },
+  "KUCUKKYALI MERKEZ": {
+   "max_depth": 5.44,
+   "avg_depth": 1.14,
+   "flood_pct": 15.52
+  },
+  "ALTINTEPE": {
+   "max_depth": 7.96,
+   "avg_depth": 2.26,
+   "flood_pct": 9.04
+  },
+  "FEYZULLAH": {
+   "max_depth": 0.7,
+   "avg_depth": 0.27,
+   "flood_pct": 0.82
+  }
+ },
+ "KARTAL": {
+  "KORDONBOYU": {
+   "max_depth": 5.84,
+   "avg_depth": 0.64,
+   "flood_pct": 16.11
+  },
+  "ORHANTEPE": {
+   "max_depth": 5.19,
+   "avg_depth": 0.64,
+   "flood_pct": 12.16
+  },
+  "BATI": {
+   "max_depth": 7.27,
+   "avg_depth": 1.83,
+   "flood_pct": 41.43
+  },
+  "DOGU": {
+   "max_depth": 4.74,
+   "avg_depth": 1.29,
+   "flood_pct": 24.82
+  },
+  "KAYNARCA": {
+   "max_depth": 7.38,
+   "avg_depth": 1.18,
+   "flood_pct": 21.11
+  },
+  "GUZELYALI": {
+   "max_depth": 5.82,
+   "avg_depth": 1.23,
+   "flood_pct": 9.28
+  },
+  "ORHANGAZI": {
+   "max_depth": 0.39,
+   "avg_depth": 0.27,
+   "flood_pct": 0.11
+  },
+  "KAVAKPINAR": {
+   "max_depth": 0.44,
+   "avg_depth": 0.25,
+   "flood_pct": 0.03
+  }
+ },
+ "PENDIK": {
+  "BATI": {
+   "max_depth": 4.62,
+   "avg_depth": 1.17,
+   "flood_pct": 24.61
+  },
+  "DOGU": {
+   "max_depth": 4.29,
+   "avg_depth": 0.72,
+   "flood_pct": 18.25
+  },
+  "KAYNARCA": {
+   "max_depth": 5.71,
+   "avg_depth": 0.71,
+   "flood_pct": 10.48
+  },
+  "GUZELYALI": {
+   "max_depth": 3.89,
+   "avg_depth": 0.85,
+   "flood_pct": 4.62
+  }
+ },
+ "TUZLA": {
+  "BATI": {
+   "max_depth": 4.62,
+   "avg_depth": 1.17,
+   "flood_pct": 24.61
+  },
+  "DOGU": {
+   "max_depth": 4.29,
+   "avg_depth": 0.72,
+   "flood_pct": 18.25
+  },
+  "KAYNARCA": {
+   "max_depth": 5.71,
+   "avg_depth": 0.71,
+   "flood_pct": 10.48
+  },
+  "GUZELYALI": {
+   "max_depth": 3.89,
+   "avg_depth": 0.85,
+   "flood_pct": 4.62
+  },
+  "CAMI": {
+   "max_depth": 4.85,
+   "avg_depth": 1.57,
+   "flood_pct": 40.79
+  },
+  "EVLIYA CELEBI": {
+   "max_depth": 9.14,
+   "avg_depth": 1.41,
+   "flood_pct": 34.54
+  },
+  "POSTANE": {
+   "max_depth": 11.15,
+   "avg_depth": 1.7,
+   "flood_pct": 23.76
+  },
+  "ISTASYON": {
+   "max_depth": 5.44,
+   "avg_depth": 2.15,
+   "flood_pct": 10.16
+  },
+  "AYDINTEPE": {
+   "max_depth": 4.31,
+   "avg_depth": 1.11,
+   "flood_pct": 4.19
+  }
+ },
+ "ADALAR": {
+  "KINALIADA": {
+   "max_depth": 8.38,
+   "avg_depth": 2.46,
+   "flood_pct": 10.42
+  },
+  "MADEN": {
+   "max_depth": 12.3,
+   "avg_depth": 2.52,
+   "flood_pct": 10.17
+  },
+  "HEYBELIADA": {
+   "max_depth": 8.84,
+   "avg_depth": 2.59,
+   "flood_pct": 9.81
+  },
+  "BURGAZADA": {
+   "max_depth": 8.38,
+   "avg_depth": 3.17,
+   "flood_pct": 7.59
+  },
+  "NIZAM": {
+   "max_depth": 8.77,
+   "avg_depth": 3.44,
+   "flood_pct": 5.21
+  }
+ }
+}
