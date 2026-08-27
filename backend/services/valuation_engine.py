@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
 from services.tcmb_service import get_tcmb_kfe_summary, get_inflation_factor
+from services.location_factor import konum_carpani
 
 class ValuationResult(BaseModel):
     base_m2_price: float
@@ -37,6 +38,8 @@ class ValuationResult(BaseModel):
     mahalle_ilan_n: Optional[int] = None
     segment_duzeltme: Optional[float] = None
     segment_etiketi: Optional[str] = None
+    konum_carpani: Optional[float] = None
+    konum_detay: Optional[Dict[str, Any]] = None
     valuation_breakdown: Dict[str, float]
 
 
@@ -424,6 +427,8 @@ def calculate_valuation(
     neighborhood: Optional[str] = "Caddebostan",
     k_facade: float = 1.0,
     site_icinde: Optional[bool] = None,
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
 ) -> ValuationResult:
     _yas_info = age_premium_info(district, building_age)
     base_m2_hist, base_source, base_n, age_specific = get_base_m2_price(district, neighborhood, building_age)
@@ -453,8 +458,14 @@ def calculate_valuation(
     # Segment yanlılık düzeltmesi (küçük/çok büyük daire, site içi).
     k_seg, seg_label = segment_duzeltme(net_m2, site_icinde)
 
-    price_before_inflation = base_m2_hist * net_m2 * k_age * k_floor * k_facade * k_seg
-    raw_estimated_price = base_m2 * net_m2 * k_age * k_floor * k_facade * k_seg
+    # MAHALLE İÇİ KONUM çarpanı: aynı mahallede kıyıya/raylı sisteme yakınlık
+    # farkı. Katsayılar koordinatlı ilan örnekleminden ÖLÇÜLDÜ (mahalle sabit
+    # etkili regresyon); mahalle ortalamasında 1.00 olacak şekilde normalize.
+    _loc = konum_carpani(lat, lng, district, neighborhood)
+    k_loc = float(_loc["carpan"]) if _loc else 1.0
+
+    price_before_inflation = base_m2_hist * net_m2 * k_age * k_floor * k_facade * k_seg * k_loc
+    raw_estimated_price = base_m2 * net_m2 * k_age * k_floor * k_facade * k_seg * k_loc
     tcmb_impact_tl = raw_estimated_price - price_before_inflation
 
     # Mahalle içi saçılmadan güven aralığı: mahalle medyanı ile p25/p75 oranını
@@ -517,6 +528,8 @@ def calculate_valuation(
         mahalle_ilan_n=mah_n,
         segment_duzeltme=k_seg,
         segment_etiketi=seg_label,
+        konum_carpani=k_loc,
+        konum_detay=_loc,
         trend_yillik_nominal_pct=_proj["trend_yillik_nominal_pct"],
         projeksiyon_12ay_tlm2=_proj["projeksiyon_12ay_tlm2"],
         projeksiyon_24ay_tlm2=_proj["projeksiyon_24ay_tlm2"],

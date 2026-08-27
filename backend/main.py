@@ -136,7 +136,10 @@ def valuate_property(req: ValuationRequest):
         building_age=req.building_age,
         floor_category=req.floor_category,
         district=req.district,
-        neighborhood=req.neighborhood
+        neighborhood=req.neighborhood,
+        # Mahalle içi konum çarpanı için koordinat (adres dropdown'ından gelir)
+        lat=req.lat,
+        lng=req.lng,
     )
 
     urb_res = simulate_urban_transformation(

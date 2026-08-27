@@ -29,3 +29,4 @@ backend/data/*.lock
 # geocoded fiyat gözlem defteri (kullanıcı verisi)
 backend/data/fiyat_gozlemleri.jsonl
 backend/data/konum_ornegi.jsonl
+backend/data/konum_ornegi.jsonl

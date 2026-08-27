@@ -42,12 +42,14 @@ SAMPLE = os.path.join(D, "konum_ornegi.jsonl")
 RAIL = os.path.join(D, "rayli_sistem.json")
 OUT = os.path.join(D, "konum_carpani.json")
 
-BOGAZ = [(41.0225, 29.0060), (41.0430, 29.0180), (41.0630, 29.0240), (41.0840, 29.0530),
-         (41.1080, 29.0570), (41.1450, 29.0640), (41.1750, 29.0760), (41.2050, 29.0930),
-         (40.9950, 29.0130), (41.0100, 29.0230)]
-MARMARA = [(40.9700, 29.0300), (40.9600, 29.0800), (40.9400, 29.1200), (40.9200, 29.1800),
-           (40.8900, 29.2500), (40.8700, 29.3100), (40.9800, 28.9500), (40.9850, 28.8700),
-           (40.9900, 28.8000), (41.0000, 28.7200), (41.0200, 28.6300), (41.0400, 28.5300)]
+# GERÇEK kıyı çizgisi (OpenStreetMap natural=coastline, ~80 m ızgaraya
+# seyreltilmiş 3580 nokta). Önceden 22 elle seçilmiş nokta kullanılıyordu;
+# mesafe hatası katsayıyı sıfıra çekiyordu (Caddebostan sahilini 1.34 km
+# içeride ölçüyordu, gerçekte 0.26 km).
+COAST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                     "data", "kiyi_cizgisi.json")
+with open(COAST, encoding="utf-8") as _f:
+    KIYI = [tuple(p) for p in json.load(_f)]
 
 
 def km(a, b, c, d):
@@ -84,8 +86,7 @@ def main():
     print("kullanılabilir ilan: %d | raylı durak: %d" % (len(rows), len(rail)))
 
     for r in rows:
-        r["d_kiyi"] = min(min(km(r["lat"], r["lng"], *p) for p in BOGAZ),
-                          min(km(r["lat"], r["lng"], *p) for p in MARMARA))
+        r["d_kiyi"] = min(km(r["lat"], r["lng"], *p) for p in KIYI)
         r["d_ray"] = min(km(r["lat"], r["lng"], a, b) for a, b in rail)
     # mahalle merkezi = o mahalledeki ilanların ortalaması
     cen = collections.defaultdict(list)
@@ -132,17 +133,44 @@ def main():
         return np.c_[X, D_]
 
     y = np.log([r["tlm2"] for r in d])
-    for cols, lab in ((CTL, "yalnız daire kontrolleri"), (LOC + CTL, "konum + kontroller")):
+    beta = {}
+    res_ctl = None
+    for cols, lab, tam in ((CTL, "yalnız daire kontrolleri", False),
+                           (LOC + CTL, "konum + kontroller", True)):
         X = build(d, cols)
         b, *_ = np.linalg.lstsq(X, y, rcond=None)
         res = y - X @ b
         print("\n%s: R²=%.3f  kalan std=%.3f" % (lab, 1 - res.var() / y.var(), res.std()))
-        if cols is LOC + CTL:
-            beta = dict(zip(cols, b[:len(cols)]))
-            for c in cols:
-                print("   %-12s %+.4f%s" % (c, beta[c],
-                      "   -> mesafe 2x olunca %%%+.0f" % ((2 ** beta[c] - 1) * 100)
-                      if c.startswith("ln_d") else ""))
+        if not tam:
+            res_ctl = res
+            continue
+        beta = dict(zip(cols, b[:len(cols)]))
+        # Konumun EK katkısı: kontrollerden sonra kalan varyansın ne kadarı?
+        ek = 1 - res.var() / res_ctl.var()
+        print("   -> konumun EK açıklaması: %%%.1f (kontrollerden sonra kalan varyansın)" % (ek * 100))
+        for c in cols:
+            print("   %-12s %+.4f%s" % (c, beta[c],
+                  "   -> mesafe 2x olunca %%%+.0f" % ((2 ** beta[c] - 1) * 100)
+                  if c.startswith("ln_d") else ""))
+        # Örneklem dışı kontrol: konum GERÇEKTEN yardımcı oluyor mu?
+        rng = np.random.default_rng(5)
+        idx = rng.permutation(len(d))
+        F = np.array_split(idx, 5)
+        e_ctl, e_loc = [], []
+        for k in range(5):
+            te = [d[i] for i in F[k]]
+            tr = [d[i] for i in np.concatenate([F[j] for j in range(5) if j != k])]
+            ytr = np.log([r["tlm2"] for r in tr])
+            yte = np.log([r["tlm2"] for r in te])
+            for cc, acc in ((CTL, e_ctl), (LOC + CTL, e_loc)):
+                bb, *_ = np.linalg.lstsq(build(tr, cc), ytr, rcond=None)
+                acc.append(yte - build(te, cc) @ bb)
+        e_ctl = np.concatenate(e_ctl)
+        e_loc = np.concatenate(e_loc)
+        print("\n   ÖRNEKLEM DIŞI  kontroller MAE=%.4f | +konum MAE=%.4f  (%s)"
+              % (np.mean(np.abs(e_ctl)), np.mean(np.abs(e_loc)),
+                 "konum İYİLEŞTİRİYOR" if np.mean(np.abs(e_loc)) < np.mean(np.abs(e_ctl))
+                 else "konum İYİLEŞTİRMİYOR"))
     out = {
         "meta": {
             "amac": "Mahalle içi konum çarpanı (mahalle ortalaması = 1.00).",
@@ -153,7 +181,7 @@ def main():
                       "bulunan etki gerçeğin ALT SINIRI sayılmalıdır."),
         },
         "katsayilar": {k: round(float(v), 4) for k, v in beta.items()},
-        "kiyi": {"bogaz": BOGAZ, "marmara": MARMARA},
+        "kiyi_nokta_sayisi": len(KIYI),
     }
     json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("\nyazıldı: %s" % OUT)
