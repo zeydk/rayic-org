@@ -1,0 +1,3092 @@
+{
+ "meta": {
+  "kaynak": "EmlakJet ikinci el konut ilanları (adverts.csv)",
+  "toplama_tarihi": "2024-09",
+  "ilan_sayisi": 10887,
+  "mahalle_sayisi": 298,
+  "asgari_ilan": 15,
+  "geocoded": false,
+  "uyari": "Kaynak veri geocoded DEĞİL (yalnız ilçe+mahalle). Mahalle ALTI mekansal kırılım bu veriden üretilemez; saçılma güven aralığı olarak raporlanır.",
+  "medyan_iqr_orani": 0.4,
+  "olcum": "medyan ikinci el satılık net TL/m² (2024-09 seviyesi; KFE ile endekslenir)"
+ },
+ "segment_carpani": {
+  "<60": 1.077,
+  "60-90": 1.0,
+  "90-140": 0.989,
+  "140-250": 0.99,
+  "250+": 1.133
+ },
+ "segment_sinirlari": [
+  0,
+  60,
+  90,
+  140,
+  250,
+  600
+ ],
+ "site_carpani": {
+  "0": 0.999,
+  "1": 1.063
+ },
+ "mahalle": {
+  "Adalar": {
+   "Maden": {
+    "n": 38,
+    "p10": 59828,
+    "p25": 85106,
+    "medyan": 95775,
+    "p75": 120164,
+    "p90": 189189,
+    "iqr_orani": 0.366,
+    "heterojen": false
+   },
+   "Nizam": {
+    "n": 55,
+    "p10": 72548,
+    "p25": 85000,
+    "medyan": 107724,
+    "p75": 127985,
+    "p90": 166667,
+    "iqr_orani": 0.399,
+    "heterojen": false
+   }
+  },
+  "Arnavutköy": {
+   "Anadolu": {
+    "n": 39,
+    "p10": 23500,
+    "p25": 29129,
+    "medyan": 32941,
+    "p75": 37614,
+    "p90": 47778,
+    "iqr_orani": 0.258,
+    "heterojen": false
+   },
+   "Arnavutköy Merkez": {
+    "n": 34,
+    "p10": 23801,
+    "p25": 27056,
+    "medyan": 31926,
+    "p75": 42206,
+    "p90": 45538,
+    "iqr_orani": 0.475,
+    "heterojen": false
+   },
+   "Boğazköy İstiklal": {
+    "n": 15,
+    "p10": 19018,
+    "p25": 27018,
+    "medyan": 32500,
+    "p75": 37857,
+    "p90": 37857,
+    "iqr_orani": 0.334,
+    "heterojen": false
+   },
+   "Hadımköy": {
+    "n": 42,
+    "p10": 27120,
+    "p25": 29569,
+    "medyan": 31056,
+    "p75": 43325,
+    "p90": 76833,
+    "iqr_orani": 0.443,
+    "heterojen": false
+   },
+   "Karlıbayır": {
+    "n": 23,
+    "p10": 23964,
+    "p25": 27222,
+    "medyan": 31500,
+    "p75": 33478,
+    "p90": 42016,
+    "iqr_orani": 0.199,
+    "heterojen": false
+   },
+   "Mustafa Kemal Paşa": {
+    "n": 31,
+    "p10": 28958,
+    "p25": 30156,
+    "medyan": 44872,
+    "p75": 48107,
+    "p90": 55625,
+    "iqr_orani": 0.4,
+    "heterojen": false
+   },
+   "Taşoluk": {
+    "n": 34,
+    "p10": 21529,
+    "p25": 26350,
+    "medyan": 33256,
+    "p75": 36064,
+    "p90": 47687,
+    "iqr_orani": 0.292,
+    "heterojen": false
+   },
+   "İslambey": {
+    "n": 15,
+    "p10": 19275,
+    "p25": 25813,
+    "medyan": 35000,
+    "p75": 51534,
+    "p90": 64464,
+    "iqr_orani": 0.735,
+    "heterojen": true
+   }
+  },
+  "Ataşehir": {
+   "Esatpaşa": {
+    "n": 25,
+    "p10": 38268,
+    "p25": 42105,
+    "medyan": 45255,
+    "p75": 50667,
+    "p90": 58979,
+    "iqr_orani": 0.189,
+    "heterojen": false
+   },
+   "Örnek": {
+    "n": 38,
+    "p10": 38670,
+    "p25": 43988,
+    "medyan": 49000,
+    "p75": 65669,
+    "p90": 76645,
+    "iqr_orani": 0.442,
+    "heterojen": false
+   },
+   "İnönü": {
+    "n": 20,
+    "p10": 43849,
+    "p25": 49147,
+    "medyan": 51755,
+    "p75": 61562,
+    "p90": 65000,
+    "iqr_orani": 0.24,
+    "heterojen": false
+   },
+   "İçerenköy": {
+    "n": 56,
+    "p10": 34800,
+    "p25": 41215,
+    "medyan": 45900,
+    "p75": 69502,
+    "p90": 80042,
+    "iqr_orani": 0.616,
+    "heterojen": true
+   }
+  },
+  "Avcılar": {
+   "Ambarlı": {
+    "n": 75,
+    "p10": 15833,
+    "p25": 20000,
+    "medyan": 30000,
+    "p75": 38941,
+    "p90": 57210,
+    "iqr_orani": 0.631,
+    "heterojen": true
+   },
+   "Cihangir": {
+    "n": 114,
+    "p10": 11562,
+    "p25": 17353,
+    "medyan": 28516,
+    "p75": 34202,
+    "p90": 42314,
+    "iqr_orani": 0.591,
+    "heterojen": false
+   },
+   "Denizköşkler": {
+    "n": 70,
+    "p10": 15413,
+    "p25": 18750,
+    "medyan": 29844,
+    "p75": 38125,
+    "p90": 45185,
+    "iqr_orani": 0.649,
+    "heterojen": true
+   },
+   "Firuzköy": {
+    "n": 16,
+    "p10": 35530,
+    "p25": 39655,
+    "medyan": 64626,
+    "p75": 99928,
+    "p90": 115296,
+    "iqr_orani": 0.933,
+    "heterojen": true
+   },
+   "Gümüşpala": {
+    "n": 51,
+    "p10": 19106,
+    "p25": 23412,
+    "medyan": 30000,
+    "p75": 36056,
+    "p90": 42353,
+    "iqr_orani": 0.421,
+    "heterojen": false
+   },
+   "Merkez": {
+    "n": 91,
+    "p10": 23500,
+    "p25": 28394,
+    "medyan": 35544,
+    "p75": 40192,
+    "p90": 44706,
+    "iqr_orani": 0.332,
+    "heterojen": false
+   },
+   "Mustafa Kemal Paşa": {
+    "n": 23,
+    "p10": 16296,
+    "p25": 21014,
+    "medyan": 27500,
+    "p75": 34202,
+    "p90": 46533,
+    "iqr_orani": 0.48,
+    "heterojen": false
+   },
+   "Tahtakale": {
+    "n": 56,
+    "p10": 37077,
+    "p25": 42842,
+    "medyan": 49488,
+    "p75": 57277,
+    "p90": 61493,
+    "iqr_orani": 0.292,
+    "heterojen": false
+   },
+   "Üniversite": {
+    "n": 16,
+    "p10": 20812,
+    "p25": 25346,
+    "medyan": 39000,
+    "p75": 70370,
+    "p90": 78067,
+    "iqr_orani": 1.154,
+    "heterojen": true
+   }
+  },
+  "Bahçelievler": {
+   "Bahçelievler": {
+    "n": 112,
+    "p10": 52147,
+    "p25": 87500,
+    "medyan": 100000,
+    "p75": 109022,
+    "p90": 124077,
+    "iqr_orani": 0.215,
+    "heterojen": false
+   },
+   "Cumhuriyet": {
+    "n": 23,
+    "p10": 25667,
+    "p25": 31111,
+    "medyan": 34615,
+    "p75": 40625,
+    "p90": 44444,
+    "iqr_orani": 0.275,
+    "heterojen": false
+   },
+   "Hürriyet": {
+    "n": 102,
+    "p10": 24000,
+    "p25": 28780,
+    "medyan": 39018,
+    "p75": 42505,
+    "p90": 46429,
+    "iqr_orani": 0.352,
+    "heterojen": false
+   },
+   "Kocasinan Merkez": {
+    "n": 72,
+    "p10": 23738,
+    "p25": 32438,
+    "medyan": 39859,
+    "p75": 51950,
+    "p90": 62344,
+    "iqr_orani": 0.49,
+    "heterojen": false
+   },
+   "Siyavuşpaşa": {
+    "n": 81,
+    "p10": 20556,
+    "p25": 23810,
+    "medyan": 32857,
+    "p75": 43810,
+    "p90": 49048,
+    "iqr_orani": 0.609,
+    "heterojen": true
+   },
+   "Soğanlı": {
+    "n": 72,
+    "p10": 20808,
+    "p25": 25000,
+    "medyan": 28604,
+    "p75": 49000,
+    "p90": 54545,
+    "iqr_orani": 0.839,
+    "heterojen": true
+   },
+   "Yenibosna Merkez": {
+    "n": 80,
+    "p10": 19562,
+    "p25": 26351,
+    "medyan": 36357,
+    "p75": 47143,
+    "p90": 66257,
+    "iqr_orani": 0.572,
+    "heterojen": false
+   },
+   "Zafer": {
+    "n": 201,
+    "p10": 16500,
+    "p25": 21167,
+    "medyan": 28778,
+    "p75": 33636,
+    "p90": 40625,
+    "iqr_orani": 0.433,
+    "heterojen": false
+   },
+   "Çobançeşme": {
+    "n": 58,
+    "p10": 26407,
+    "p25": 30333,
+    "medyan": 36731,
+    "p75": 47092,
+    "p90": 55000,
+    "iqr_orani": 0.456,
+    "heterojen": false
+   },
+   "Şirinevler": {
+    "n": 90,
+    "p10": 19624,
+    "p25": 27059,
+    "medyan": 36389,
+    "p75": 46182,
+    "p90": 56522,
+    "iqr_orani": 0.526,
+    "heterojen": false
+   }
+  },
+  "Bakırköy": {
+   "Ataköy 2-5-6. Kısım": {
+    "n": 24,
+    "p10": 80026,
+    "p25": 120000,
+    "medyan": 186364,
+    "p75": 223715,
+    "p90": 283724,
+    "iqr_orani": 0.557,
+    "heterojen": false
+   },
+   "Ataköy 7-8-9-10. Kısım": {
+    "n": 21,
+    "p10": 68182,
+    "p25": 77778,
+    "medyan": 117568,
+    "p75": 123636,
+    "p90": 135714,
+    "iqr_orani": 0.39,
+    "heterojen": false
+   },
+   "Kartaltepe": {
+    "n": 44,
+    "p10": 41469,
+    "p25": 49853,
+    "medyan": 76078,
+    "p75": 100000,
+    "p90": 120364,
+    "iqr_orani": 0.659,
+    "heterojen": true
+   },
+   "Osmaniye": {
+    "n": 30,
+    "p10": 34119,
+    "p25": 50000,
+    "medyan": 78333,
+    "p75": 96069,
+    "p90": 144704,
+    "iqr_orani": 0.588,
+    "heterojen": false
+   },
+   "Sakızağacı": {
+    "n": 15,
+    "p10": 37679,
+    "p25": 42778,
+    "medyan": 58333,
+    "p75": 86000,
+    "p90": 135213,
+    "iqr_orani": 0.741,
+    "heterojen": true
+   },
+   "Yeşilköy": {
+    "n": 33,
+    "p10": 75455,
+    "p25": 92000,
+    "medyan": 116667,
+    "p75": 168000,
+    "p90": 183068,
+    "iqr_orani": 0.651,
+    "heterojen": true
+   },
+   "Zuhuratbaba": {
+    "n": 76,
+    "p10": 47941,
+    "p25": 62976,
+    "medyan": 88194,
+    "p75": 99444,
+    "p90": 115000,
+    "iqr_orani": 0.413,
+    "heterojen": false
+   },
+   "Şenlikköy": {
+    "n": 42,
+    "p10": 71730,
+    "p25": 93228,
+    "medyan": 124149,
+    "p75": 164671,
+    "p90": 203674,
+    "iqr_orani": 0.575,
+    "heterojen": false
+   }
+  },
+  "Bayrampaşa": {
+   "Altıntepsi": {
+    "n": 41,
+    "p10": 20357,
+    "p25": 36667,
+    "medyan": 40417,
+    "p75": 52174,
+    "p90": 81081,
+    "iqr_orani": 0.384,
+    "heterojen": false
+   },
+   "Cevatpaşa": {
+    "n": 69,
+    "p10": 38850,
+    "p25": 41667,
+    "medyan": 48101,
+    "p75": 56818,
+    "p90": 59533,
+    "iqr_orani": 0.315,
+    "heterojen": false
+   },
+   "Kartaltepe": {
+    "n": 78,
+    "p10": 23200,
+    "p25": 37072,
+    "medyan": 43588,
+    "p75": 51548,
+    "p90": 60800,
+    "iqr_orani": 0.332,
+    "heterojen": false
+   },
+   "Kocatepe": {
+    "n": 25,
+    "p10": 36250,
+    "p25": 36250,
+    "medyan": 37500,
+    "p75": 43704,
+    "p90": 55411,
+    "iqr_orani": 0.199,
+    "heterojen": false
+   },
+   "Muratpaşa": {
+    "n": 57,
+    "p10": 24545,
+    "p25": 24545,
+    "medyan": 33000,
+    "p75": 42963,
+    "p90": 58750,
+    "iqr_orani": 0.558,
+    "heterojen": false
+   },
+   "Orta": {
+    "n": 22,
+    "p10": 26139,
+    "p25": 32500,
+    "medyan": 40833,
+    "p75": 50602,
+    "p90": 51653,
+    "iqr_orani": 0.443,
+    "heterojen": false
+   },
+   "Vatan": {
+    "n": 16,
+    "p10": 32558,
+    "p25": 34610,
+    "medyan": 44481,
+    "p75": 48523,
+    "p90": 51429,
+    "iqr_orani": 0.313,
+    "heterojen": false
+   },
+   "Yenidoğan": {
+    "n": 25,
+    "p10": 28133,
+    "p25": 30000,
+    "medyan": 38889,
+    "p75": 52778,
+    "p90": 65000,
+    "iqr_orani": 0.586,
+    "heterojen": false
+   },
+   "Yıldırım": {
+    "n": 90,
+    "p10": 34762,
+    "p25": 40635,
+    "medyan": 50000,
+    "p75": 75556,
+    "p90": 135185,
+    "iqr_orani": 0.698,
+    "heterojen": true
+   }
+  },
+  "Bağcılar": {
+   "100. Yıl": {
+    "n": 19,
+    "p10": 19231,
+    "p25": 34331,
+    "medyan": 34688,
+    "p75": 36923,
+    "p90": 37333,
+    "iqr_orani": 0.075,
+    "heterojen": false
+   },
+   "15 Temmuz": {
+    "n": 35,
+    "p10": 29519,
+    "p25": 38889,
+    "medyan": 56250,
+    "p75": 81033,
+    "p90": 86047,
+    "iqr_orani": 0.749,
+    "heterojen": true
+   },
+   "Bağlar": {
+    "n": 27,
+    "p10": 26897,
+    "p25": 52160,
+    "medyan": 53488,
+    "p75": 77292,
+    "p90": 81250,
+    "iqr_orani": 0.47,
+    "heterojen": false
+   },
+   "Göztepe": {
+    "n": 16,
+    "p10": 35556,
+    "p25": 38952,
+    "medyan": 51541,
+    "p75": 57800,
+    "p90": 58563,
+    "iqr_orani": 0.366,
+    "heterojen": false
+   },
+   "Güneşli": {
+    "n": 57,
+    "p10": 28462,
+    "p25": 38636,
+    "medyan": 47333,
+    "p75": 64545,
+    "p90": 76565,
+    "iqr_orani": 0.547,
+    "heterojen": false
+   },
+   "Kazım Karabekir": {
+    "n": 18,
+    "p10": 32916,
+    "p25": 35179,
+    "medyan": 40478,
+    "p75": 44167,
+    "p90": 48738,
+    "iqr_orani": 0.222,
+    "heterojen": false
+   },
+   "Kirazlı": {
+    "n": 23,
+    "p10": 30700,
+    "p25": 36177,
+    "medyan": 43750,
+    "p75": 62925,
+    "p90": 64085,
+    "iqr_orani": 0.611,
+    "heterojen": true
+   },
+   "Mahmutbey": {
+    "n": 23,
+    "p10": 56589,
+    "p25": 62779,
+    "medyan": 67000,
+    "p75": 77632,
+    "p90": 77632,
+    "iqr_orani": 0.222,
+    "heterojen": false
+   },
+   "Yıldıztepe": {
+    "n": 29,
+    "p10": 20235,
+    "p25": 21765,
+    "medyan": 27059,
+    "p75": 30400,
+    "p90": 41810,
+    "iqr_orani": 0.319,
+    "heterojen": false
+   },
+   "Çınar": {
+    "n": 29,
+    "p10": 21429,
+    "p25": 28824,
+    "medyan": 40227,
+    "p75": 42857,
+    "p90": 51724,
+    "iqr_orani": 0.349,
+    "heterojen": false
+   }
+  },
+  "Başakşehir": {
+   "Altınşehir": {
+    "n": 29,
+    "p10": 21768,
+    "p25": 24324,
+    "medyan": 27478,
+    "p75": 31950,
+    "p90": 35372,
+    "iqr_orani": 0.278,
+    "heterojen": false
+   },
+   "Bahçeşehir 1. Kısım": {
+    "n": 22,
+    "p10": 51765,
+    "p25": 57662,
+    "medyan": 83027,
+    "p75": 113542,
+    "p90": 132000,
+    "iqr_orani": 0.673,
+    "heterojen": true
+   },
+   "Bahçeşehir 2. Kısım": {
+    "n": 88,
+    "p10": 30389,
+    "p25": 35799,
+    "medyan": 47083,
+    "p75": 54193,
+    "p90": 78986,
+    "iqr_orani": 0.391,
+    "heterojen": false
+   },
+   "Başakşehir": {
+    "n": 30,
+    "p10": 44627,
+    "p25": 67534,
+    "medyan": 74602,
+    "p75": 80096,
+    "p90": 84759,
+    "iqr_orani": 0.168,
+    "heterojen": false
+   },
+   "Güvercintepe": {
+    "n": 43,
+    "p10": 19052,
+    "p25": 21221,
+    "medyan": 24444,
+    "p75": 29364,
+    "p90": 34227,
+    "iqr_orani": 0.333,
+    "heterojen": false
+   },
+   "Kayabaşı": {
+    "n": 71,
+    "p10": 46000,
+    "p25": 56104,
+    "medyan": 67333,
+    "p75": 83575,
+    "p90": 99429,
+    "iqr_orani": 0.408,
+    "heterojen": false
+   }
+  },
+  "Beykoz": {
+   "Riva": {
+    "n": 23,
+    "p10": 102667,
+    "p25": 118922,
+    "medyan": 142857,
+    "p75": 184615,
+    "p90": 205037,
+    "iqr_orani": 0.46,
+    "heterojen": false
+   }
+  },
+  "Beylikdüzü": {
+   "Adnan Kahveci": {
+    "n": 140,
+    "p10": 24673,
+    "p25": 28401,
+    "medyan": 33125,
+    "p75": 46624,
+    "p90": 62011,
+    "iqr_orani": 0.55,
+    "heterojen": false
+   },
+   "Barış": {
+    "n": 22,
+    "p10": 25018,
+    "p25": 25455,
+    "medyan": 28062,
+    "p75": 30557,
+    "p90": 31944,
+    "iqr_orani": 0.182,
+    "heterojen": false
+   },
+   "Beylikdüzü OSB": {
+    "n": 29,
+    "p10": 7722,
+    "p25": 11667,
+    "medyan": 14818,
+    "p75": 17407,
+    "p90": 22661,
+    "iqr_orani": 0.387,
+    "heterojen": false
+   },
+   "Cumhuriyet": {
+    "n": 194,
+    "p10": 12436,
+    "p25": 16200,
+    "medyan": 19091,
+    "p75": 21500,
+    "p90": 26830,
+    "iqr_orani": 0.278,
+    "heterojen": false
+   },
+   "Dereağzı": {
+    "n": 32,
+    "p10": 30833,
+    "p25": 46364,
+    "medyan": 57781,
+    "p75": 57806,
+    "p90": 69667,
+    "iqr_orani": 0.198,
+    "heterojen": false
+   },
+   "Gürpınar": {
+    "n": 37,
+    "p10": 16458,
+    "p25": 22703,
+    "medyan": 35000,
+    "p75": 67045,
+    "p90": 82822,
+    "iqr_orani": 1.267,
+    "heterojen": true
+   },
+   "Kavaklı": {
+    "n": 147,
+    "p10": 20348,
+    "p25": 23158,
+    "medyan": 29500,
+    "p75": 36111,
+    "p90": 43942,
+    "iqr_orani": 0.439,
+    "heterojen": false
+   },
+   "Marmara": {
+    "n": 87,
+    "p10": 24095,
+    "p25": 26792,
+    "medyan": 34074,
+    "p75": 39091,
+    "p90": 52436,
+    "iqr_orani": 0.361,
+    "heterojen": false
+   },
+   "Sahil": {
+    "n": 16,
+    "p10": 30544,
+    "p25": 32143,
+    "medyan": 42000,
+    "p75": 50776,
+    "p90": 55398,
+    "iqr_orani": 0.444,
+    "heterojen": false
+   },
+   "Yakuplu": {
+    "n": 111,
+    "p10": 16500,
+    "p25": 18947,
+    "medyan": 23529,
+    "p75": 27091,
+    "p90": 32667,
+    "iqr_orani": 0.346,
+    "heterojen": false
+   }
+  },
+  "Beyoğlu": {
+   "Hacıahmet": {
+    "n": 16,
+    "p10": 26000,
+    "p25": 30750,
+    "medyan": 60714,
+    "p75": 129123,
+    "p90": 129825,
+    "iqr_orani": 1.62,
+    "heterojen": true
+   }
+  },
+  "Beşiktaş": {
+   "Dikilitaş": {
+    "n": 52,
+    "p10": 63865,
+    "p25": 100142,
+    "medyan": 148683,
+    "p75": 200000,
+    "p90": 218841,
+    "iqr_orani": 0.672,
+    "heterojen": true
+   },
+   "Etiler": {
+    "n": 18,
+    "p10": 167897,
+    "p25": 240000,
+    "medyan": 288889,
+    "p75": 312500,
+    "p90": 321429,
+    "iqr_orani": 0.251,
+    "heterojen": false
+   },
+   "Konaklar": {
+    "n": 15,
+    "p10": 93750,
+    "p25": 93750,
+    "medyan": 93750,
+    "p75": 153750,
+    "p90": 153750,
+    "iqr_orani": 0.64,
+    "heterojen": true
+   },
+   "Levazım": {
+    "n": 15,
+    "p10": 104329,
+    "p25": 190000,
+    "medyan": 285294,
+    "p75": 304412,
+    "p90": 320588,
+    "iqr_orani": 0.401,
+    "heterojen": false
+   },
+   "Mecidiye": {
+    "n": 19,
+    "p10": 46269,
+    "p25": 46429,
+    "medyan": 53750,
+    "p75": 53750,
+    "p90": 67225,
+    "iqr_orani": 0.136,
+    "heterojen": false
+   },
+   "Nisbetiye": {
+    "n": 21,
+    "p10": 105000,
+    "p25": 105714,
+    "medyan": 177419,
+    "p75": 288235,
+    "p90": 305810,
+    "iqr_orani": 1.029,
+    "heterojen": true
+   },
+   "Ortaköy": {
+    "n": 22,
+    "p10": 45964,
+    "p25": 61429,
+    "medyan": 136364,
+    "p75": 237500,
+    "p90": 369111,
+    "iqr_orani": 1.291,
+    "heterojen": true
+   },
+   "Yıldız": {
+    "n": 18,
+    "p10": 110846,
+    "p25": 124638,
+    "medyan": 255053,
+    "p75": 255053,
+    "p90": 255053,
+    "iqr_orani": 0.511,
+    "heterojen": false
+   }
+  },
+  "Büyükçekmece": {
+   "Atatürk": {
+    "n": 56,
+    "p10": 33929,
+    "p25": 35294,
+    "medyan": 47339,
+    "p75": 57681,
+    "p90": 73035,
+    "iqr_orani": 0.473,
+    "heterojen": false
+   },
+   "Bahçelievler": {
+    "n": 20,
+    "p10": 24721,
+    "p25": 33750,
+    "medyan": 57778,
+    "p75": 62625,
+    "p90": 84935,
+    "iqr_orani": 0.5,
+    "heterojen": false
+   },
+   "Celaliye": {
+    "n": 41,
+    "p10": 23500,
+    "p25": 25385,
+    "medyan": 30769,
+    "p75": 36471,
+    "p90": 37438,
+    "iqr_orani": 0.36,
+    "heterojen": false
+   },
+   "Fatih": {
+    "n": 27,
+    "p10": 33196,
+    "p25": 37500,
+    "medyan": 44231,
+    "p75": 51673,
+    "p90": 63526,
+    "iqr_orani": 0.32,
+    "heterojen": false
+   },
+   "Kamiloba": {
+    "n": 20,
+    "p10": 20556,
+    "p25": 22500,
+    "medyan": 23905,
+    "p75": 35625,
+    "p90": 63788,
+    "iqr_orani": 0.549,
+    "heterojen": false
+   },
+   "Kumburgaz": {
+    "n": 53,
+    "p10": 22944,
+    "p25": 28788,
+    "medyan": 32500,
+    "p75": 38889,
+    "p90": 93191,
+    "iqr_orani": 0.311,
+    "heterojen": false
+   },
+   "Pınartepe": {
+    "n": 37,
+    "p10": 28089,
+    "p25": 31304,
+    "medyan": 53097,
+    "p75": 63889,
+    "p90": 90955,
+    "iqr_orani": 0.614,
+    "heterojen": true
+   },
+   "Türkoba": {
+    "n": 17,
+    "p10": 32927,
+    "p25": 40909,
+    "medyan": 50182,
+    "p75": 75833,
+    "p90": 82500,
+    "iqr_orani": 0.696,
+    "heterojen": true
+   },
+   "Yenimahalle": {
+    "n": 15,
+    "p10": 17369,
+    "p25": 31665,
+    "medyan": 43133,
+    "p75": 90417,
+    "p90": 102450,
+    "iqr_orani": 1.362,
+    "heterojen": true
+   }
+  },
+  "Esenler": {
+   "15 Temmuz": {
+    "n": 68,
+    "p10": 55459,
+    "p25": 63636,
+    "medyan": 68182,
+    "p75": 71023,
+    "p90": 74211,
+    "iqr_orani": 0.108,
+    "heterojen": false
+   },
+   "Fatih": {
+    "n": 37,
+    "p10": 18200,
+    "p25": 27500,
+    "medyan": 36176,
+    "p75": 38750,
+    "p90": 43043,
+    "iqr_orani": 0.311,
+    "heterojen": false
+   },
+   "Nine Hatun": {
+    "n": 20,
+    "p10": 22000,
+    "p25": 28000,
+    "medyan": 41176,
+    "p75": 44938,
+    "p90": 50500,
+    "iqr_orani": 0.411,
+    "heterojen": false
+   },
+   "Oruçreis": {
+    "n": 29,
+    "p10": 19765,
+    "p25": 27885,
+    "medyan": 28947,
+    "p75": 51875,
+    "p90": 68750,
+    "iqr_orani": 0.829,
+    "heterojen": true
+   },
+   "Tuna": {
+    "n": 29,
+    "p10": 31190,
+    "p25": 32386,
+    "medyan": 32929,
+    "p75": 34167,
+    "p90": 39143,
+    "iqr_orani": 0.054,
+    "heterojen": false
+   }
+  },
+  "Esenyurt": {
+   "Cumhuriyet": {
+    "n": 36,
+    "p10": 13875,
+    "p25": 18653,
+    "medyan": 24799,
+    "p75": 32353,
+    "p90": 32857,
+    "iqr_orani": 0.552,
+    "heterojen": false
+   },
+   "Güzelyurt": {
+    "n": 84,
+    "p10": 14833,
+    "p25": 18020,
+    "medyan": 22059,
+    "p75": 27456,
+    "p90": 36667,
+    "iqr_orani": 0.428,
+    "heterojen": false
+   },
+   "Mehmet Akif Ersoy": {
+    "n": 35,
+    "p10": 18824,
+    "p25": 20460,
+    "medyan": 23333,
+    "p75": 27880,
+    "p90": 28947,
+    "iqr_orani": 0.318,
+    "heterojen": false
+   },
+   "Mehterçeşme": {
+    "n": 61,
+    "p10": 16800,
+    "p25": 18769,
+    "medyan": 21320,
+    "p75": 23056,
+    "p90": 26316,
+    "iqr_orani": 0.201,
+    "heterojen": false
+   },
+   "Pınar": {
+    "n": 19,
+    "p10": 8522,
+    "p25": 16182,
+    "medyan": 18000,
+    "p75": 19541,
+    "p90": 23323,
+    "iqr_orani": 0.187,
+    "heterojen": false
+   },
+   "Talatpaşa": {
+    "n": 30,
+    "p10": 11305,
+    "p25": 14286,
+    "medyan": 20134,
+    "p75": 23000,
+    "p90": 26643,
+    "iqr_orani": 0.433,
+    "heterojen": false
+   },
+   "Yenikent": {
+    "n": 17,
+    "p10": 14319,
+    "p25": 15800,
+    "medyan": 16818,
+    "p75": 18325,
+    "p90": 20792,
+    "iqr_orani": 0.15,
+    "heterojen": false
+   },
+   "Yeşilkent": {
+    "n": 34,
+    "p10": 15975,
+    "p25": 18000,
+    "medyan": 22722,
+    "p75": 35000,
+    "p90": 37222,
+    "iqr_orani": 0.748,
+    "heterojen": true
+   },
+   "Zafer": {
+    "n": 18,
+    "p10": 19663,
+    "p25": 21875,
+    "medyan": 24762,
+    "p75": 31201,
+    "p90": 50500,
+    "iqr_orani": 0.377,
+    "heterojen": false
+   },
+   "Üçevler": {
+    "n": 25,
+    "p10": 11466,
+    "p25": 13320,
+    "medyan": 19615,
+    "p75": 20714,
+    "p90": 22752,
+    "iqr_orani": 0.377,
+    "heterojen": false
+   }
+  },
+  "Eyüpsultan": {
+   "Akşemsettin": {
+    "n": 21,
+    "p10": 31250,
+    "p25": 36250,
+    "medyan": 54545,
+    "p75": 66667,
+    "p90": 83333,
+    "iqr_orani": 0.558,
+    "heterojen": false
+   },
+   "Göktürk Merkez": {
+    "n": 71,
+    "p10": 76250,
+    "p25": 101042,
+    "medyan": 127778,
+    "p75": 188573,
+    "p90": 236634,
+    "iqr_orani": 0.685,
+    "heterojen": true
+   },
+   "Karadolap": {
+    "n": 16,
+    "p10": 38147,
+    "p25": 39916,
+    "medyan": 48195,
+    "p75": 57011,
+    "p90": 76071,
+    "iqr_orani": 0.355,
+    "heterojen": false
+   },
+   "Mimar Sinan": {
+    "n": 27,
+    "p10": 96867,
+    "p25": 131267,
+    "medyan": 152597,
+    "p75": 177561,
+    "p90": 186587,
+    "iqr_orani": 0.303,
+    "heterojen": false
+   },
+   "Mithatpaşa": {
+    "n": 19,
+    "p10": 76618,
+    "p25": 111046,
+    "medyan": 146667,
+    "p75": 201513,
+    "p90": 244285,
+    "iqr_orani": 0.617,
+    "heterojen": true
+   },
+   "Yeşilpınar": {
+    "n": 23,
+    "p10": 30521,
+    "p25": 38874,
+    "medyan": 49950,
+    "p75": 94716,
+    "p90": 101728,
+    "iqr_orani": 1.118,
+    "heterojen": true
+   },
+   "Çırçır": {
+    "n": 27,
+    "p10": 29250,
+    "p25": 34995,
+    "medyan": 46875,
+    "p75": 57239,
+    "p90": 65222,
+    "iqr_orani": 0.475,
+    "heterojen": false
+   },
+   "İslambey": {
+    "n": 32,
+    "p10": 27542,
+    "p25": 31996,
+    "medyan": 36333,
+    "p75": 41786,
+    "p90": 51184,
+    "iqr_orani": 0.269,
+    "heterojen": false
+   }
+  },
+  "Fatih": {
+   "Derviş Ali": {
+    "n": 18,
+    "p10": 24227,
+    "p25": 27605,
+    "medyan": 40769,
+    "p75": 63761,
+    "p90": 72627,
+    "iqr_orani": 0.887,
+    "heterojen": true
+   },
+   "Hırka-i Şerif": {
+    "n": 21,
+    "p10": 25000,
+    "p25": 31250,
+    "medyan": 32500,
+    "p75": 38824,
+    "p90": 54167,
+    "iqr_orani": 0.233,
+    "heterojen": false
+   },
+   "Karagümrük": {
+    "n": 15,
+    "p10": 19235,
+    "p25": 23450,
+    "medyan": 33333,
+    "p75": 42361,
+    "p90": 53182,
+    "iqr_orani": 0.567,
+    "heterojen": false
+   },
+   "Seyyid Ömer": {
+    "n": 20,
+    "p10": 23143,
+    "p25": 26143,
+    "medyan": 34375,
+    "p75": 39469,
+    "p90": 55184,
+    "iqr_orani": 0.388,
+    "heterojen": false
+   },
+   "Silivrikapı": {
+    "n": 23,
+    "p10": 23147,
+    "p25": 31667,
+    "medyan": 35938,
+    "p75": 53571,
+    "p90": 73843,
+    "iqr_orani": 0.61,
+    "heterojen": true
+   }
+  },
+  "Gaziosmanpaşa": {
+   "Barbaros Hayrettinpaşa": {
+    "n": 15,
+    "p10": 21350,
+    "p25": 27911,
+    "medyan": 35000,
+    "p75": 41388,
+    "p90": 57842,
+    "iqr_orani": 0.385,
+    "heterojen": false
+   },
+   "Bağlarbaşı": {
+    "n": 42,
+    "p10": 22800,
+    "p25": 27388,
+    "medyan": 35268,
+    "p75": 43943,
+    "p90": 53711,
+    "iqr_orani": 0.469,
+    "heterojen": false
+   },
+   "Hürriyet": {
+    "n": 18,
+    "p10": 20680,
+    "p25": 29764,
+    "medyan": 33146,
+    "p75": 37739,
+    "p90": 46023,
+    "iqr_orani": 0.241,
+    "heterojen": false
+   },
+   "Karadeniz": {
+    "n": 116,
+    "p10": 33415,
+    "p25": 48953,
+    "medyan": 70490,
+    "p75": 81582,
+    "p90": 88940,
+    "iqr_orani": 0.463,
+    "heterojen": false
+   },
+   "Karlıtepe": {
+    "n": 17,
+    "p10": 26200,
+    "p25": 28333,
+    "medyan": 33582,
+    "p75": 45938,
+    "p90": 56333,
+    "iqr_orani": 0.524,
+    "heterojen": false
+   },
+   "Merkez": {
+    "n": 50,
+    "p10": 25000,
+    "p25": 29405,
+    "medyan": 35000,
+    "p75": 41765,
+    "p90": 50417,
+    "iqr_orani": 0.353,
+    "heterojen": false
+   },
+   "Sarıgöl": {
+    "n": 54,
+    "p10": 28571,
+    "p25": 40417,
+    "medyan": 49688,
+    "p75": 54401,
+    "p90": 61667,
+    "iqr_orani": 0.281,
+    "heterojen": false
+   },
+   "Yeni Mahalle": {
+    "n": 17,
+    "p10": 26364,
+    "p25": 31081,
+    "medyan": 36948,
+    "p75": 45652,
+    "p90": 74155,
+    "iqr_orani": 0.394,
+    "heterojen": false
+   },
+   "Yıldıztabya": {
+    "n": 34,
+    "p10": 23363,
+    "p25": 28235,
+    "medyan": 31250,
+    "p75": 42963,
+    "p90": 57594,
+    "iqr_orani": 0.471,
+    "heterojen": false
+   },
+   "Şemsipaşa": {
+    "n": 23,
+    "p10": 23437,
+    "p25": 28877,
+    "medyan": 34118,
+    "p75": 43067,
+    "p90": 67500,
+    "iqr_orani": 0.416,
+    "heterojen": false
+   }
+  },
+  "Güngören": {
+   "Akıncılar": {
+    "n": 23,
+    "p10": 24765,
+    "p25": 26875,
+    "medyan": 27500,
+    "p75": 35714,
+    "p90": 41176,
+    "iqr_orani": 0.321,
+    "heterojen": false
+   },
+   "Gençosman": {
+    "n": 17,
+    "p10": 25294,
+    "p25": 30556,
+    "medyan": 48333,
+    "p75": 71667,
+    "p90": 87727,
+    "iqr_orani": 0.851,
+    "heterojen": true
+   },
+   "Güneştepe": {
+    "n": 55,
+    "p10": 21696,
+    "p25": 34454,
+    "medyan": 37931,
+    "p75": 46698,
+    "p90": 63077,
+    "iqr_orani": 0.323,
+    "heterojen": false
+   },
+   "Haznedar": {
+    "n": 39,
+    "p10": 22500,
+    "p25": 26159,
+    "medyan": 31818,
+    "p75": 33152,
+    "p90": 61111,
+    "iqr_orani": 0.22,
+    "heterojen": false
+   },
+   "Mareşal Çakmak": {
+    "n": 23,
+    "p10": 20833,
+    "p25": 23500,
+    "medyan": 35000,
+    "p75": 36842,
+    "p90": 36842,
+    "iqr_orani": 0.381,
+    "heterojen": false
+   },
+   "Merkez": {
+    "n": 57,
+    "p10": 20765,
+    "p25": 25652,
+    "medyan": 28333,
+    "p75": 48824,
+    "p90": 50750,
+    "iqr_orani": 0.818,
+    "heterojen": true
+   }
+  },
+  "Kadıköy": {
+   "19 Mayıs": {
+    "n": 27,
+    "p10": 69600,
+    "p25": 81944,
+    "medyan": 111111,
+    "p75": 116806,
+    "p90": 133978,
+    "iqr_orani": 0.314,
+    "heterojen": false
+   },
+   "Bostancı": {
+    "n": 73,
+    "p10": 65817,
+    "p25": 97368,
+    "medyan": 110526,
+    "p75": 121429,
+    "p90": 135000,
+    "iqr_orani": 0.218,
+    "heterojen": false
+   },
+   "Caddebostan": {
+    "n": 22,
+    "p10": 153267,
+    "p25": 163636,
+    "medyan": 192446,
+    "p75": 208596,
+    "p90": 244706,
+    "iqr_orani": 0.234,
+    "heterojen": false
+   },
+   "Erenköy": {
+    "n": 60,
+    "p10": 115909,
+    "p25": 122856,
+    "medyan": 134276,
+    "p75": 151643,
+    "p90": 157895,
+    "iqr_orani": 0.214,
+    "heterojen": false
+   },
+   "Fenerbahçe": {
+    "n": 26,
+    "p10": 143414,
+    "p25": 174604,
+    "medyan": 223600,
+    "p75": 274420,
+    "p90": 337209,
+    "iqr_orani": 0.446,
+    "heterojen": false
+   },
+   "Göztepe": {
+    "n": 68,
+    "p10": 77867,
+    "p25": 95460,
+    "medyan": 128759,
+    "p75": 158451,
+    "p90": 177690,
+    "iqr_orani": 0.489,
+    "heterojen": false
+   },
+   "Kozyatağı": {
+    "n": 34,
+    "p10": 62354,
+    "p25": 103264,
+    "medyan": 119000,
+    "p75": 129875,
+    "p90": 144688,
+    "iqr_orani": 0.224,
+    "heterojen": false
+   },
+   "Sahrayı Cedit": {
+    "n": 19,
+    "p10": 57907,
+    "p25": 66000,
+    "medyan": 99000,
+    "p75": 113056,
+    "p90": 141048,
+    "iqr_orani": 0.475,
+    "heterojen": false
+   },
+   "Suadiye": {
+    "n": 85,
+    "p10": 122222,
+    "p25": 129412,
+    "medyan": 143605,
+    "p75": 163699,
+    "p90": 196777,
+    "iqr_orani": 0.239,
+    "heterojen": false
+   }
+  },
+  "Kartal": {
+   "Atalar": {
+    "n": 22,
+    "p10": 47573,
+    "p25": 58594,
+    "medyan": 73750,
+    "p75": 103869,
+    "p90": 105556,
+    "iqr_orani": 0.614,
+    "heterojen": true
+   },
+   "Cevizli": {
+    "n": 16,
+    "p10": 32271,
+    "p25": 58312,
+    "medyan": 64586,
+    "p75": 75782,
+    "p90": 90587,
+    "iqr_orani": 0.27,
+    "heterojen": false
+   },
+   "Cumhuriyet": {
+    "n": 23,
+    "p10": 53097,
+    "p25": 54059,
+    "medyan": 70833,
+    "p75": 97840,
+    "p90": 103900,
+    "iqr_orani": 0.618,
+    "heterojen": true
+   },
+   "Esentepe": {
+    "n": 28,
+    "p10": 34113,
+    "p25": 47602,
+    "medyan": 52400,
+    "p75": 61638,
+    "p90": 80000,
+    "iqr_orani": 0.268,
+    "heterojen": false
+   },
+   "Gümüşpınar": {
+    "n": 29,
+    "p10": 24061,
+    "p25": 31923,
+    "medyan": 48000,
+    "p75": 57857,
+    "p90": 61610,
+    "iqr_orani": 0.54,
+    "heterojen": false
+   },
+   "Hürriyet": {
+    "n": 81,
+    "p10": 30938,
+    "p25": 41667,
+    "medyan": 52200,
+    "p75": 78761,
+    "p90": 94286,
+    "iqr_orani": 0.711,
+    "heterojen": true
+   },
+   "Karlıktepe": {
+    "n": 27,
+    "p10": 32895,
+    "p25": 36429,
+    "medyan": 60854,
+    "p75": 75000,
+    "p90": 110833,
+    "iqr_orani": 0.634,
+    "heterojen": true
+   },
+   "Orhantepe": {
+    "n": 19,
+    "p10": 34695,
+    "p25": 61312,
+    "medyan": 62632,
+    "p75": 72812,
+    "p90": 85755,
+    "iqr_orani": 0.184,
+    "heterojen": false
+   },
+   "Orta": {
+    "n": 16,
+    "p10": 36519,
+    "p25": 46745,
+    "medyan": 61833,
+    "p75": 69712,
+    "p90": 69712,
+    "iqr_orani": 0.371,
+    "heterojen": false
+   },
+   "Petroliş": {
+    "n": 21,
+    "p10": 35308,
+    "p25": 51000,
+    "medyan": 59701,
+    "p75": 68750,
+    "p90": 79167,
+    "iqr_orani": 0.297,
+    "heterojen": false
+   },
+   "Soğanlık Yeni": {
+    "n": 19,
+    "p10": 21682,
+    "p25": 35769,
+    "medyan": 37188,
+    "p75": 47268,
+    "p90": 60100,
+    "iqr_orani": 0.309,
+    "heterojen": false
+   },
+   "Yakacık Yeni": {
+    "n": 19,
+    "p10": 38690,
+    "p25": 43050,
+    "medyan": 48125,
+    "p75": 60372,
+    "p90": 75510,
+    "iqr_orani": 0.36,
+    "heterojen": false
+   },
+   "Yakacık Çarşı": {
+    "n": 15,
+    "p10": 41250,
+    "p25": 45952,
+    "medyan": 55929,
+    "p75": 65680,
+    "p90": 107429,
+    "iqr_orani": 0.353,
+    "heterojen": false
+   },
+   "Yunus": {
+    "n": 17,
+    "p10": 29545,
+    "p25": 29545,
+    "medyan": 32273,
+    "p75": 49412,
+    "p90": 81334,
+    "iqr_orani": 0.616,
+    "heterojen": true
+   }
+  },
+  "Kağıthane": {
+   "Gürsel": {
+    "n": 27,
+    "p10": 26188,
+    "p25": 35474,
+    "medyan": 42143,
+    "p75": 56571,
+    "p90": 79333,
+    "iqr_orani": 0.501,
+    "heterojen": false
+   },
+   "Hamidiye": {
+    "n": 42,
+    "p10": 90909,
+    "p25": 118242,
+    "medyan": 152208,
+    "p75": 170057,
+    "p90": 173684,
+    "iqr_orani": 0.34,
+    "heterojen": false
+   },
+   "Harmantepe": {
+    "n": 15,
+    "p10": 23500,
+    "p25": 29343,
+    "medyan": 40242,
+    "p75": 42473,
+    "p90": 44231,
+    "iqr_orani": 0.326,
+    "heterojen": false
+   },
+   "Merkez": {
+    "n": 34,
+    "p10": 31651,
+    "p25": 42417,
+    "medyan": 59167,
+    "p75": 109091,
+    "p90": 131573,
+    "iqr_orani": 1.127,
+    "heterojen": true
+   },
+   "Nurtepe": {
+    "n": 33,
+    "p10": 38636,
+    "p25": 41250,
+    "medyan": 53000,
+    "p75": 57333,
+    "p90": 60000,
+    "iqr_orani": 0.303,
+    "heterojen": false
+   },
+   "Seyrantepe": {
+    "n": 43,
+    "p10": 42500,
+    "p25": 49583,
+    "medyan": 128000,
+    "p75": 133333,
+    "p90": 148364,
+    "iqr_orani": 0.654,
+    "heterojen": true
+   },
+   "Talatpaşa": {
+    "n": 29,
+    "p10": 29745,
+    "p25": 34375,
+    "medyan": 45625,
+    "p75": 58000,
+    "p90": 92308,
+    "iqr_orani": 0.518,
+    "heterojen": false
+   },
+   "Telsizler": {
+    "n": 16,
+    "p10": 40659,
+    "p25": 46327,
+    "medyan": 57829,
+    "p75": 80000,
+    "p90": 92273,
+    "iqr_orani": 0.582,
+    "heterojen": false
+   },
+   "Çağlayan": {
+    "n": 61,
+    "p10": 26176,
+    "p25": 29312,
+    "medyan": 34286,
+    "p75": 47857,
+    "p90": 56250,
+    "iqr_orani": 0.541,
+    "heterojen": false
+   },
+   "Çeliktepe": {
+    "n": 37,
+    "p10": 39556,
+    "p25": 52727,
+    "medyan": 76923,
+    "p75": 79167,
+    "p90": 105882,
+    "iqr_orani": 0.344,
+    "heterojen": false
+   }
+  },
+  "Küçükçekmece": {
+   "Atakent": {
+    "n": 37,
+    "p10": 54516,
+    "p25": 68182,
+    "medyan": 79412,
+    "p75": 95200,
+    "p90": 110667,
+    "iqr_orani": 0.34,
+    "heterojen": false
+   },
+   "Atatürk": {
+    "n": 26,
+    "p10": 11967,
+    "p25": 15625,
+    "medyan": 24554,
+    "p75": 33532,
+    "p90": 42628,
+    "iqr_orani": 0.729,
+    "heterojen": true
+   },
+   "Cennet": {
+    "n": 21,
+    "p10": 30769,
+    "p25": 32667,
+    "medyan": 41333,
+    "p75": 49870,
+    "p90": 51538,
+    "iqr_orani": 0.416,
+    "heterojen": false
+   },
+   "Cumhuriyet": {
+    "n": 35,
+    "p10": 14812,
+    "p25": 26255,
+    "medyan": 38333,
+    "p75": 52018,
+    "p90": 61111,
+    "iqr_orani": 0.672,
+    "heterojen": true
+   },
+   "Fevzi Çakmak": {
+    "n": 25,
+    "p10": 18857,
+    "p25": 28125,
+    "medyan": 35200,
+    "p75": 41895,
+    "p90": 52000,
+    "iqr_orani": 0.391,
+    "heterojen": false
+   },
+   "Halkalı Merkez": {
+    "n": 19,
+    "p10": 21861,
+    "p25": 36875,
+    "medyan": 43750,
+    "p75": 57692,
+    "p90": 66872,
+    "iqr_orani": 0.476,
+    "heterojen": false
+   },
+   "Kanarya": {
+    "n": 22,
+    "p10": 26112,
+    "p25": 29526,
+    "medyan": 30434,
+    "p75": 32827,
+    "p90": 39066,
+    "iqr_orani": 0.108,
+    "heterojen": false
+   },
+   "Kartaltepe": {
+    "n": 25,
+    "p10": 24057,
+    "p25": 28062,
+    "medyan": 38889,
+    "p75": 41875,
+    "p90": 45000,
+    "iqr_orani": 0.355,
+    "heterojen": false
+   },
+   "Mehmet Akif": {
+    "n": 33,
+    "p10": 12159,
+    "p25": 12941,
+    "medyan": 15714,
+    "p75": 18400,
+    "p90": 32238,
+    "iqr_orani": 0.347,
+    "heterojen": false
+   },
+   "Söğütlü Çeşme": {
+    "n": 18,
+    "p10": 22386,
+    "p25": 26359,
+    "medyan": 27413,
+    "p75": 34789,
+    "p90": 38568,
+    "iqr_orani": 0.308,
+    "heterojen": false
+   },
+   "Tevfik Bey": {
+    "n": 37,
+    "p10": 17515,
+    "p25": 26000,
+    "medyan": 31500,
+    "p75": 36667,
+    "p90": 39375,
+    "iqr_orani": 0.339,
+    "heterojen": false
+   },
+   "Yeşilova": {
+    "n": 15,
+    "p10": 26214,
+    "p25": 31538,
+    "medyan": 40625,
+    "p75": 44375,
+    "p90": 45279,
+    "iqr_orani": 0.316,
+    "heterojen": false
+   },
+   "İnönü": {
+    "n": 24,
+    "p10": 13405,
+    "p25": 18386,
+    "medyan": 31941,
+    "p75": 43846,
+    "p90": 65289,
+    "iqr_orani": 0.797,
+    "heterojen": true
+   },
+   "İstasyon": {
+    "n": 16,
+    "p10": 27179,
+    "p25": 35895,
+    "medyan": 43770,
+    "p75": 60036,
+    "p90": 63709,
+    "iqr_orani": 0.552,
+    "heterojen": false
+   }
+  },
+  "Maltepe": {
+   "Altayçeşme": {
+    "n": 32,
+    "p10": 56390,
+    "p25": 59773,
+    "medyan": 65478,
+    "p75": 82636,
+    "p90": 92000,
+    "iqr_orani": 0.349,
+    "heterojen": false
+   },
+   "Altıntepe": {
+    "n": 128,
+    "p10": 44467,
+    "p25": 56974,
+    "medyan": 66962,
+    "p75": 76942,
+    "p90": 84691,
+    "iqr_orani": 0.298,
+    "heterojen": false
+   },
+   "Bağlarbaşı": {
+    "n": 50,
+    "p10": 32200,
+    "p25": 46411,
+    "medyan": 63540,
+    "p75": 84000,
+    "p90": 97632,
+    "iqr_orani": 0.592,
+    "heterojen": false
+   },
+   "Cevizli": {
+    "n": 46,
+    "p10": 42507,
+    "p25": 52880,
+    "medyan": 68826,
+    "p75": 78373,
+    "p90": 92929,
+    "iqr_orani": 0.37,
+    "heterojen": false
+   },
+   "Feyzullah": {
+    "n": 40,
+    "p10": 44453,
+    "p25": 48000,
+    "medyan": 56034,
+    "p75": 80360,
+    "p90": 97619,
+    "iqr_orani": 0.578,
+    "heterojen": false
+   },
+   "Fındıklı": {
+    "n": 18,
+    "p10": 31500,
+    "p25": 33969,
+    "medyan": 42510,
+    "p75": 47974,
+    "p90": 51671,
+    "iqr_orani": 0.329,
+    "heterojen": false
+   },
+   "Küçükyalı": {
+    "n": 77,
+    "p10": 44225,
+    "p25": 59429,
+    "medyan": 73333,
+    "p75": 87143,
+    "p90": 92190,
+    "iqr_orani": 0.378,
+    "heterojen": false
+   },
+   "Yalı": {
+    "n": 25,
+    "p10": 44231,
+    "p25": 53000,
+    "medyan": 71429,
+    "p75": 102381,
+    "p90": 109403,
+    "iqr_orani": 0.691,
+    "heterojen": true
+   },
+   "Zümrütevler": {
+    "n": 56,
+    "p10": 28721,
+    "p25": 35588,
+    "medyan": 42533,
+    "p75": 59375,
+    "p90": 80103,
+    "iqr_orani": 0.559,
+    "heterojen": false
+   },
+   "Çınar": {
+    "n": 87,
+    "p10": 53521,
+    "p25": 61964,
+    "medyan": 69215,
+    "p75": 81847,
+    "p90": 91267,
+    "iqr_orani": 0.287,
+    "heterojen": false
+   },
+   "İdealtepe": {
+    "n": 101,
+    "p10": 51364,
+    "p25": 62222,
+    "medyan": 70667,
+    "p75": 78000,
+    "p90": 85000,
+    "iqr_orani": 0.223,
+    "heterojen": false
+   }
+  },
+  "Pendik": {
+   "Ahmet Yesevi": {
+    "n": 18,
+    "p10": 16925,
+    "p25": 25778,
+    "medyan": 38333,
+    "p75": 42629,
+    "p90": 49471,
+    "iqr_orani": 0.44,
+    "heterojen": false
+   },
+   "Batı": {
+    "n": 24,
+    "p10": 62077,
+    "p25": 71878,
+    "medyan": 76471,
+    "p75": 88324,
+    "p90": 112143,
+    "iqr_orani": 0.215,
+    "heterojen": false
+   },
+   "Dumlupınar": {
+    "n": 27,
+    "p10": 47286,
+    "p25": 51912,
+    "medyan": 71000,
+    "p75": 80574,
+    "p90": 90990,
+    "iqr_orani": 0.404,
+    "heterojen": false
+   },
+   "Esenler": {
+    "n": 18,
+    "p10": 30800,
+    "p25": 34384,
+    "medyan": 38282,
+    "p75": 49133,
+    "p90": 49133,
+    "iqr_orani": 0.385,
+    "heterojen": false
+   },
+   "Esenyalı": {
+    "n": 18,
+    "p10": 20735,
+    "p25": 23295,
+    "medyan": 30404,
+    "p75": 41556,
+    "p90": 50643,
+    "iqr_orani": 0.601,
+    "heterojen": true
+   },
+   "Güzelyalı": {
+    "n": 18,
+    "p10": 26150,
+    "p25": 28986,
+    "medyan": 30273,
+    "p75": 33333,
+    "p90": 35976,
+    "iqr_orani": 0.144,
+    "heterojen": false
+   },
+   "Kavakpınar": {
+    "n": 57,
+    "p10": 21200,
+    "p25": 32714,
+    "medyan": 37500,
+    "p75": 41250,
+    "p90": 46682,
+    "iqr_orani": 0.228,
+    "heterojen": false
+   },
+   "Kaynarca": {
+    "n": 18,
+    "p10": 33000,
+    "p25": 33961,
+    "medyan": 51538,
+    "p75": 53198,
+    "p90": 56522,
+    "iqr_orani": 0.373,
+    "heterojen": false
+   },
+   "Kurtköy": {
+    "n": 26,
+    "p10": 45235,
+    "p25": 56154,
+    "medyan": 68059,
+    "p75": 74432,
+    "p90": 80227,
+    "iqr_orani": 0.269,
+    "heterojen": false
+   },
+   "Orhangazi": {
+    "n": 15,
+    "p10": 21333,
+    "p25": 25359,
+    "medyan": 32500,
+    "p75": 38409,
+    "p90": 40670,
+    "iqr_orani": 0.402,
+    "heterojen": false
+   },
+   "Yenişehir": {
+    "n": 28,
+    "p10": 42442,
+    "p25": 42599,
+    "medyan": 50875,
+    "p75": 67525,
+    "p90": 82206,
+    "iqr_orani": 0.49,
+    "heterojen": false
+   }
+  },
+  "Sancaktepe": {
+   "Abdurrahmangazi": {
+    "n": 44,
+    "p10": 29835,
+    "p25": 31215,
+    "medyan": 36915,
+    "p75": 48696,
+    "p90": 70109,
+    "iqr_orani": 0.474,
+    "heterojen": false
+   },
+   "Atatürk": {
+    "n": 27,
+    "p10": 23792,
+    "p25": 27126,
+    "medyan": 38000,
+    "p75": 44713,
+    "p90": 57059,
+    "iqr_orani": 0.463,
+    "heterojen": false
+   },
+   "Eyüp Sultan": {
+    "n": 18,
+    "p10": 28482,
+    "p25": 37211,
+    "medyan": 39327,
+    "p75": 51400,
+    "p90": 76162,
+    "iqr_orani": 0.361,
+    "heterojen": false
+   },
+   "Fatih": {
+    "n": 19,
+    "p10": 23920,
+    "p25": 27745,
+    "medyan": 30385,
+    "p75": 37246,
+    "p90": 45000,
+    "iqr_orani": 0.313,
+    "heterojen": false
+   },
+   "Kemal Türkler": {
+    "n": 26,
+    "p10": 23438,
+    "p25": 24290,
+    "medyan": 36894,
+    "p75": 46353,
+    "p90": 54167,
+    "iqr_orani": 0.598,
+    "heterojen": false
+   },
+   "Merve": {
+    "n": 23,
+    "p10": 29703,
+    "p25": 34010,
+    "medyan": 41176,
+    "p75": 43750,
+    "p90": 49467,
+    "iqr_orani": 0.237,
+    "heterojen": false
+   },
+   "Mevlana": {
+    "n": 18,
+    "p10": 22941,
+    "p25": 26375,
+    "medyan": 33160,
+    "p75": 38155,
+    "p90": 48274,
+    "iqr_orani": 0.355,
+    "heterojen": false
+   },
+   "Osmangazi": {
+    "n": 48,
+    "p10": 24569,
+    "p25": 27500,
+    "medyan": 34167,
+    "p75": 40000,
+    "p90": 56710,
+    "iqr_orani": 0.366,
+    "heterojen": false
+   },
+   "Sarıgazi": {
+    "n": 16,
+    "p10": 28438,
+    "p25": 28750,
+    "medyan": 31593,
+    "p75": 44673,
+    "p90": 48452,
+    "iqr_orani": 0.504,
+    "heterojen": false
+   },
+   "Veysel Karani": {
+    "n": 15,
+    "p10": 25650,
+    "p25": 30417,
+    "medyan": 34737,
+    "p75": 41646,
+    "p90": 44989,
+    "iqr_orani": 0.323,
+    "heterojen": false
+   },
+   "Yenidoğan": {
+    "n": 40,
+    "p10": 27578,
+    "p25": 29086,
+    "medyan": 31700,
+    "p75": 33703,
+    "p90": 36080,
+    "iqr_orani": 0.146,
+    "heterojen": false
+   }
+  },
+  "Sarıyer": {
+   "Büyükdere": {
+    "n": 18,
+    "p10": 54167,
+    "p25": 60000,
+    "medyan": 66297,
+    "p75": 100060,
+    "p90": 252183,
+    "iqr_orani": 0.604,
+    "heterojen": true
+   },
+   "Huzur": {
+    "n": 15,
+    "p10": 109592,
+    "p25": 114444,
+    "medyan": 177273,
+    "p75": 195946,
+    "p90": 223047,
+    "iqr_orani": 0.46,
+    "heterojen": false
+   },
+   "Maden": {
+    "n": 19,
+    "p10": 36062,
+    "p25": 38667,
+    "medyan": 71429,
+    "p75": 186667,
+    "p90": 226667,
+    "iqr_orani": 2.072,
+    "heterojen": true
+   },
+   "Maslak": {
+    "n": 53,
+    "p10": 111724,
+    "p25": 123069,
+    "medyan": 137143,
+    "p75": 144444,
+    "p90": 160917,
+    "iqr_orani": 0.156,
+    "heterojen": false
+   },
+   "Sarıyer Merkez": {
+    "n": 15,
+    "p10": 35714,
+    "p25": 38333,
+    "medyan": 44000,
+    "p75": 70000,
+    "p90": 70000,
+    "iqr_orani": 0.72,
+    "heterojen": true
+   },
+   "Zekeriyaköy": {
+    "n": 20,
+    "p10": 104049,
+    "p25": 120536,
+    "medyan": 121429,
+    "p75": 164583,
+    "p90": 194252,
+    "iqr_orani": 0.363,
+    "heterojen": false
+   }
+  },
+  "Silivri": {
+   "Cumhuriyet": {
+    "n": 15,
+    "p10": 34043,
+    "p25": 34521,
+    "medyan": 40000,
+    "p75": 70159,
+    "p90": 75238,
+    "iqr_orani": 0.891,
+    "heterojen": true
+   },
+   "Gümüşyaka": {
+    "n": 45,
+    "p10": 25000,
+    "p25": 30769,
+    "medyan": 45000,
+    "p75": 60000,
+    "p90": 63750,
+    "iqr_orani": 0.65,
+    "heterojen": true
+   },
+   "Mimar Sinan": {
+    "n": 30,
+    "p10": 27722,
+    "p25": 31579,
+    "medyan": 34164,
+    "p75": 51429,
+    "p90": 75000,
+    "iqr_orani": 0.581,
+    "heterojen": false
+   },
+   "Ortaköy": {
+    "n": 19,
+    "p10": 39596,
+    "p25": 53242,
+    "medyan": 58889,
+    "p75": 76389,
+    "p90": 89622,
+    "iqr_orani": 0.393,
+    "heterojen": false
+   },
+   "Selimpaşa": {
+    "n": 39,
+    "p10": 27411,
+    "p25": 34944,
+    "medyan": 52593,
+    "p75": 72973,
+    "p90": 93463,
+    "iqr_orani": 0.723,
+    "heterojen": true
+   },
+   "Semizkumlar": {
+    "n": 18,
+    "p10": 34340,
+    "p25": 42222,
+    "medyan": 45501,
+    "p75": 50000,
+    "p90": 76962,
+    "iqr_orani": 0.171,
+    "heterojen": false
+   },
+   "Yeni": {
+    "n": 68,
+    "p10": 25155,
+    "p25": 29091,
+    "medyan": 34732,
+    "p75": 36859,
+    "p90": 41587,
+    "iqr_orani": 0.224,
+    "heterojen": false
+   },
+   "Çanta Balaban": {
+    "n": 28,
+    "p10": 28257,
+    "p25": 37706,
+    "medyan": 45833,
+    "p75": 59781,
+    "p90": 67819,
+    "iqr_orani": 0.482,
+    "heterojen": false
+   },
+   "Çanta Sancaktepe": {
+    "n": 19,
+    "p10": 18880,
+    "p25": 25742,
+    "medyan": 40625,
+    "p75": 53333,
+    "p90": 72444,
+    "iqr_orani": 0.679,
+    "heterojen": true
+   }
+  },
+  "Sultanbeyli": {
+   "Adil": {
+    "n": 38,
+    "p10": 31167,
+    "p25": 33097,
+    "medyan": 35750,
+    "p75": 49318,
+    "p90": 58333,
+    "iqr_orani": 0.454,
+    "heterojen": false
+   },
+   "Battalgazi": {
+    "n": 71,
+    "p10": 27500,
+    "p25": 32576,
+    "medyan": 37917,
+    "p75": 42510,
+    "p90": 50989,
+    "iqr_orani": 0.262,
+    "heterojen": false
+   },
+   "Mehmet Akif": {
+    "n": 21,
+    "p10": 34000,
+    "p25": 41545,
+    "medyan": 51000,
+    "p75": 62500,
+    "p90": 62500,
+    "iqr_orani": 0.411,
+    "heterojen": false
+   },
+   "Mimar Sinan": {
+    "n": 63,
+    "p10": 31000,
+    "p25": 32296,
+    "medyan": 35000,
+    "p75": 37447,
+    "p90": 40000,
+    "iqr_orani": 0.147,
+    "heterojen": false
+   },
+   "Necip Fazıl": {
+    "n": 40,
+    "p10": 27888,
+    "p25": 34243,
+    "medyan": 41250,
+    "p75": 46277,
+    "p90": 49517,
+    "iqr_orani": 0.292,
+    "heterojen": false
+   },
+   "Orhangazi": {
+    "n": 17,
+    "p10": 27277,
+    "p25": 28929,
+    "medyan": 31000,
+    "p75": 36111,
+    "p90": 42514,
+    "iqr_orani": 0.232,
+    "heterojen": false
+   }
+  },
+  "Sultangazi": {
+   "50. Yıl": {
+    "n": 54,
+    "p10": 19222,
+    "p25": 22941,
+    "medyan": 28556,
+    "p75": 34776,
+    "p90": 42799,
+    "iqr_orani": 0.414,
+    "heterojen": false
+   },
+   "Cebeci": {
+    "n": 93,
+    "p10": 19727,
+    "p25": 23333,
+    "medyan": 28557,
+    "p75": 37391,
+    "p90": 47331,
+    "iqr_orani": 0.492,
+    "heterojen": false
+   },
+   "Esentepe": {
+    "n": 33,
+    "p10": 14294,
+    "p25": 22417,
+    "medyan": 26667,
+    "p75": 31333,
+    "p90": 39126,
+    "iqr_orani": 0.334,
+    "heterojen": false
+   },
+   "Gazi": {
+    "n": 44,
+    "p10": 25088,
+    "p25": 27000,
+    "medyan": 32570,
+    "p75": 39912,
+    "p90": 42896,
+    "iqr_orani": 0.396,
+    "heterojen": false
+   },
+   "Sultançiftliği": {
+    "n": 58,
+    "p10": 17571,
+    "p25": 20147,
+    "medyan": 24432,
+    "p75": 30556,
+    "p90": 36571,
+    "iqr_orani": 0.426,
+    "heterojen": false
+   },
+   "Uğur Mumcu": {
+    "n": 29,
+    "p10": 20242,
+    "p25": 29800,
+    "medyan": 34684,
+    "p75": 44511,
+    "p90": 52820,
+    "iqr_orani": 0.424,
+    "heterojen": false
+   },
+   "Yunus Emre": {
+    "n": 30,
+    "p10": 19400,
+    "p25": 22263,
+    "medyan": 29444,
+    "p75": 34187,
+    "p90": 36000,
+    "iqr_orani": 0.405,
+    "heterojen": false
+   },
+   "Zübeyde Hanım": {
+    "n": 17,
+    "p10": 20123,
+    "p25": 21444,
+    "medyan": 27182,
+    "p75": 35000,
+    "p90": 38429,
+    "iqr_orani": 0.499,
+    "heterojen": false
+   },
+   "İsmetpaşa": {
+    "n": 73,
+    "p10": 18322,
+    "p25": 21176,
+    "medyan": 27500,
+    "p75": 37490,
+    "p90": 46842,
+    "iqr_orani": 0.593,
+    "heterojen": false
+   }
+  },
+  "Tuzla": {
+   "Aydınlı": {
+    "n": 19,
+    "p10": 36150,
+    "p25": 39345,
+    "medyan": 44389,
+    "p75": 48000,
+    "p90": 50000,
+    "iqr_orani": 0.195,
+    "heterojen": false
+   },
+   "Aydıntepe": {
+    "n": 15,
+    "p10": 36667,
+    "p25": 37400,
+    "medyan": 40312,
+    "p75": 50533,
+    "p90": 69000,
+    "iqr_orani": 0.326,
+    "heterojen": false
+   },
+   "Evliya Çelebi": {
+    "n": 22,
+    "p10": 29250,
+    "p25": 42857,
+    "medyan": 48362,
+    "p75": 55553,
+    "p90": 61479,
+    "iqr_orani": 0.263,
+    "heterojen": false
+   },
+   "Mimar Sinan": {
+    "n": 18,
+    "p10": 23752,
+    "p25": 33744,
+    "medyan": 36742,
+    "p75": 48958,
+    "p90": 50924,
+    "iqr_orani": 0.414,
+    "heterojen": false
+   },
+   "Postane": {
+    "n": 27,
+    "p10": 47525,
+    "p25": 55014,
+    "medyan": 74324,
+    "p75": 84058,
+    "p90": 152974,
+    "iqr_orani": 0.391,
+    "heterojen": false
+   },
+   "Yayla": {
+    "n": 28,
+    "p10": 35628,
+    "p25": 42351,
+    "medyan": 47696,
+    "p75": 52579,
+    "p90": 60333,
+    "iqr_orani": 0.214,
+    "heterojen": false
+   },
+   "İstasyon": {
+    "n": 35,
+    "p10": 50768,
+    "p25": 56128,
+    "medyan": 72500,
+    "p75": 93462,
+    "p90": 107030,
+    "iqr_orani": 0.515,
+    "heterojen": false
+   }
+  },
+  "Zeytinburnu": {
+   "Beştelsiz": {
+    "n": 24,
+    "p10": 38625,
+    "p25": 52000,
+    "medyan": 59098,
+    "p75": 74852,
+    "p90": 112917,
+    "iqr_orani": 0.387,
+    "heterojen": false
+   },
+   "Gökalp": {
+    "n": 22,
+    "p10": 29375,
+    "p25": 33571,
+    "medyan": 51739,
+    "p75": 66667,
+    "p90": 77450,
+    "iqr_orani": 0.64,
+    "heterojen": true
+   },
+   "Kazlıçeşme": {
+    "n": 28,
+    "p10": 171918,
+    "p25": 202857,
+    "medyan": 257451,
+    "p75": 280952,
+    "p90": 299059,
+    "iqr_orani": 0.303,
+    "heterojen": false
+   },
+   "Maltepe": {
+    "n": 15,
+    "p10": 83333,
+    "p25": 92473,
+    "medyan": 112500,
+    "p75": 126515,
+    "p90": 159487,
+    "iqr_orani": 0.303,
+    "heterojen": false
+   },
+   "Nuripaşa": {
+    "n": 15,
+    "p10": 29077,
+    "p25": 32000,
+    "medyan": 35375,
+    "p75": 46234,
+    "p90": 53673,
+    "iqr_orani": 0.402,
+    "heterojen": false
+   },
+   "Seyitnizam": {
+    "n": 27,
+    "p10": 45111,
+    "p25": 55333,
+    "medyan": 69231,
+    "p75": 87500,
+    "p90": 146582,
+    "iqr_orani": 0.465,
+    "heterojen": false
+   },
+   "Sümer": {
+    "n": 25,
+    "p10": 25936,
+    "p25": 34737,
+    "medyan": 92857,
+    "p75": 97436,
+    "p90": 105096,
+    "iqr_orani": 0.675,
+    "heterojen": true
+   },
+   "Telsiz": {
+    "n": 22,
+    "p10": 42609,
+    "p25": 56000,
+    "medyan": 60769,
+    "p75": 71429,
+    "p90": 135000,
+    "iqr_orani": 0.254,
+    "heterojen": false
+   },
+   "Çırpıcı": {
+    "n": 15,
+    "p10": 24588,
+    "p25": 31737,
+    "medyan": 39286,
+    "p75": 50833,
+    "p90": 63925,
+    "iqr_orani": 0.486,
+    "heterojen": false
+   }
+  },
+  "Çatalca": {
+   "Ferhatpaşa": {
+    "n": 28,
+    "p10": 26818,
+    "p25": 31085,
+    "medyan": 42967,
+    "p75": 55825,
+    "p90": 86878,
+    "iqr_orani": 0.576,
+    "heterojen": false
+   }
+  },
+  "Çekmeköy": {
+   "Cumhuriyet": {
+    "n": 17,
+    "p10": 36000,
+    "p25": 37059,
+    "medyan": 46154,
+    "p75": 48776,
+    "p90": 58165,
+    "iqr_orani": 0.254,
+    "heterojen": false
+   },
+   "Ekşioğlu": {
+    "n": 19,
+    "p10": 33929,
+    "p25": 41304,
+    "medyan": 43614,
+    "p75": 51282,
+    "p90": 55030,
+    "iqr_orani": 0.229,
+    "heterojen": false
+   },
+   "Mehmet Akif": {
+    "n": 25,
+    "p10": 35055,
+    "p25": 44643,
+    "medyan": 48889,
+    "p75": 56667,
+    "p90": 65706,
+    "iqr_orani": 0.246,
+    "heterojen": false
+   },
+   "Merkez": {
+    "n": 64,
+    "p10": 37841,
+    "p25": 43936,
+    "medyan": 48918,
+    "p75": 58875,
+    "p90": 76327,
+    "iqr_orani": 0.305,
+    "heterojen": false
+   },
+   "Mimar Sinan": {
+    "n": 38,
+    "p10": 38441,
+    "p25": 45652,
+    "medyan": 52381,
+    "p75": 60844,
+    "p90": 66358,
+    "iqr_orani": 0.29,
+    "heterojen": false
+   },
+   "Sultançiftliği": {
+    "n": 23,
+    "p10": 29617,
+    "p25": 36833,
+    "medyan": 42727,
+    "p75": 50658,
+    "p90": 72702,
+    "iqr_orani": 0.324,
+    "heterojen": false
+   },
+   "Taşdelen": {
+    "n": 19,
+    "p10": 27874,
+    "p25": 33235,
+    "medyan": 37556,
+    "p75": 54368,
+    "p90": 65515,
+    "iqr_orani": 0.563,
+    "heterojen": false
+   },
+   "Çatalmeşe": {
+    "n": 18,
+    "p10": 28727,
+    "p25": 38972,
+    "medyan": 43997,
+    "p75": 45200,
+    "p90": 50780,
+    "iqr_orani": 0.142,
+    "heterojen": false
+   }
+  },
+  "Ümraniye": {
+   "Armağanevler": {
+    "n": 29,
+    "p10": 38714,
+    "p25": 42797,
+    "medyan": 46421,
+    "p75": 50462,
+    "p90": 57647,
+    "iqr_orani": 0.165,
+    "heterojen": false
+   },
+   "Aşağı Dudullu": {
+    "n": 17,
+    "p10": 35556,
+    "p25": 42667,
+    "medyan": 51250,
+    "p75": 56500,
+    "p90": 62186,
+    "iqr_orani": 0.27,
+    "heterojen": false
+   },
+   "Esenevler": {
+    "n": 15,
+    "p10": 32600,
+    "p25": 45004,
+    "medyan": 54167,
+    "p75": 56410,
+    "p90": 61143,
+    "iqr_orani": 0.211,
+    "heterojen": false
+   },
+   "Mehmet Akif": {
+    "n": 17,
+    "p10": 38800,
+    "p25": 48750,
+    "medyan": 49750,
+    "p75": 70000,
+    "p90": 78462,
+    "iqr_orani": 0.427,
+    "heterojen": false
+   },
+   "Tatlısu": {
+    "n": 25,
+    "p10": 43227,
+    "p25": 62500,
+    "medyan": 80000,
+    "p75": 118636,
+    "p90": 118655,
+    "iqr_orani": 0.702,
+    "heterojen": true
+   },
+   "Çakmak": {
+    "n": 16,
+    "p10": 32315,
+    "p25": 38875,
+    "medyan": 40514,
+    "p75": 43529,
+    "p90": 47087,
+    "iqr_orani": 0.115,
+    "heterojen": false
+   },
+   "İnkılap": {
+    "n": 19,
+    "p10": 30758,
+    "p25": 39286,
+    "medyan": 60000,
+    "p75": 72455,
+    "p90": 93838,
+    "iqr_orani": 0.553,
+    "heterojen": false
+   },
+   "İstiklal": {
+    "n": 21,
+    "p10": 33571,
+    "p25": 34000,
+    "medyan": 47222,
+    "p75": 57333,
+    "p90": 71250,
+    "iqr_orani": 0.494,
+    "heterojen": false
+   }
+  },
+  "Üsküdar": {
+   "Acıbadem": {
+    "n": 20,
+    "p10": 93591,
+    "p25": 103013,
+    "medyan": 104545,
+    "p75": 125357,
+    "p90": 142918,
+    "iqr_orani": 0.214,
+    "heterojen": false
+   },
+   "Aziz Mahmut Hüdayi": {
+    "n": 16,
+    "p10": 70236,
+    "p25": 79252,
+    "medyan": 84545,
+    "p75": 104219,
+    "p90": 122500,
+    "iqr_orani": 0.295,
+    "heterojen": false
+   },
+   "Bahçelievler": {
+    "n": 47,
+    "p10": 53419,
+    "p25": 67857,
+    "medyan": 80952,
+    "p75": 100000,
+    "p90": 129608,
+    "iqr_orani": 0.397,
+    "heterojen": false
+   },
+   "Bulgurlu": {
+    "n": 19,
+    "p10": 33194,
+    "p25": 45648,
+    "medyan": 55882,
+    "p75": 62061,
+    "p90": 73356,
+    "iqr_orani": 0.294,
+    "heterojen": false
+   },
+   "Cumhuriyet": {
+    "n": 18,
+    "p10": 44658,
+    "p25": 50114,
+    "medyan": 55263,
+    "p75": 60526,
+    "p90": 74599,
+    "iqr_orani": 0.188,
+    "heterojen": false
+   },
+   "Murat Reis": {
+    "n": 22,
+    "p10": 30625,
+    "p25": 31086,
+    "medyan": 49375,
+    "p75": 68098,
+    "p90": 102178,
+    "iqr_orani": 0.75,
+    "heterojen": true
+   },
+   "Valide-i Atik": {
+    "n": 22,
+    "p10": 32342,
+    "p25": 35806,
+    "medyan": 49312,
+    "p75": 58571,
+    "p90": 82340,
+    "iqr_orani": 0.462,
+    "heterojen": false
+   },
+   "Çengelköy": {
+    "n": 38,
+    "p10": 62965,
+    "p25": 71875,
+    "medyan": 76471,
+    "p75": 119609,
+    "p90": 158537,
+    "iqr_orani": 0.624,
+    "heterojen": true
+   },
+   "İcadiye": {
+    "n": 18,
+    "p10": 45583,
+    "p25": 46562,
+    "medyan": 91239,
+    "p75": 93103,
+    "p90": 93103,
+    "iqr_orani": 0.51,
+    "heterojen": false
+   }
+  },
+  "Şile": {
+   "Ahmetli": {
+    "n": 22,
+    "p10": 72222,
+    "p25": 74286,
+    "medyan": 91667,
+    "p75": 98587,
+    "p90": 107736,
+    "iqr_orani": 0.265,
+    "heterojen": false
+   },
+   "Balibey": {
+    "n": 37,
+    "p10": 51429,
+    "p25": 57692,
+    "medyan": 70588,
+    "p75": 85000,
+    "p90": 96130,
+    "iqr_orani": 0.387,
+    "heterojen": false
+   },
+   "Kumbaba": {
+    "n": 17,
+    "p10": 85452,
+    "p25": 96154,
+    "medyan": 100000,
+    "p75": 109375,
+    "p90": 129451,
+    "iqr_orani": 0.132,
+    "heterojen": false
+   },
+   "Çavuş": {
+    "n": 39,
+    "p10": 32919,
+    "p25": 44118,
+    "medyan": 71875,
+    "p75": 100000,
+    "p90": 140500,
+    "iqr_orani": 0.777,
+    "heterojen": true
+   }
+  },
+  "Şişli": {
+   "Cumhuriyet": {
+    "n": 20,
+    "p10": 73529,
+    "p25": 135750,
+    "medyan": 167933,
+    "p75": 198636,
+    "p90": 233546,
+    "iqr_orani": 0.374,
+    "heterojen": false
+   },
+   "Mecidiyeköy": {
+    "n": 30,
+    "p10": 28571,
+    "p25": 34167,
+    "medyan": 44099,
+    "p75": 55454,
+    "p90": 120272,
+    "iqr_orani": 0.483,
+    "heterojen": false
+   },
+   "Merkez": {
+    "n": 26,
+    "p10": 40357,
+    "p25": 52578,
+    "medyan": 75556,
+    "p75": 174936,
+    "p90": 262779,
+    "iqr_orani": 1.619,
+    "heterojen": true
+   }
+  }
+ }
+}

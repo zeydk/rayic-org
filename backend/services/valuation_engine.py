@@ -29,6 +29,14 @@ class ValuationResult(BaseModel):
     trend_yillik_nominal_pct: Optional[float] = None
     projeksiyon_12ay_tlm2: Optional[float] = None
     projeksiyon_24ay_tlm2: Optional[float] = None
+    # Mahalle içi fiyat saçılması: nokta tahmin yerine aralık ver.
+    deger_alt_tl: Optional[float] = None
+    deger_ust_tl: Optional[float] = None
+    mahalle_iqr_orani: Optional[float] = None
+    mahalle_heterojen: bool = False
+    mahalle_ilan_n: Optional[int] = None
+    segment_duzeltme: Optional[float] = None
+    segment_etiketi: Optional[str] = None
     valuation_breakdown: Dict[str, float]
 
 
@@ -78,6 +86,61 @@ def _load_piyasa() -> Dict[str, Any]:
 _PIYASA = _load_piyasa()
 PIYASA_RAYIC: Dict[str, Any] = _PIYASA.get("rayic", {})
 PIYASA_META: Dict[str, Any] = _PIYASA.get("meta", {})
+
+
+# ---------------------------------------------------------------------------
+# Mahalle İÇİ fiyat saçılması. İstanbul'da mahalleler geniş ve heterojen:
+# ölçtüğümüz kadarıyla tipik mahallede çeyrekler arası açıklık medyanın %40'ı,
+# en uçta %200'ü buluyor. Bu yüzden tek bir m² fiyatıyla nokta tahmin yapmak
+# ekspertizi yanıltıcı kılıyor -> ARALIK + heterojenlik uyarısı veriyoruz.
+# Ayrıca mahalle medyanının SİSTEMATİK saptığı segmentleri düzeltiyoruz
+# (küçük daire / çok büyük daire / site içi) — çapraz doğrulamayla sınandı.
+# ---------------------------------------------------------------------------
+def _load_dispersion() -> Dict[str, Any]:
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "mahalle_dispersion.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+_DISP = _load_dispersion()
+DISP_META: Dict[str, Any] = _DISP.get("meta", {})
+
+
+def _disp_lookup(district: Optional[str], neighborhood: Optional[str]) -> Optional[Dict[str, Any]]:
+    for ilce, mahs in (_DISP.get("mahalle") or {}).items():
+        if _norm_tr(ilce) != _norm_tr(district or ""):
+            continue
+        for m, rec in mahs.items():
+            if _norm_tr(m) == _norm_tr(neighborhood or ""):
+                return rec
+    return None
+
+
+def segment_duzeltme(net_m2: Optional[float], site_icinde: Optional[bool] = None):
+    """Mahalle medyanının sistematik saptığı segmentler için çarpan.
+
+    Ölçüm (örneklem dışı, 5-katlı): mahalle medyanı küçük daireleri ~%9,
+    çok büyük daireleri ~%19, site içi konutları ~%12 DÜŞÜK gösteriyor.
+    Bu çarpanlar o yanlılığı sıfıra yaklaştırıyor. Döner: (çarpan, etiket)."""
+    if not net_m2 or net_m2 <= 0:
+        return 1.0, None
+    bins = _DISP.get("segment_sinirlari") or [0, 60, 90, 140, 250, 600]
+    labels = list((_DISP.get("segment_carpani") or {}).keys())
+    if not labels:
+        return 1.0, None
+    order = ["<60", "60-90", "90-140", "140-250", "250+"]
+    label = order[-1]
+    for i in range(1, len(bins)):
+        if net_m2 <= bins[i]:
+            label = order[min(i - 1, len(order) - 1)]
+            break
+    mult = float((_DISP.get("segment_carpani") or {}).get(label, 1.0))
+    if site_icinde:
+        mult *= float((_DISP.get("site_carpani") or {}).get("1", 1.0))
+    return round(mult, 3), label
 
 
 def _age_multiplier(district: Optional[str], band: str) -> float:
@@ -359,7 +422,8 @@ def calculate_valuation(
     floor_category: str = "ara_kat",
     district: Optional[str] = "Kadıköy",
     neighborhood: Optional[str] = "Caddebostan",
-    k_facade: float = 1.0
+    k_facade: float = 1.0,
+    site_icinde: Optional[bool] = None,
 ) -> ValuationResult:
     _yas_info = age_premium_info(district, building_age)
     base_m2_hist, base_source, base_n, age_specific = get_base_m2_price(district, neighborhood, building_age)
@@ -385,9 +449,27 @@ def calculate_valuation(
     # Base m² brought to today's level.
     base_m2 = round(base_m2_hist * k_tcmb, 0)
     _proj = market_projection(district, base_m2)
-    price_before_inflation = base_m2_hist * net_m2 * k_age * k_floor * k_facade
-    raw_estimated_price = base_m2 * net_m2 * k_age * k_floor * k_facade
+
+    # Segment yanlılık düzeltmesi (küçük/çok büyük daire, site içi).
+    k_seg, seg_label = segment_duzeltme(net_m2, site_icinde)
+
+    price_before_inflation = base_m2_hist * net_m2 * k_age * k_floor * k_facade * k_seg
+    raw_estimated_price = base_m2 * net_m2 * k_age * k_floor * k_facade * k_seg
     tcmb_impact_tl = raw_estimated_price - price_before_inflation
+
+    # Mahalle içi saçılmadan güven aralığı: mahalle medyanı ile p25/p75 oranını
+    # tahmine taşıyoruz. Veri yoksa ölçülen İstanbul geneli IQR/medyan kullanılır.
+    _d = _disp_lookup(district, neighborhood)
+    if _d and _d.get("medyan"):
+        lo_r = _d["p25"] / _d["medyan"]
+        hi_r = _d["p75"] / _d["medyan"]
+        iqr_oran, heter, mah_n = _d["iqr_orani"], bool(_d.get("heterojen")), _d["n"]
+    else:
+        iqr_oran = float(DISP_META.get("medyan_iqr_orani", 0.40))
+        lo_r, hi_r = 1.0 - iqr_oran / 2.0, 1.0 + iqr_oran / 2.0
+        heter, mah_n = False, None
+    deger_alt = round(raw_estimated_price * lo_r, 2)
+    deger_ust = round(raw_estimated_price * hi_r, 2)
 
     deviation = ((price_advertised - raw_estimated_price) / raw_estimated_price) * 100.0
     
@@ -428,6 +510,13 @@ def calculate_valuation(
         yas_bandi=_yas_info["yas_bandi"],
         sifir_konut_prim_pct=_yas_info["sifir_konut_prim_pct"],
         kiralik_rayic_tlm2=piyasa_kiralik(district, neighborhood),
+        deger_alt_tl=deger_alt,
+        deger_ust_tl=deger_ust,
+        mahalle_iqr_orani=round(float(iqr_oran), 3),
+        mahalle_heterojen=heter,
+        mahalle_ilan_n=mah_n,
+        segment_duzeltme=k_seg,
+        segment_etiketi=seg_label,
         trend_yillik_nominal_pct=_proj["trend_yillik_nominal_pct"],
         projeksiyon_12ay_tlm2=_proj["projeksiyon_12ay_tlm2"],
         projeksiyon_24ay_tlm2=_proj["projeksiyon_24ay_tlm2"],

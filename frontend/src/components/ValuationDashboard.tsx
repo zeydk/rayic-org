@@ -32,6 +32,13 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
     trend_yillik_nominal_pct,
     projeksiyon_12ay_tlm2,
     projeksiyon_24ay_tlm2,
+    deger_alt_tl,
+    deger_ust_tl,
+    mahalle_iqr_orani,
+    mahalle_heterojen,
+    mahalle_ilan_n,
+    segment_duzeltme,
+    segment_etiketi,
   } = valuation;
 
   const monthlyRent = financials?.estimated_monthly_rent || roundEstimatedRent(estimated_total_price);
@@ -92,6 +99,16 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
           <span className="text-[11px] text-slate-600 font-bold mt-2 block border-t border-[#E5E7EB] pt-1">
             Konut Rayici (yaş &amp; bölge bazlı): {base_m2_price.toLocaleString("tr-TR")} ₺/m²
           </span>
+          {typeof deger_alt_tl === "number" && typeof deger_ust_tl === "number" && (
+            <span className="text-[11px] text-[#111827] font-extrabold mt-1 block">
+              Değer aralığı: {deger_alt_tl.toLocaleString("tr-TR")} – {deger_ust_tl.toLocaleString("tr-TR")} ₺
+            </span>
+          )}
+          {typeof segment_duzeltme === "number" && segment_duzeltme !== 1 && segment_etiketi && (
+            <span className="text-[10px] text-[#7C3AED] font-semibold mt-0.5 block">
+              📐 {segment_etiketi} m² segmenti düzeltmesi: ×{segment_duzeltme.toFixed(3)}
+            </span>
+          )}
           {typeof base_price_source === "string" && base_price_source.startsWith("Ağustos 2026") && (
             <span className="text-[10px] text-[#047857] font-semibold mt-0.5 block">
               📅 Ağustos 2026 güncel piyasa raporu{typeof kiralik_rayic_tlm2 === "number" ? ` · kira rayici: ${kiralik_rayic_tlm2.toLocaleString("tr-TR")} ₺/m²` : ""}
@@ -142,6 +159,32 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
         </div>
 
       </div>
+
+      {/* Mahalle içi saçılma uyarısı — tek m² fiyatının yanıltıcı olduğu yerler */}
+      {typeof mahalle_iqr_orani === "number" && (
+        <div className={`p-3 rounded-xl border text-[11px] font-medium leading-relaxed ${
+          mahalle_heterojen
+            ? "bg-amber-50 border-amber-300 text-amber-900"
+            : "bg-[#FAF8F5] border-[#E5E7EB] text-slate-700"
+        }`}>
+          {mahalle_heterojen ? (
+            <>
+              <strong>⚠️ Bu mahalle fiyat açısından heterojen.</strong> Mahalle içi ilanların
+              çeyrekler arası açıklığı medyanın <strong>%{(mahalle_iqr_orani * 100).toFixed(0)}</strong>&apos;ı
+              {typeof mahalle_ilan_n === "number" ? ` (${mahalle_ilan_n} ilan)` : ""}. Tek bir m² fiyatı
+              bu mahallede yanıltıcıdır; yukarıdaki <strong>değer aralığını</strong> esas alın. Kesin
+              değer için konum (cadde/ada), bina durumu ve manzara yerinde değerlendirilmelidir.
+            </>
+          ) : (
+            <>
+              Mahalle içi fiyat saçılması: çeyrekler arası açıklık medyanın
+              <strong> %{(mahalle_iqr_orani * 100).toFixed(0)}</strong>&apos;ı
+              {typeof mahalle_ilan_n === "number" ? ` (${mahalle_ilan_n} ilan)` : ""} — bu mahalle
+              görece türdeş, nokta tahmin daha güvenilir.
+            </>
+          )}
+        </div>
+      )}
 
       {/* Human Readable Price Factors Breakdown */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold pt-3 border-t border-[#E5E7EB]">
