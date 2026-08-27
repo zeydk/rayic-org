@@ -85,10 +85,17 @@ _IMAR_CACHE: Dict[str, Any] = _load_cache()
 
 
 def _save_cache() -> None:
+    """Stoku diske yazar. BİRLEŞTİREREK yazar: aynı anda başka bir süreç
+    (ör. paralel ön-çekme koşusu) stoka yazmış olabilir; dosyayı önce tekrar
+    okuyup kendi kayıtlarımızı üzerine ekliyoruz — aksi halde son yazan diğerinin
+    işini siler. Yazım atomik (tmp + os.replace)."""
     try:
-        tmp = _CACHE_PATH + ".tmp"
+        merged = _load_cache()
+        merged.update(_IMAR_CACHE)
+        _IMAR_CACHE.update(merged)          # diğer sürecin kayıtları bize de gelsin
+        tmp = f"{_CACHE_PATH}.{os.getpid()}.tmp"
         with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(_IMAR_CACHE, f, ensure_ascii=False)
+            json.dump(merged, f, ensure_ascii=False)
         os.replace(tmp, _CACHE_PATH)
     except Exception:
         pass
