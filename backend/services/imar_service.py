@@ -35,10 +35,17 @@ MUNICIPAL_WEBGIS: Dict[str, Dict[str, str]] = {
     "umraniye":   {"platform": "netgis", "base": "https://webgis.umraniye.bel.tr/imardurumu/"},
     "cekmekoy":   {"platform": "netgis", "base": "https://webgis.cekmekoy.bel.tr/imardurumu/"},
     "sancaktepe": {"platform": "netgis", "base": "https://webgis.sancaktepe.bel.tr/imardurumu/"},
-    "tuzla":      {"platform": "netgis", "base": "https://webgis.tuzla.bel.tr/imardurumu/"},
+    # Tuzla imar BELGESİNİ Google reCAPTCHA arkasına almış ("İmar Durumu -
+    # Güvenlik Doğrulaması"). CAPTCHA aşmaya çalışmıyoruz; belge alınamaz.
+    # Parsel/geometri servisi açık olduğu için konum çözümlemede kullanılır.
+    "tuzla":      {"platform": "netgis", "base": "https://webgis.tuzla.bel.tr/imardurumu/",
+                   "belge_engelli": "recaptcha"},
     "sultangazi": {"platform": "netgis", "base": "https://webgis.sultangazi.bel.tr/imardurumu/"},
     "basaksehir": {"platform": "netgis", "base": "https://webgis.basaksehir.bel.tr/imardurumu/"},
-    "silivri":    {"platform": "netgis", "base": "https://webgis.silivri.bel.tr/imardurumu/"},
+    # Silivri imar.aspx'i 403'e yönlendiriyor (hata.aspx?code=403); parsel
+    # servisi çalışıyor -> geometri evet, imar belgesi hayır.
+    "silivri":    {"platform": "netgis", "base": "https://webgis.silivri.bel.tr/imardurumu/",
+                   "belge_engelli": "403"},
     "gungoren":   {"platform": "netgis", "base": "https://keos.gungoren.bel.tr:3443/imardurumu/"},
     # Aynı NETGIS platformu, farklı ana makine desenleri (keos./cbs.) —
     # parselid enumerasyonu ve imar belgesi uçtan uca doğrulandı.
@@ -987,6 +994,11 @@ def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
     """
     cfg = MUNICIPAL_WEBGIS.get(_norm(district))
     if not cfg or cfg["platform"] != "netgis":
+        return 0
+    if cfg.get("belge_engelli"):
+        if progress:
+            progress("imar belgesi erişime kapalı (%s) -> toplu çekim atlandı"
+                     % cfg["belge_engelli"])
         return 0
     base = cfg["base"]
     dk = _norm(district)
