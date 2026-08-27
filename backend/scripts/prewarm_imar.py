@@ -37,7 +37,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from services.imar_service import (  # noqa: E402
     fetch_imar_durumu, bulk_fetch_arcgis, bulk_fetch_gisoft, bulk_fetch_netgis,
-    _cache_key, _IMAR_CACHE, MUNICIPAL_WEBGIS, _norm,
+    bulk_fetch_netgis_oid, _cache_key, _IMAR_CACHE, MUNICIPAL_WEBGIS, _norm,
 )
 
 
@@ -72,6 +72,12 @@ def main():
     ap.add_argument("--limit", type=int, default=0, help="max deneme (0=sınırsız)")
     ap.add_argument("--all", action="store_true",
                     help="ilçenin TÜM parsellerini toplu stokla (GiSoft/NETGIS)")
+    ap.add_argument("--by-ada", action="store_true",
+                    help="NETGIS'te kimlik taraması yerine ada aralığı kullan")
+    ap.add_argument("--oid-start", type=int, default=0,
+                    help="parselid tarama başlangıcı (0=kaldığı yerden devam)")
+    ap.add_argument("--oid-end", type=int, default=250000,
+                    help="parselid tarama üst sınırı")
     args = ap.parse_args()
 
     cfg = MUNICIPAL_WEBGIS.get(_norm(args.district))
@@ -96,14 +102,21 @@ def main():
         print(f"\nBitti. {args.district}: {n} yeni parsel stoklandı | Toplam stok={len(_IMAR_CACHE)}")
         return
 
-    # NETGIS toplu mod: ada aralığındaki parselleri (Pendik'te GERÇEK parsel
-    # listesiyle) sırayla stoklar.
+    # NETGIS toplu mod. Varsayılan: parsel kimliği (OBJECTID) taraması —
+    # ada×parsel denemesinden çok daha verimli, ıskasız ve devam edilebilir.
     if cfg["platform"] == "netgis" and args.all:
-        adalar = _parse_range(args.ada)
-        print(f"[NETGIS toplu mod] {args.district} — ada {args.ada} (delay={args.delay}s)"
-              + (" · KEOS gerçek parsel listesi" if cfg.get("search_proxy") else ""))
-        n = bulk_fetch_netgis(args.district, adalar, delay=args.delay,
-                              limit=args.limit, progress=prog)
+        if args.by_ada:
+            adalar = _parse_range(args.ada)
+            print(f"[NETGIS ada modu] {args.district} — ada {args.ada} (delay={args.delay}s)"
+                  + (" · KEOS gerçek parsel listesi" if cfg.get("search_proxy") else ""))
+            n = bulk_fetch_netgis(args.district, adalar, delay=args.delay,
+                                  limit=args.limit, progress=prog)
+        else:
+            print(f"[NETGIS kimlik taraması] {args.district} — parselid "
+                  f"{args.oid_start or 'kaldığı yer'}..{args.oid_end} (delay={args.delay}s)")
+            n = bulk_fetch_netgis_oid(args.district, start=args.oid_start,
+                                      end=args.oid_end, delay=args.delay,
+                                      limit=args.limit, progress=prog)
         print(f"\nBitti. {args.district}: {n} yeni parsel stoklandı | Toplam stok={len(_IMAR_CACHE)}")
         return
 

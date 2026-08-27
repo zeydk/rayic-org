@@ -17,6 +17,7 @@ import re
 import io
 import json
 import time
+import fcntl
 import html as _html
 import threading
 from typing import Dict, Any, Optional
@@ -69,36 +70,86 @@ _KULLANIM_FALLBACK = {
 _UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36")
 
-_CACHE_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "imar_cache.json")
+_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
+# Eski tek parça stok (geriye dönük okunur; yazım artık ilçe parçalarına yapılır).
+_CACHE_PATH = os.path.join(_DATA_DIR, "imar_cache.json")
+# İlçe başına ayrı stok dosyası: paralel ön-çekmede süreçler birbirini
+# beklemez ve her yazım küçük kalır (tek parça dosya 12+ MB'a çıkıp her
+# kayıtta baştan yazılıyordu -> tüm süreçler kilitte sıraya giriyordu).
+_SHARD_DIR = os.path.join(_DATA_DIR, "imar")
 _cache_lock = threading.Lock()
 
 
-def _load_cache() -> Dict[str, Any]:
+def _shard_path(dk: str) -> str:
+    return os.path.join(_SHARD_DIR, f"{dk}.json")
+
+
+def _read_json(path: str) -> Dict[str, Any]:
     try:
-        with open(_CACHE_PATH, encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return {}
 
 
+def _load_cache() -> Dict[str, Any]:
+    """Tüm stoku belleğe alır: önce eski tek parça dosya, sonra ilçe parçaları."""
+    out: Dict[str, Any] = _read_json(_CACHE_PATH)
+    try:
+        for fn in os.listdir(_SHARD_DIR):
+            if fn.endswith(".json"):
+                out.update(_read_json(os.path.join(_SHARD_DIR, fn)))
+    except FileNotFoundError:
+        pass
+    except Exception:
+        pass
+    return out
+
+
 _IMAR_CACHE: Dict[str, Any] = _load_cache()
 
 
-def _save_cache() -> None:
-    """Stoku diske yazar. BİRLEŞTİREREK yazar: aynı anda başka bir süreç
-    (ör. paralel ön-çekme koşusu) stoka yazmış olabilir; dosyayı önce tekrar
-    okuyup kendi kayıtlarımızı üzerine ekliyoruz — aksi halde son yazan diğerinin
-    işini siler. Yazım atomik (tmp + os.replace)."""
+def _save_district(dk: str) -> None:
+    """Tek bir ilçenin kayıtlarını kendi parça dosyasına yazar.
+
+    Parça dosyası kilit altında okunup birleştirilir (aynı ilçeye yazan ikinci
+    bir süreç olursa kayıp olmasın), sonra atomik olarak değiştirilir. Farklı
+    ilçeler farklı dosyalara yazdığı için süreçler birbirini beklemez."""
     try:
-        merged = _load_cache()
-        merged.update(_IMAR_CACHE)
-        _IMAR_CACHE.update(merged)          # diğer sürecin kayıtları bize de gelsin
-        tmp = f"{_CACHE_PATH}.{os.getpid()}.tmp"
-        with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(merged, f, ensure_ascii=False)
-        os.replace(tmp, _CACHE_PATH)
+        os.makedirs(_SHARD_DIR, exist_ok=True)
+        path = _shard_path(dk)
+        pref = dk + "|"
+        mine = {k: v for k, v in _IMAR_CACHE.items() if k.startswith(pref)}
+        if not mine:
+            return
+        with open(path + ".lock", "w") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX)
+            except Exception:
+                pass
+            merged = _read_json(path)
+            merged.update(mine)
+            _IMAR_CACHE.update(merged)
+            tmp = f"{path}.{os.getpid()}.tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(merged, f, ensure_ascii=False)
+            os.replace(tmp, path)
+            try:
+                fcntl.flock(lock, fcntl.LOCK_UN)
+            except Exception:
+                pass
     except Exception:
         pass
+
+
+def _save_cache(district: Optional[str] = None) -> None:
+    """Stoku diske yazar. İlçe verilirse yalnız o ilçenin parçası yazılır
+    (toplu ön-çekmenin sıcak yolu); verilmezse bellekteki tüm ilçeler yazılır."""
+    if district:
+        _save_district(_norm(district))
+        return
+    for dk in {k.split("|", 1)[0] for k in _IMAR_CACHE if "|" in k}:
+        _save_district(dk)
 
 
 def _norm(s: Optional[str]) -> str:
@@ -767,7 +818,7 @@ def bulk_fetch_arcgis(district: str, progress=None) -> int:
             key = _cache_key(district, str(ada), str(parsel))
             _IMAR_CACHE[key] = rec
             stocked += 1
-    _save_cache()
+    _save_cache(district)
     return stocked
 
 
@@ -854,11 +905,11 @@ def bulk_fetch_gisoft(district: str, delay: float = 1.0, limit: int = 0,
             if progress and stocked % 25 == 0:
                 progress("stoklandı: %d / denenen %d" % (stocked, done))
             if stocked % 100 == 0:
-                _save_cache()
+                _save_cache(district)
         except Exception:
             pass
         time.sleep(delay)
-    _save_cache()
+    _save_cache(district)
     return stocked
 
 
@@ -896,6 +947,108 @@ def netgis_probe_ada(cfg: Dict[str, str], ada: str, parsel_max: int = 40,
     return out
 
 
+_SCAN_KEY = "__scan_oid__"   # işaret anahtarı: "{ilce}|__scan_oid__"
+
+
+def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
+                          delay: float = 0.4, limit: int = 0,
+                          miss_stop: int = 3000, progress=None) -> int:
+    """NETGIS ilçesini PARSEL KİMLİĞİ (OBJECTID) üzerinden tarayarak stoklar.
+
+    NETGIS'te ada/parsel'i toplu listeleyen bir uç YOK; ada×parsel kombinasyonu
+    denemek ise ıskadan ibaret. Onun yerine parselid 1..N taranır:
+
+      1) service/imarsvc.aspx?type=parsel&parselid=N   (~250 bayt, hızlı)
+         -> ADAPARSEL var mı? Yoksa/zaten stoktaysa AĞIR belge indirilmez.
+      2) imar.aspx?parselid=N                          (~100-400 KB)
+         -> tüm imar alanları; ada/parsel belgeden okunur.
+
+    Kaldığı yerden devam eder (stokta `__scan_oid__|ilce` işareti tutulur).
+    Üst üste `miss_stop` boş kimlikten sonra taramayı bitirir.
+    """
+    cfg = MUNICIPAL_WEBGIS.get(_norm(district))
+    if not cfg or cfg["platform"] != "netgis":
+        return 0
+    base = cfg["base"]
+    dk = _norm(district)
+    mark = f"{dk}|{_SCAN_KEY}"
+    if not start:
+        start = int(_IMAR_CACHE.get(mark, {}).get("last_oid", 0)) + 1
+
+    s = requests.Session()
+    s.headers.update({"User-Agent": _UA})
+
+    def _nonce():
+        s.get(base, timeout=10, verify=False)
+        return s.cookies.get("svc_nonce") or ""
+
+    nonce = _nonce()
+    h = {"Referer": base, "X-Service-Nonce": nonce, "X-Requested-With": "XMLHttpRequest"}
+    stocked = miss = done = 0
+    oid = start
+    while oid <= end:
+        if limit and done >= limit:
+            break
+        try:
+            r = s.get(base + "service/imarsvc.aspx",
+                      params={"type": "parsel", "parselid": oid},
+                      headers=h, timeout=12, verify=False)
+            txt = r.text.strip()
+            if txt.startswith("#") or r.status_code == 403:       # nonce düştü -> tazele
+                nonce = _nonce()
+                h["X-Service-Nonce"] = nonce
+                continue
+            arr = json.loads(txt) if txt.startswith("[") else []
+            ap = (arr[0].get("ADAPARSEL") or "").strip() if arr else ""
+            m = re.match(r'^\s*(\d+)\s*/\s*(\d+)\s*$', ap)
+            if not m:
+                miss += 1
+                if miss >= miss_stop:
+                    if progress:
+                        progress("üst üste %d boş kimlik -> tarama bitti (oid=%d)" % (miss, oid))
+                    break
+                oid += 1
+                continue
+            miss = 0
+            ada, parsel = m.group(1), m.group(2)
+            key = _cache_key(district, ada, parsel)
+            if key not in _IMAR_CACHE:
+                done += 1
+                doc = s.get(base + "imar.aspx", params={"parselid": oid},
+                            headers={"Referer": base, "X-Service-Nonce": nonce},
+                            timeout=30, verify=False).text
+                fields = _extract_imar(doc)
+                if fields:
+                    rec = {"supported": True,
+                           "belediye": district.strip().title() + " Belediyesi",
+                           "ada_parsel": f"{ada}/{parsel}",
+                           "tapu_mahalle": (arr[0].get("TAPU_MAH_ADI") or ""),
+                           "kaynak_url": f"{base}imar.aspx?parselid={oid}", **fields}
+                    geom = arr[0].get("POLY")
+                    if geom:
+                        try:
+                            cen = _geojson_centroid(json.loads(geom))
+                            if cen:
+                                rec["_lat"], rec["_lng"] = cen
+                        except Exception:
+                            pass
+                    with _cache_lock:
+                        _IMAR_CACHE[key] = rec
+                    stocked += 1
+                    if progress and stocked % 25 == 0:
+                        progress("stoklandı: %d (oid=%d, %s/%s)" % (stocked, oid, ada, parsel))
+                    if stocked % 100 == 0:
+                        _IMAR_CACHE[mark] = {"last_oid": oid}
+                        _save_cache(district)
+                time.sleep(delay)
+        except Exception:
+            pass
+        oid += 1
+    _IMAR_CACHE[mark] = {"last_oid": oid}
+    _save_cache(district)
+    return stocked
+
+
 def bulk_fetch_netgis(district: str, adalar, delay: float = 0.8, limit: int = 0,
                       probe: bool = True, progress=None) -> int:
     """NETGIS ilçesi için verilen ADA listesindeki tüm parselleri stoklar.
@@ -926,7 +1079,7 @@ def bulk_fetch_netgis(district: str, adalar, delay: float = 0.8, limit: int = 0,
                 if progress and stocked % 20 == 0:
                     progress("stoklandı: %d / denenen %d (ada %s)" % (stocked, done, ada))
             time.sleep(delay)
-    _save_cache()
+    _save_cache(district)
     return stocked
 
 
@@ -948,5 +1101,5 @@ def fetch_imar_durumu(district: str, ada: str, parsel: str,
     if result is not None:
         with _cache_lock:
             _IMAR_CACHE[key] = result
-            _save_cache()
+            _save_cache(district)
     return result
