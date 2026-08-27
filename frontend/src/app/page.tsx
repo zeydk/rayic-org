@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Header, { NavMenu } from "@/components/Header";
 import LandingHeroView from "@/components/LandingHeroView";
-import AdInputParser from "@/components/AdInputParser";
+import PropertyWizard from "@/components/PropertyWizard";
 import ListingModal from "@/components/ListingModal";
 import ValuationDashboard from "@/components/ValuationDashboard";
 import SpatialMap from "@/components/SpatialMap";
@@ -319,7 +319,7 @@ export default function Home() {
 
         {/* MENU 7: ADD PROPERTY */}
         {activeMenu === "add_property" && (
-          <AdInputParser
+          <PropertyWizard
             onComplete={runFullCheckup}
             loading={loading}
           />
