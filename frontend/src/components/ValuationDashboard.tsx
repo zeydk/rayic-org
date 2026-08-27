@@ -39,6 +39,8 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
     mahalle_ilan_n,
     segment_duzeltme,
     segment_etiketi,
+    konum_carpani,
+    konum_detay,
   } = valuation;
 
   const monthlyRent = financials?.estimated_monthly_rent || roundEstimatedRent(estimated_total_price);
@@ -159,6 +161,32 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
         </div>
 
       </div>
+
+      {/* MAHALLE İÇİ KONUM: aynı mahallede kıyıya/raylı sisteme yakınlık farkı.
+          Katsayılar koordinatlı ilan örnekleminden ölçüldü (uydurma değil). */}
+      {typeof konum_carpani === "number" && konum_detay && Math.abs(konum_carpani - 1) > 0.005 && (
+        <div className={`p-3 rounded-xl border text-[11px] font-medium leading-relaxed ${
+          konum_carpani > 1
+            ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+            : "bg-slate-50 border-slate-300 text-slate-700"
+        }`}>
+          <div className="flex items-baseline justify-between gap-3 flex-wrap">
+            <span>
+              📍 <strong>Mahalle içi konum farkı: ×{konum_carpani.toFixed(3)}</strong>{" "}
+              ({konum_carpani > 1 ? "mahalle ortalamasının üzerinde" : "mahalle ortalamasının altında"})
+            </span>
+            <span className="font-mono text-[10px] opacity-80">
+              kıyı {konum_detay.konut_kiyi_km} km (mah. ort. {konum_detay.mahalle_kiyi_km} km) ·
+              raylı {konum_detay.konut_ray_km} km
+            </span>
+          </div>
+          <p className="mt-1 text-[10px] opacity-90">
+            Aynı mahallede konum farkı ölçülen etkiyle uygulanır: kıyıya uzaklık iki katına
+            çıktığında ~%13, raylı sisteme uzaklık iki katına çıktığında ~%7 fiyat düşüşü.
+            {" "}<em>{konum_detay.dayanak}.</em> Tahmindir; mahalle ortalaması 1.00 kabul edilir.
+          </p>
+        </div>
+      )}
 
       {/* Mahalle içi saçılma uyarısı — tek m² fiyatının yanıltıcı olduğu yerler */}
       {typeof mahalle_iqr_orani === "number" && (

@@ -315,6 +315,12 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
         setDoorNo(String(d.kapi_no ?? ""));
         if (d.ada_no) setAdaNo(String(d.ada_no));
         if (d.parsel_no) setParselNo(String(d.parsel_no));
+        // Binanın KENDİ koordinatı -> değerlemeye gider; mahalle içi konum
+        // çarpanı bu koordinattan hesaplanır (tahmini geocode değil).
+        if (typeof d.lat === "number" && typeof d.lng === "number") {
+          setPinLat(d.lat);
+          setPinLng(d.lng);
+        }
       }
     } finally { setIbbYukleniyor(false); }
   };
