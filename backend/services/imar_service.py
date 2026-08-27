@@ -439,8 +439,12 @@ def _keos_search(cfg: Dict[str, str], ada: str, parsel: str,
 
 def keos_list_ada(cfg: Dict[str, str], ada: str) -> list:
     """Bir ADA'daki tüm parselleri KEOS arama ucundan listeler -> ["ada/parsel"].
-    Toplu ön-çekmede parsel numaralarını TAHMİN etmek yerine gerçek listeyi
-    almak için (arama ucu sorgu başına en fazla 50 kayıt döner)."""
+
+    DİKKAT: arama ucu ALT DİZE eşleşmesi yapar ve sorgu başına en fazla 50 kayıt
+    döner. Küçük ada numaralarında ("1/") başka adaların parselleri ("8171/5")
+    sonuçları doldurup gerçek eşleşmeleri dışarı itebilir; bu yüzden boş dönen
+    adalar için çağıran taraf ucuz ada/parsel yoklamasına düşmelidir
+    (bkz. bulk_fetch_netgis)."""
     proxy = cfg.get("search_proxy")
     if not proxy:
         return []
@@ -851,11 +855,45 @@ def bulk_fetch_gisoft(district: str, delay: float = 1.0, limit: int = 0,
     return stocked
 
 
+def netgis_probe_ada(cfg: Dict[str, str], ada: str, parsel_max: int = 40,
+                     delay: float = 0.15) -> list:
+    """Bir adadaki parselleri UCUZ yoklama ile bulur -> ["ada/parsel"].
+
+    imarsvc.aspx `type=adaparsel` yanıtı ~80 bayt ve olmayan parsel için boş
+    dizi döner; ağır (yüzlerce KB) imar belgesi indirilmez. Arama ucunun
+    yetersiz kaldığı adalar için yedek yol."""
+    base = cfg["base"]
+    out = []
+    try:
+        s = requests.Session()
+        s.headers.update({"User-Agent": _UA})
+        s.get(base, timeout=10, verify=False)
+        nonce = s.cookies.get("svc_nonce") or ""
+        h = {"Referer": base, "X-Service-Nonce": nonce, "X-Requested-With": "XMLHttpRequest"}
+        miss = 0
+        for p in range(1, parsel_max + 1):
+            r = s.get(base + "service/imarsvc.aspx",
+                      params={"type": "adaparsel", "adaparsel": f"{ada}/{p}"},
+                      headers=h, timeout=10, verify=False)
+            arr = r.json() if r.text.strip().startswith("[") else []
+            if arr:
+                out.append(f"{ada}/{p}")
+                miss = 0
+            else:
+                miss += 1
+                if miss >= 12 and not out:
+                    break          # ada hiç yok gibi -> erken çık
+            time.sleep(delay)
+    except Exception:
+        pass
+    return out
+
+
 def bulk_fetch_netgis(district: str, adalar, delay: float = 0.8, limit: int = 0,
-                      progress=None) -> int:
+                      probe: bool = True, progress=None) -> int:
     """NETGIS ilçesi için verilen ADA listesindeki tüm parselleri stoklar.
-    Pendik'te parsel numaraları KEOS arama ucundan GERÇEK listeyle alınır
-    (tahmin yok); diğer ilçelerde 1..60 aralığı denenir."""
+    Pendik'te parsel listesi önce KEOS arama ucundan alınır; arama ucu boş
+    dönerse (alt-dize/50 kayıt sınırı) ucuz ada/parsel yoklamasına düşülür."""
     cfg = MUNICIPAL_WEBGIS.get(_norm(district))
     if not cfg or cfg["platform"] != "netgis":
         return 0
@@ -864,8 +902,9 @@ def bulk_fetch_netgis(district: str, adalar, delay: float = 0.8, limit: int = 0,
         if limit and done >= limit:
             break
         ada = str(ada)
-        aps = keos_list_ada(cfg, ada) if cfg.get("search_proxy") else \
-            [f"{ada}/{p}" for p in range(1, 61)]
+        aps = keos_list_ada(cfg, ada) if cfg.get("search_proxy") else []
+        if not aps and probe:
+            aps = netgis_probe_ada(cfg, ada)
         for ap in aps:
             if limit and done >= limit:
                 break
