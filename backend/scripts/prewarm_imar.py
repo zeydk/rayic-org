@@ -18,6 +18,15 @@ Kullanım:
 
   # bir dosyadan (her satır: "ada/parsel"):
   python -m scripts.prewarm_imar --district Maltepe --file parseller.txt --delay 0.8
+
+  # ArcGIS ilçesi (Üsküdar): tek komutla TÜM ilçe, mekansal birleştirme ile
+  python -m scripts.prewarm_imar --district Üsküdar
+
+  # GiSoft ilçesi (Beylikdüzü): tüm parseller (~4.3k), rapor başına 1 istek
+  python -m scripts.prewarm_imar --district Beylikdüzü --all --delay 1.0
+
+  # NETGIS ilçesi (Pendik): ada aralığı, parsel listesi KEOS'tan gerçek
+  python -m scripts.prewarm_imar --district Pendik --all --ada 1-12000 --delay 0.8
 """
 import argparse
 import sys
@@ -27,7 +36,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from services.imar_service import (  # noqa: E402
-    fetch_imar_durumu, bulk_fetch_arcgis, _cache_key, _IMAR_CACHE, MUNICIPAL_WEBGIS, _norm,
+    fetch_imar_durumu, bulk_fetch_arcgis, bulk_fetch_gisoft, bulk_fetch_netgis,
+    _cache_key, _IMAR_CACHE, MUNICIPAL_WEBGIS, _norm,
 )
 
 
@@ -60,6 +70,8 @@ def main():
     ap.add_argument("--file", help="satır başına 'ada/parsel' içeren dosya")
     ap.add_argument("--delay", type=float, default=0.8, help="istekler arası saniye")
     ap.add_argument("--limit", type=int, default=0, help="max deneme (0=sınırsız)")
+    ap.add_argument("--all", action="store_true",
+                    help="ilçenin TÜM parsellerini toplu stokla (GiSoft/NETGIS)")
     args = ap.parse_args()
 
     cfg = MUNICIPAL_WEBGIS.get(_norm(args.district))
@@ -67,11 +79,32 @@ def main():
         print(f"[!] {args.district} desteklenen ilçelerde değil. Desteklenen: {sorted(MUNICIPAL_WEBGIS)}")
         return
 
+    prog = lambda m: print("  " + m, flush=True)  # noqa: E731
+
     # ArcGIS ilçelerinde TOPLU (spatial-join) mod — çok hızlı, ıskasız.
     if cfg["platform"] == "arcgis_kentrehberi":
         print(f"[ArcGIS toplu mod] {args.district} — tüm parseller + plan adaları çekiliyor...")
-        n = bulk_fetch_arcgis(args.district, progress=lambda m: print("  " + m, flush=True))
+        n = bulk_fetch_arcgis(args.district, progress=prog)
         print(f"\nBitti. {args.district}: {n} parsel stoklandı | Toplam stok={len(_IMAR_CACHE)}")
+        return
+
+    # GiSoft: parsel listesi tek çağrıda alınır, imar raporu parsel başına
+    # üretilir -> hız sınırlı ama devam edilebilir.
+    if cfg["platform"] == "gisoft" and args.all:
+        print(f"[GiSoft toplu mod] {args.district} — tüm parseller (delay={args.delay}s)...")
+        n = bulk_fetch_gisoft(args.district, delay=args.delay, limit=args.limit, progress=prog)
+        print(f"\nBitti. {args.district}: {n} yeni parsel stoklandı | Toplam stok={len(_IMAR_CACHE)}")
+        return
+
+    # NETGIS toplu mod: ada aralığındaki parselleri (Pendik'te GERÇEK parsel
+    # listesiyle) sırayla stoklar.
+    if cfg["platform"] == "netgis" and args.all:
+        adalar = _parse_range(args.ada)
+        print(f"[NETGIS toplu mod] {args.district} — ada {args.ada} (delay={args.delay}s)"
+              + (" · KEOS gerçek parsel listesi" if cfg.get("search_proxy") else ""))
+        n = bulk_fetch_netgis(args.district, adalar, delay=args.delay,
+                              limit=args.limit, progress=prog)
+        print(f"\nBitti. {args.district}: {n} yeni parsel stoklandı | Toplam stok={len(_IMAR_CACHE)}")
         return
 
     tried = hit = skipped = 0

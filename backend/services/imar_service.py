@@ -16,6 +16,7 @@ import os
 import re
 import io
 import json
+import time
 import html as _html
 import threading
 from typing import Dict, Any, Optional
@@ -53,7 +54,10 @@ MUNICIPAL_WEBGIS: Dict[str, Dict[str, str]] = {
     "beylikduzu": {"platform": "gisoft",
                    "base": "https://cbs.beylikduzu.istanbul/GiSoftGis",
                    "app": "GISOFT_GIS_WEB_CLIENT",
-                   "eharita": "https://cbs.beylikduzu.istanbul/GiSoftGis/#/ezoning"},
+                   "eharita": "https://cbs.beylikduzu.istanbul/GiSoftGis/#/ezoning",
+                   # Toplu enumerasyonda taranacak tapu (kadastro) mahalleleri.
+                   # Beylikdüzü'nün tüm parselleri tek kadastro mahallesinde.
+                   "mahalleler": ["KAVAKLI"]},
 }
 
 # ArcGIS KULLANIM kodları için yedek eşleme (domain yoksa).
@@ -752,6 +756,130 @@ def bulk_fetch_arcgis(district: str, progress=None) -> int:
             key = _cache_key(district, str(ada), str(parsel))
             _IMAR_CACHE[key] = rec
             stocked += 1
+    _save_cache()
+    return stocked
+
+
+def gisoft_list_all(district: str, mahalle_hint: str = "") -> list:
+    """GiSoft ilçesindeki TÜM parselleri listeler -> [(entity_id, "ada/parsel"), ...].
+    Arama ucu tek çağrıda binlerce kayıt döndürebiliyor; mahalle adı ile tarar."""
+    cfg = MUNICIPAL_WEBGIS.get(_norm(district))
+    if not cfg or cfg["platform"] != "gisoft":
+        return []
+    s = requests.Session()
+    s.headers.update({"User-Agent": _UA})
+    tok = _gisoft_token(s, cfg)
+    if not tok:
+        return []
+    H = {"X-Auth-Token": tok, "Content-Type": "application/json",
+         "Referer": cfg["base"] + "/"}
+    hints = [mahalle_hint] if mahalle_hint else cfg.get("mahalleler", [])
+    found: Dict[str, str] = {}
+    for q in hints:
+        body = {"entityAliasItemIndexMap": {"parcel": 0}, "filterValue": q,
+                "maxResultCount": 20000, "includeDeletedRecords": False}
+        try:
+            r = s.post(cfg["base"] + "/rest/entity/cache/list", data=json.dumps(body),
+                       headers=H, timeout=90, verify=False)
+            for e in r.json().get("entityCacheModelList", []):
+                m = re.match(r'^\s*(\d+)\s*/\s*(\d+)\s', e.get("label", ""))
+                if m and e.get("id"):
+                    found[str(e["id"])] = f"{m.group(1)}/{m.group(2)}"
+        except Exception:
+            continue
+    return sorted(found.items(), key=lambda kv: kv[1])
+
+
+def bulk_fetch_gisoft(district: str, delay: float = 1.0, limit: int = 0,
+                      progress=None) -> int:
+    """GiSoft ilçesi için TÜM parsellerin imar durumunu sırayla çekip stoklar.
+    Her parsel için rapor üretimi + PDF indirme gerektiğinden hız sınırlıdır;
+    devam edilebilir (stoktakiler atlanır). Stoklanan yeni kayıt sayısı döner."""
+    cfg = MUNICIPAL_WEBGIS.get(_norm(district))
+    if not cfg or cfg["platform"] != "gisoft":
+        return 0
+    targets = gisoft_list_all(district)
+    if progress:
+        progress("parsel listesi: %d" % len(targets))
+
+    s = requests.Session()
+    s.headers.update({"User-Agent": _UA})
+    tok = _gisoft_token(s, cfg)
+    stocked = done = 0
+    for eid, ap in targets:
+        if limit and done >= limit:
+            break
+        ada, parsel = ap.split("/", 1)
+        key = _cache_key(district, ada, parsel)
+        if key in _IMAR_CACHE:
+            continue
+        done += 1
+        try:
+            hdr = {"X-Auth-Token": tok, "Referer": cfg["base"] + "/"}
+            fn = s.get(cfg["base"] + f"/rest/entity/report/parcel/2/{eid}",
+                       headers=hdr, timeout=30, verify=False)
+            if fn.status_code == 401:                      # token süresi doldu -> tazele
+                tok = _gisoft_token(s, cfg)
+                hdr = {"X-Auth-Token": tok, "Referer": cfg["base"] + "/"}
+                fn = s.get(cfg["base"] + f"/rest/entity/report/parcel/2/{eid}",
+                           headers=hdr, timeout=30, verify=False)
+            names = fn.json()
+            if not isinstance(names, list) or not names:
+                continue
+            pdf = s.get(cfg["base"] + f"/rest/file/download/{names[0]}",
+                        params={"isAttachment": "false"}, headers=hdr,
+                        timeout=30, verify=False)
+            if pdf.status_code != 200 or "pdf" not in pdf.headers.get("content-type", ""):
+                continue
+            fields = _extract_gisoft_pdf(pdf.content)
+            if not fields:
+                continue
+            rec = {"supported": True,
+                   "belediye": district.strip().title() + " Belediyesi",
+                   "ada_parsel": ap, "kaynak_url": cfg.get("eharita", ""), **fields}
+            with _cache_lock:
+                _IMAR_CACHE[key] = rec
+            stocked += 1
+            if progress and stocked % 25 == 0:
+                progress("stoklandı: %d / denenen %d" % (stocked, done))
+            if stocked % 100 == 0:
+                _save_cache()
+        except Exception:
+            pass
+        time.sleep(delay)
+    _save_cache()
+    return stocked
+
+
+def bulk_fetch_netgis(district: str, adalar, delay: float = 0.8, limit: int = 0,
+                      progress=None) -> int:
+    """NETGIS ilçesi için verilen ADA listesindeki tüm parselleri stoklar.
+    Pendik'te parsel numaraları KEOS arama ucundan GERÇEK listeyle alınır
+    (tahmin yok); diğer ilçelerde 1..60 aralığı denenir."""
+    cfg = MUNICIPAL_WEBGIS.get(_norm(district))
+    if not cfg or cfg["platform"] != "netgis":
+        return 0
+    stocked = done = 0
+    for ada in adalar:
+        if limit and done >= limit:
+            break
+        ada = str(ada)
+        aps = keos_list_ada(cfg, ada) if cfg.get("search_proxy") else \
+            [f"{ada}/{p}" for p in range(1, 61)]
+        for ap in aps:
+            if limit and done >= limit:
+                break
+            a, p = ap.split("/", 1)
+            key = _cache_key(district, a, p)
+            if key in _IMAR_CACHE:
+                continue
+            done += 1
+            res = fetch_imar_durumu(district, a, p)
+            if res:
+                stocked += 1
+                if progress and stocked % 20 == 0:
+                    progress("stoklandı: %d / denenen %d (ada %s)" % (stocked, done, ada))
+            time.sleep(delay)
     _save_cache()
     return stocked
 
