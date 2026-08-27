@@ -321,6 +321,35 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
           setPinLat(d.lat);
           setPinLng(d.lng);
         }
+        // Resmî kayıttan çözüldü -> ayrıca "adresi bul" adımına gerek yok.
+        setIsAddressFound(true);
+        setErrorMsg(null);
+        // Ada/parsel elimizde: TKGM öznitelikleri + İMAR DURUMUNU hemen getir.
+        if (d.ada_no && d.parsel_no) {
+          try {
+            const cr = await fetch(`${API}/api/v1/cadastre-lookup`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                district: ibbIlceler.find((x: any) => String(x.id) === String(ibbIlce))?.name || district,
+                neighborhood: ibbMahalleler.find((x: any) => String(x.id) === String(ibbMahalle))?.name || neighborhood,
+                user_ada: String(d.ada_no),
+                user_parsel: String(d.parsel_no),
+              }),
+            });
+            if (cr.ok) {
+              const t = await cr.json();
+              if (t.total_land_area_m2 > 0) setTotalLandM2(String(t.total_land_area_m2));
+              if (t.oznitelik) {
+                setPaftaNo(t.oznitelik.pafta_no);
+                setNitelik(t.oznitelik.nitelik);
+                setTasinmazId(t.oznitelik.tasinmaz_id);
+              }
+              setImarDurumu(t.imar_durumu || null);
+              setPolygonGeoJson(t.polygon_geometry);
+            }
+          } catch { /* imar alınamazsa akış durmasın */ }
+        }
       }
     } finally { setIbbYukleniyor(false); }
   };
@@ -426,13 +455,25 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
   };
 
   const validateStep1 = () => {
-    if (!district || !neighborhood || !roomCount) {
-      setErrorMsg("Lütfen İlçe, Mahalle ve Oda Düzeni seçimlerini yapın.");
+    // DETAYLI ADRES ZORUNLU: sokak+kapı olmadan ada/parsel ve dolayısıyla imar
+    // bilgisi çekilemez. Tek istisna, kullanıcının ada/parseli elle girmesi.
+    const adaParselVar = Boolean(adaNo.trim() && parselNo.trim());
+    if (!ibbIlce || !ibbMahalle) {
+      setErrorMsg("Lütfen İlçe ve Mahalle seçin.");
+      return false;
+    }
+    if (!adaParselVar && (!ibbSokak || !ibbKapi)) {
+      setErrorMsg("Lütfen Sokak/Cadde ve Kapı No seçin — imar bilgisi için gerekli. " +
+                  "Alternatif olarak ada/parselinizi girebilirsiniz.");
+      return false;
+    }
+    if (!roomCount) {
+      setErrorMsg("Lütfen Oda Düzeni seçin.");
       return false;
     }
 
-    if (!isAddressFound) {
-      setErrorMsg("Lütfen 'ADRESİ BUL VE HARİTADA İŞARETLE' butonuna tıklayarak konumu bulun.");
+    if (!isAddressFound && !adaParselVar) {
+      setErrorMsg("Konum çözümlenemedi. Kapı seçimini tekrar deneyin veya ada/parsel girin.");
       return false;
     }
 
@@ -623,63 +664,89 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
             </div>
           </div>
 
-          {/* STEP 1.1: SELECT DISTRICT & NEIGHBORHOOD MANDATORY DROPDOWNS */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-bold p-4 bg-[#FAF8F5] rounded-xl border border-[#E5E7EB]">
-            
-            {/* District First (Mandatory) */}
-            <div>
-              <label className="text-slate-600 block mb-1.5 uppercase text-[10px]">
-                2. İlçe Seçiniz (İstanbul'un 39 İlçesi) <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={district}
-                onChange={(e) => handleDistrictChange(e.target.value)}
-                className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-              >
-                <option value="">-- İlçe Seçiniz --</option>
-                {Object.keys(ISTANBUL_DISTRICTS).sort((a,b) => a.localeCompare(b, "tr")).map((dist) => (
-                  <option key={dist} value={dist}>{dist}</option>
+          {/* STEP 1.1: TEK ADRES BLOĞU — İlçe → Mahalle → Sokak → Kapı.
+              Hepsi İBB e-Plan resmî kayıtlarından; kullanıcı hiçbir şey YAZMAZ.
+              Kapı seçilince binanın kendi koordinatı + ada/parsel otomatik gelir,
+              böylece imar bilgisi de çekilebilir. Bu yüzden ZORUNLU. */}
+          <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E5E7EB] space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-extrabold text-[#111827]">
+              <MapPin className="w-4 h-4 text-[#047857]" />
+              <span>2. ADRESİNİZİ SEÇİN (resmî adres kayıtlarından)</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-bold">
+              {([
+                ["İlçe", ibbIlce, secIlce, ibbIlceler, false, "-- İlçe --"],
+                ["Mahalle", ibbMahalle, secMahalle, ibbMahalleler, !ibbIlce, "-- Mahalle --"],
+                ["Sokak / Cadde", ibbSokak, secSokak, ibbSokaklar, !ibbMahalle, "-- Sokak --"],
+                ["Kapı No", ibbKapi, secKapi, ibbKapilar, !ibbSokak, "-- Kapı --"],
+              ] as [string, string, (v: string) => void, any[], boolean, string][]).map(
+                ([label, val, onSel, list, disabled, ph]) => (
+                  <div key={label}>
+                    <label className="text-slate-600 block mb-1.5 uppercase text-[10px]">
+                      {label} <span className="text-red-500">*</span>
+                      {list.length > 0 && <span className="text-slate-400 ml-1">({list.length})</span>}
+                    </label>
+                    <select
+                      value={val}
+                      disabled={disabled || ibbYukleniyor}
+                      onChange={(e) => onSel(e.target.value)}
+                      className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-[#111827] font-bold focus:outline-none focus:border-[#111827] disabled:bg-slate-100 disabled:text-slate-400"
+                    >
+                      <option value="">{ph}</option>
+                      {list.map((o: any) => (
+                        <option key={o.id} value={o.id}>{o.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 ))}
-              </select>
             </div>
 
-            {/* Neighborhood Second (Mandatory Dropdown) */}
-            <div>
-              <label className="text-slate-600 block mb-1.5 uppercase text-[10px]">
-                3. Mahalle Seçiniz (Mecburi Dropdown) <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={neighborhood}
-                onChange={(e) => handleNeighborhoodChange(e.target.value)}
-                disabled={!district}
-                className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-              >
-                <option value="">-- Mahalle Seçiniz --</option>
-                {(ISTANBUL_DISTRICTS[district] || []).sort((a,b) => a.localeCompare(b, "tr")).map((neigh) => (
-                  <option key={neigh} value={neigh}>{neigh}</option>
-                ))}
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-bold">
+              <div>
+                <label className="text-slate-600 block mb-1.5 uppercase text-[10px]">
+                  3. Oda Düzeni <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={roomCount}
+                  onChange={(e) => setRoomCount(e.target.value)}
+                  className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
+                >
+                  <option value="">-- Oda Düzeni Seçiniz --</option>
+                  <option value="1+1">1+1</option>
+                  <option value="2+1">2+1</option>
+                  <option value="3+1">3+1</option>
+                  <option value="4+1">4+1</option>
+                  <option value="4+2">4+2</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-slate-600 block mb-1.5 uppercase text-[10px]">
+                  Daire No (Opsiyonel)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Örn: 23"
+                  value={aptNo}
+                  onChange={(e) => setAptNo(e.target.value)}
+                  className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
+                />
+              </div>
             </div>
 
-            {/* Room Count */}
-            <div>
-              <label className="text-slate-600 block mb-1.5 uppercase text-[10px]">
-                4. Oda Düzeni <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={roomCount}
-                onChange={(e) => setRoomCount(e.target.value)}
-                className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-              >
-                <option value="">-- Oda Düzeni Seçiniz --</option>
-                <option value="1+1">1+1</option>
-                <option value="2+1">2+1</option>
-                <option value="3+1">3+1</option>
-                <option value="4+1">4+1</option>
-                <option value="4+2">4+2</option>
-              </select>
-            </div>
-
+            {ibbSonuc?.bulundu && (
+              <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-[11px] text-emerald-900 font-medium">
+                ✅ <strong>Adres resmî kayıttan bulundu.</strong> Kapı {ibbSonuc.kapi_no} →
+                {" "}<strong>Ada {ibbSonuc.ada_no} / Parsel {ibbSonuc.parsel_no}</strong>
+                {ibbSonuc.tapu_mahalle ? ` (${ibbSonuc.tapu_mahalle} tapu mahallesi)` : ""}.
+                Konum binanın kendi koordinatıdır — tahmin değil. İmar bilgisi bu ada/parselden çekilir.
+              </div>
+            )}
+            {ibbSonuc && !ibbSonuc.bulundu && (
+              <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-[11px] text-amber-900 font-medium">
+                ⚠️ {ibbSonuc.mesaj} Aşağıdan ada/parsel girerek devam edebilirsiniz.
+              </div>
+            )}
           </div>
 
           {/* STEP 1.2a: ADA/PARSEL-ÖNCELİKLİ (en doğru, birincil yöntem) */}
@@ -724,89 +791,6 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
             <p className="text-[11px] text-slate-500 font-medium">
               Ada/parselinizi tapunuzda bulabilirsiniz. Bilmiyorsanız aşağıdan adresinizi girin, sizin için bulalım.
             </p>
-          </div>
-
-          {/* STEP 1.2b: ADRESTEN BULMA (ada/parsel bilinmiyorsa yedek yöntem) */}
-          <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E5E7EB] space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#111827]">
-                <MapPin className="w-4 h-4 text-[#047857]" />
-                <span>veya — BİLMİYORSANIZ ADRESİNİZİ GİRİN</span>
-              </div>
-            </div>
-
-            {/* RESMÎ ADRES SEÇİMİ — İBB e-Plan. Serbest metin yok: kullanıcı
-                listeden seçer, kapı seçilince binanın kendi koordinatı gelir. */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {([
-                ["İlçe", ibbIlce, secIlce, ibbIlceler, false, "-- İlçe --"],
-                ["Mahalle", ibbMahalle, secMahalle, ibbMahalleler, !ibbIlce, "-- Mahalle --"],
-                ["Sokak / Cadde", ibbSokak, secSokak, ibbSokaklar, !ibbMahalle, "-- Sokak --"],
-                ["Kapı No", ibbKapi, secKapi, ibbKapilar, !ibbSokak, "-- Kapı --"],
-              ] as [string, string, (v: string) => void, any[], boolean, string][]).map(
-                ([label, val, onSel, list, disabled, ph]) => (
-                  <div key={label}>
-                    <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">
-                      {label} {list.length > 0 && <span className="text-slate-400">({list.length})</span>}
-                    </label>
-                    <select
-                      value={val}
-                      disabled={disabled || ibbYukleniyor}
-                      onChange={(e) => onSel(e.target.value)}
-                      className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827] disabled:bg-slate-100 disabled:text-slate-400"
-                    >
-                      <option value="">{ph}</option>
-                      {list.map((o: any) => (
-                        <option key={o.id} value={o.id}>{o.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-            </div>
-
-            <div>
-              <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">Daire No (Opsiyonel)</label>
-              <input
-                type="text"
-                placeholder="Örn: 23"
-                value={aptNo}
-                onChange={(e) => setAptNo(e.target.value)}
-                className="w-full sm:w-48 bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-              />
-            </div>
-
-            {ibbSonuc?.bulundu && (
-              <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-[11px] text-emerald-900 font-medium">
-                ✅ <strong>Adres resmî kayıttan bulundu.</strong> Kapı {ibbSonuc.kapi_no} →
-                {" "}<strong>Ada {ibbSonuc.ada_no} / Parsel {ibbSonuc.parsel_no}</strong>
-                {ibbSonuc.tapu_mahalle ? ` (${ibbSonuc.tapu_mahalle} tapu mahallesi)` : ""}.
-                Konum binanın kendi koordinatıdır — tahmin değil.
-              </div>
-            )}
-            {ibbSonuc && !ibbSonuc.bulundu && (
-              <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-[11px] text-amber-900 font-medium">
-                ⚠️ {ibbSonuc.mesaj}
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleExecuteAddressSearch}
-              disabled={isSearchingAddress}
-              className="w-full py-3 px-4 rounded-xl bg-[#111827] hover:bg-[#047857] text-white text-xs font-extrabold flex items-center justify-center space-x-2 transition-all shadow-md uppercase tracking-wider"
-            >
-              {isSearchingAddress ? (
-                <>
-                  <RefreshCw className="w-4 h-4 text-white animate-spin" />
-                  <span>TKGM APİ İLE ÖZNİTELİK VE BİNA BB LİSTESİ SORGULANIYOR...</span>
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4 text-white" />
-                  <span>🔍 ADRESİ BUL VE HARİTADA İŞARETLE</span>
-                </>
-              )}
-            </button>
           </div>
 
           {/* TKGM ÖZNİTELİK BİLGİSİ & DYNAMICALLY REFRESHED BB LİSTESİ SORGUSU */}
