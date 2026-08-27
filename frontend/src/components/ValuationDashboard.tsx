@@ -143,6 +143,16 @@ export default function ValuationDashboard({ valuation, financials, spatial }: V
           <span className="text-[11px] text-slate-600 font-bold mt-2 block border-t border-[#E5E7EB] pt-1">
             Yıllık Kira: {(monthlyRent * 12).toLocaleString("tr-TR")} ₺
           </span>
+          {typeof financials?.kira_rayic_tlm2 === "number" && (
+            <span className="text-[10px] text-slate-500 font-semibold mt-1 block leading-relaxed">
+              Kira rayici {financials.kira_rayic_tlm2.toLocaleString("tr-TR")} ₺/m²
+              {typeof financials.kira_yas_carpani === "number" ? ` · yaş ×${financials.kira_yas_carpani}` : ""}
+              {typeof financials.kira_konum_carpani === "number" && financials.kira_konum_carpani !== 1
+                ? ` · konum ×${financials.kira_konum_carpani}` : ""}
+              {typeof financials.kira_segment_carpani === "number" && financials.kira_segment_carpani !== 1
+                ? ` · m² segmenti ×${financials.kira_segment_carpani}` : ""}
+            </span>
+          )}
         </div>
 
         {/* Deviation % */}

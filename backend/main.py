@@ -1,4 +1,5 @@
 import io
+import os
 import re
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, Response
@@ -84,6 +85,81 @@ def read_root():
 # ilçe -> mahalle -> sokak -> kapı. Kapı seçilince binanın kendi koordinatı ve
 # oradan ada/parsel kesin olarak gelir; adres ayrıştırma tahmini ortadan kalkar.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# MAHALLE & İLÇE REHBERİ — paywall'suz, SEO için açık uçlar.
+# Yalnızca gerçek kaynaklardan üretilir (İBB deprem senaryosu, İBB nüfus,
+# Ağustos 2026 piyasa raporu, OSM raylı/kıyı, MeTHuVA tsunami).
+# ---------------------------------------------------------------------------
+def _rehber():
+    global _REHBER
+    try:
+        return _REHBER
+    except NameError:
+        pass
+    import json as _json
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               "data", "mahalle_rehberi.json"), encoding="utf-8") as f:
+            _REHBER = _json.load(f)
+    except Exception:
+        _REHBER = {"meta": {}, "ilceler": {}}
+    return _REHBER
+
+
+def _nrm_reh(s):
+    s = (s or "").strip().lower()
+    for a, b in (("ı", "i"), ("İ", "i"), ("ş", "s"), ("ğ", "g"), ("ü", "u"),
+                 ("ö", "o"), ("ç", "c"), ("â", "a"), ("-", " ")):
+        s = s.replace(a, b)
+    return " ".join(s.split())
+
+
+@app.get("/api/v1/rehber/ilceler")
+def rehber_ilceler():
+    """Tüm ilçeler + özet (mahalle sayısı, medyan fiyat, demografi)."""
+    r = _rehber()
+    out = []
+    for ad, v in r["ilceler"].items():
+        ms = list(v["mahalleler"].values())
+        sat = sorted(m["satilik_tlm2"] for m in ms if m.get("satilik_tlm2"))
+        kir = sorted(m["kiralik_tlm2"] for m in ms if m.get("kiralik_tlm2"))
+        out.append({
+            "ad": ad, "slug": _nrm_reh(ad).replace(" ", "-"),
+            "mahalle_sayisi": len(ms),
+            "medyan_satilik_tlm2": sat[len(sat) // 2] if sat else None,
+            "medyan_kiralik_tlm2": kir[len(kir) // 2] if kir else None,
+            "demografi": v.get("demografi"),
+        })
+    out.sort(key=lambda x: x["ad"])
+    return {"meta": r.get("meta", {}), "ilceler": out}
+
+
+@app.get("/api/v1/rehber/ilce/{slug}")
+def rehber_ilce(slug: str):
+    """Bir ilçenin tüm mahalleleri ve göstergeleri."""
+    r = _rehber()
+    for ad, v in r["ilceler"].items():
+        if _nrm_reh(ad).replace(" ", "-") == _nrm_reh(slug).replace(" ", "-"):
+            ms = sorted(v["mahalleler"].values(), key=lambda m: m["ad"])
+            for m in ms:
+                m["slug"] = _nrm_reh(m["ad"]).replace(" ", "-")
+            return {"ad": ad, "demografi": v.get("demografi"), "mahalleler": ms}
+    return {"bulundu": False, "mesaj": "İlçe bulunamadı."}
+
+
+@app.get("/api/v1/rehber/mahalle/{ilce_slug}/{mahalle_slug}")
+def rehber_mahalle(ilce_slug: str, mahalle_slug: str):
+    """Tek mahallenin tam profili (SEO sayfası bunu kullanır)."""
+    r = _rehber()
+    for ad, v in r["ilceler"].items():
+        if _nrm_reh(ad).replace(" ", "-") != _nrm_reh(ilce_slug).replace(" ", "-"):
+            continue
+        for mad, m in v["mahalleler"].items():
+            if _nrm_reh(mad).replace(" ", "-") == _nrm_reh(mahalle_slug).replace(" ", "-"):
+                return {"ilce": ad, "ilce_demografi": v.get("demografi"), **m}
+    return {"bulundu": False, "mesaj": "Mahalle bulunamadı."}
+
+
 @app.get("/api/v1/adres/ilceler")
 def adres_ilceler():
     return {"ilceler": _adres.ilceler()}
