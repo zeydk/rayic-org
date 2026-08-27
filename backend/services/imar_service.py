@@ -40,6 +40,15 @@ MUNICIPAL_WEBGIS: Dict[str, Dict[str, str]] = {
     "basaksehir": {"platform": "netgis", "base": "https://webgis.basaksehir.bel.tr/imardurumu/"},
     "silivri":    {"platform": "netgis", "base": "https://webgis.silivri.bel.tr/imardurumu/"},
     "gungoren":   {"platform": "netgis", "base": "https://keos.gungoren.bel.tr:3443/imardurumu/"},
+    # Aynı NETGIS platformu, farklı ana makine desenleri (keos./cbs.) —
+    # parselid enumerasyonu ve imar belgesi uçtan uca doğrulandı.
+    "besiktas":     {"platform": "netgis", "base": "https://keos.besiktas.bel.tr/imardurumu/"},
+    "beyoglu":      {"platform": "netgis", "base": "https://cbs.beyoglu.bel.tr/imardurumu/"},
+    "eyupsultan":   {"platform": "netgis", "base": "https://keos.eyupsultan.bel.tr/imardurumu/"},
+    "bakirkoy":     {"platform": "netgis", "base": "https://keos.bakirkoy.bel.tr/imardurumu/"},
+    "esenler":      {"platform": "netgis", "base": "https://keos.esenler.bel.tr/imardurumu/"},
+    "kucukcekmece": {"platform": "netgis", "base": "https://keos.kucukcekmece.bel.tr/imardurumu/"},
+    "bayrampasa":   {"platform": "netgis", "base": "https://keos.bayrampasa.bel.tr/imardurumu/"},
     # İBB/ArcGIS "Kent Rehberi" platformu (AdaParsel + PlanBinaYok mekansal sorgu).
     "uskudar":    {"platform": "arcgis_kentrehberi",
                    "gis": "https://harita.uskudar.bel.tr/server/rest/services/KENTREHBERI",
@@ -173,6 +182,12 @@ def _strip_html(t: str) -> str:
 # ayrıca ham olarak da döndürüyoruz (algoritmalarda kullanmak için).
 _LABEL_MAP = {
     "Plan Fonksiyon": "fonksiyon", "Fonksiyon": "fonksiyon",
+    # İlçeden ilçeye değişen etiket varyantları (Esenler/Bayrampaşa/Beşiktaş...)
+    "FONKSIYON": "fonksiyon", "Plan Fonksiyonu": "fonksiyon",
+    "Fonksiyonu": "fonksiyon", "Plan Fonsiyon": "fonksiyon",
+    "Hesap Alanı": "parsel_alani", "Ölçeği": "plan_olcegi",
+    "Jeoloji": "jeoloji", "Ada": "ada_no_belge", "Parsel": "parsel_no_belge",
+    "Mahalle": "mahalle_belge", "İlçe": "ilce_belge",
     "Bina Yüksekliği": "bina_yuksekligi", "Kat Adedi": "kat_adedi",
     "İnşaat Nizamı": "insaat_nizami", "T.A.K.S.": "taks", "TAKS": "taks",
     "T.A.K.S": "taks", "K.A.K.S (Emsal)": "kaks", "K.A.K.S": "kaks",
