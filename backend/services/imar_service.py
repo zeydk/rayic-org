@@ -42,10 +42,12 @@ MUNICIPAL_WEBGIS: Dict[str, Dict[str, str]] = {
     "uskudar":    {"platform": "arcgis_kentrehberi",
                    "gis": "https://harita.uskudar.bel.tr/server/rest/services/KENTREHBERI",
                    "eharita": "https://cbs.uskudar.bel.tr/eharita/"},
-    # NETCAD KEOS/YKR platformu: OGC-Features arama proxy'si + NETGIS imar belgesi.
-    "pendik":     {"platform": "keos_ykr",
-                   "proxy": "https://cbsproxy.pendik.bel.tr",
+    # Pendik de NETGIS: giriş noktası Kent Rehberi (_keos) olduğu için gizli
+    # kalmıştı; imar servisi /imardurumu/ altında. `search_proxy` ise KEOS'un
+    # OGC-Features arama ucu — toplu parsel ENUMERASYONU için kullanılır.
+    "pendik":     {"platform": "netgis",
                    "base": "https://keos.pendik.bel.tr/imardurumu/",
+                   "search_proxy": "https://cbsproxy.pendik.bel.tr",
                    "kentrehberi": "https://keos.pendik.bel.tr/_keos/"},
     # GiSoft GIS platformu (anonim JWT + entity/report + PDF imar belgesi).
     "beylikduzu": {"platform": "gisoft",
@@ -264,20 +266,6 @@ def fetch_parcel_geometry(district: str, ada: str, parsel: str) -> Optional[Dict
         except Exception:
             return None
 
-    # KEOS/YKR: arama proxy'si doğrudan parsel poligonunu (GeoJSON) veriyor.
-    if cfg["platform"] == "keos_ykr":
-        try:
-            feat = _keos_search(cfg, ada, parsel)
-            if not feat:
-                return None
-            cen = _geojson_centroid(feat.get("geometry"))
-            if not cen:
-                return None
-            return {"lat": cen[0], "lng": cen[1], "geometry": feat.get("geometry"),
-                    "tapu_mahalle": (feat.get("properties") or {}).get("mahalle", "")}
-        except Exception:
-            return None
-
     # GiSoft: imar PDF'inden coğrafi koordinat (geometri poligonu yok, nokta var).
     if cfg["platform"] == "gisoft":
         try:
@@ -445,35 +433,26 @@ def _keos_search(cfg: Dict[str, str], ada: str, parsel: str,
     return None
 
 
-def _query_keos_ykr(cfg: Dict[str, str], district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]]:
-    feat = _keos_search(cfg, ada, parsel)
-    if not feat:
-        return None
-    props = feat.get("properties") or {}
-    pk = props.get("pk")
-    if not pk:
-        return None
-
-    s = requests.Session()
-    s.headers.update({"User-Agent": _UA, "Referer": cfg.get("kentrehberi", "")})
-    doc = s.get(cfg["base"] + "imar.aspx", params={"parselid": pk},
-                timeout=20, verify=False).text
-    fields = _extract_imar(doc)
-    if not fields:
-        return None
-
-    rec: Dict[str, Any] = {
-        "supported": True,
-        "belediye": district.strip().title() + " Belediyesi",
-        "ada_parsel": f"{ada}/{parsel}",
-        "tapu_mahalle": props.get("mahalle", ""),
-        "kaynak_url": f"{cfg['base']}imar.aspx?parselid={pk}",
-        **fields,
-    }
-    cen = _geojson_centroid(feat.get("geometry"))
-    if cen:
-        rec["_lat"], rec["_lng"] = cen
-    return rec
+def keos_list_ada(cfg: Dict[str, str], ada: str) -> list:
+    """Bir ADA'daki tüm parselleri KEOS arama ucundan listeler -> ["ada/parsel"].
+    Toplu ön-çekmede parsel numaralarını TAHMİN etmek yerine gerçek listeyi
+    almak için (arama ucu sorgu başına en fazla 50 kayıt döner)."""
+    proxy = cfg.get("search_proxy")
+    if not proxy:
+        return []
+    try:
+        r = requests.get(proxy + "/search",
+                         params={"function": "public.ykr_lsearch_parsel", "q": f"{ada}/"},
+                         headers={"User-Agent": _UA, "Referer": cfg.get("kentrehberi", "")},
+                         timeout=15, verify=False)
+        out = []
+        for f in r.json().get("features", []):
+            ad = (f.get("properties") or {}).get("ad") or ""
+            if ad.startswith(f"{ada}/"):
+                out.append(ad)
+        return out
+    except Exception:
+        return []
 
 
 def _geojson_centroid(geom: Optional[Dict[str, Any]]):
@@ -667,7 +646,6 @@ _ADAPTERS = {
     "netgis": _query_netgis,
     "arcgis_kentrehberi": _query_arcgis_kentrehberi,
     "gisoft": _query_gisoft,
-    "keos_ykr": _query_keos_ykr,
 }
 
 
