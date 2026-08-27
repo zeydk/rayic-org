@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, MapPin, Sparkles, Check, Edit3, Search, RefreshCw, FileText, Home, Layers } from "lucide-react";
 import MapLocationPicker, { DISTRICT_COORDS } from "./MapLocationPicker";
 import dynamic from "next/dynamic";
@@ -118,6 +118,18 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
   const [fullAddress, setFullAddress] = useState("");
   const [street, setStreet] = useState("");
   const [doorNo, setDoorNo] = useState("");
+  // RESMÎ ADRES SEÇİMİ (İBB e-Plan): kullanıcı adres yazmaz, listeden seçer.
+  // Kapı seçilince binanın kendi koordinatı + ada/parsel kesin olarak gelir.
+  const [ibbIlceler, setIbbIlceler] = useState<any[]>([]);
+  const [ibbMahalleler, setIbbMahalleler] = useState<any[]>([]);
+  const [ibbSokaklar, setIbbSokaklar] = useState<any[]>([]);
+  const [ibbKapilar, setIbbKapilar] = useState<any[]>([]);
+  const [ibbIlce, setIbbIlce] = useState("");
+  const [ibbMahalle, setIbbMahalle] = useState("");
+  const [ibbSokak, setIbbSokak] = useState("");
+  const [ibbKapi, setIbbKapi] = useState("");
+  const [ibbYukleniyor, setIbbYukleniyor] = useState(false);
+  const [ibbSonuc, setIbbSonuc] = useState<any>(null);
   const [aptNo, setAptNo] = useState("");
   const [polygonGeoJson, setPolygonGeoJson] = useState<any>(null);
   const [adaNo, setAdaNo] = useState("");
@@ -235,6 +247,76 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
         setIsConfirmed(false);
       }
     }, 300);
+  };
+
+  // --- İBB e-Plan kademeli adres seçimi -------------------------------------
+  const API = "http://127.0.0.1:8000";
+
+  useEffect(() => {
+    fetch(`${API}/api/v1/adres/ilceler`)
+      .then((r) => r.json())
+      .then((d) => setIbbIlceler(d.ilceler || []))
+      .catch(() => setIbbIlceler([]));
+  }, []);
+
+  const secIlce = async (id: string) => {
+    setIbbIlce(id); setIbbMahalle(""); setIbbSokak(""); setIbbKapi("");
+    setIbbMahalleler([]); setIbbSokaklar([]); setIbbKapilar([]); setIbbSonuc(null);
+    if (!id) return;
+    setIbbYukleniyor(true);
+    try {
+      const d = await (await fetch(`${API}/api/v1/adres/mahalleler?ilce_id=${id}`)).json();
+      setIbbMahalleler(d.mahalleler || []);
+      // Ana ilçe alanını da senkronla (değerleme bunu kullanıyor)
+      const ad = ibbIlceler.find((x: any) => String(x.id) === String(id))?.name;
+      if (ad) {
+        const eslesen = Object.keys(ISTANBUL_DISTRICTS).find(
+          (k) => k.toLocaleUpperCase("tr") === String(ad).toLocaleUpperCase("tr"));
+        if (eslesen) handleDistrictChange(eslesen);
+      }
+    } finally { setIbbYukleniyor(false); }
+  };
+
+  const secMahalle = async (id: string) => {
+    setIbbMahalle(id); setIbbSokak(""); setIbbKapi("");
+    setIbbSokaklar([]); setIbbKapilar([]); setIbbSonuc(null);
+    if (!id) return;
+    setIbbYukleniyor(true);
+    try {
+      const d = await (await fetch(`${API}/api/v1/adres/sokaklar?mahalle_id=${id}`)).json();
+      setIbbSokaklar(d.sokaklar || []);
+      const ad = ibbMahalleler.find((x: any) => String(x.id) === String(id))?.name;
+      if (ad) setNeighborhood(String(ad));
+    } finally { setIbbYukleniyor(false); }
+  };
+
+  const secSokak = async (id: string) => {
+    setIbbSokak(id); setIbbKapi(""); setIbbKapilar([]); setIbbSonuc(null);
+    if (!id || !ibbMahalle) return;
+    setIbbYukleniyor(true);
+    try {
+      const d = await (await fetch(
+        `${API}/api/v1/adres/kapilar?mahalle_id=${ibbMahalle}&sokak_id=${id}`)).json();
+      setIbbKapilar(d.kapilar || []);
+      const ad = ibbSokaklar.find((x: any) => String(x.id) === String(id))?.name;
+      if (ad) setStreet(String(ad));
+    } finally { setIbbYukleniyor(false); }
+  };
+
+  const secKapi = async (id: string) => {
+    setIbbKapi(id); setIbbSonuc(null);
+    if (!id) return;
+    setIbbYukleniyor(true);
+    try {
+      const d = await (await fetch(`${API}/api/v1/adres/coz?ilce_id=${ibbIlce}` +
+        `&mahalle_id=${ibbMahalle}&sokak_id=${ibbSokak}&kapi_id=${id}`)).json();
+      setIbbSonuc(d);
+      if (d?.bulundu) {
+        setDoorNo(String(d.kapi_no ?? ""));
+        if (d.ada_no) setAdaNo(String(d.ada_no));
+        if (d.parsel_no) setParselNo(String(d.parsel_no));
+      }
+    } finally { setIbbYukleniyor(false); }
   };
 
   const handleExecuteAddressSearch = () => {
@@ -647,38 +729,59 @@ export default function AdInputParser({ onComplete, loading }: StepFormProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">Sokak / Cadde İsmi <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  placeholder="Örn: Cumhuriyet Caddesi"
-                  value={street}
-                  onChange={(e) => setStreet(e.target.value)}
-                  className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-                />
-              </div>
-              <div>
-                <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">Kapı No <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  placeholder="Örn: 19"
-                  value={doorNo}
-                  onChange={(e) => setDoorNo(e.target.value)}
-                  className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-                />
-              </div>
-              <div>
-                <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">Daire No (Opsiyonel)</label>
-                <input
-                  type="text"
-                  placeholder="Örn: 23"
-                  value={aptNo}
-                  onChange={(e) => setAptNo(e.target.value)}
-                  className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
-                />
-              </div>
+            {/* RESMÎ ADRES SEÇİMİ — İBB e-Plan. Serbest metin yok: kullanıcı
+                listeden seçer, kapı seçilince binanın kendi koordinatı gelir. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {([
+                ["İlçe", ibbIlce, secIlce, ibbIlceler, false, "-- İlçe --"],
+                ["Mahalle", ibbMahalle, secMahalle, ibbMahalleler, !ibbIlce, "-- Mahalle --"],
+                ["Sokak / Cadde", ibbSokak, secSokak, ibbSokaklar, !ibbMahalle, "-- Sokak --"],
+                ["Kapı No", ibbKapi, secKapi, ibbKapilar, !ibbSokak, "-- Kapı --"],
+              ] as [string, string, (v: string) => void, any[], boolean, string][]).map(
+                ([label, val, onSel, list, disabled, ph]) => (
+                  <div key={label}>
+                    <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">
+                      {label} {list.length > 0 && <span className="text-slate-400">({list.length})</span>}
+                    </label>
+                    <select
+                      value={val}
+                      disabled={disabled || ibbYukleniyor}
+                      onChange={(e) => onSel(e.target.value)}
+                      className="w-full bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827] disabled:bg-slate-100 disabled:text-slate-400"
+                    >
+                      <option value="">{ph}</option>
+                      {list.map((o: any) => (
+                        <option key={o.id} value={o.id}>{o.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
             </div>
+
+            <div>
+              <label className="text-slate-600 block mb-1 uppercase text-[10px] font-bold">Daire No (Opsiyonel)</label>
+              <input
+                type="text"
+                placeholder="Örn: 23"
+                value={aptNo}
+                onChange={(e) => setAptNo(e.target.value)}
+                className="w-full sm:w-48 bg-white border border-[#D1D5DB] rounded-xl p-3 text-xs text-[#111827] font-bold focus:outline-none focus:border-[#111827]"
+              />
+            </div>
+
+            {ibbSonuc?.bulundu && (
+              <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-[11px] text-emerald-900 font-medium">
+                ✅ <strong>Adres resmî kayıttan bulundu.</strong> Kapı {ibbSonuc.kapi_no} →
+                {" "}<strong>Ada {ibbSonuc.ada_no} / Parsel {ibbSonuc.parsel_no}</strong>
+                {ibbSonuc.tapu_mahalle ? ` (${ibbSonuc.tapu_mahalle} tapu mahallesi)` : ""}.
+                Konum binanın kendi koordinatıdır — tahmin değil.
+              </div>
+            )}
+            {ibbSonuc && !ibbSonuc.bulundu && (
+              <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-[11px] text-amber-900 font-medium">
+                ⚠️ {ibbSonuc.mesaj}
+              </div>
+            )}
 
             <button
               type="button"
