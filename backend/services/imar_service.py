@@ -979,7 +979,11 @@ def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
          -> tüm imar alanları; ada/parsel belgeden okunur.
 
     Kaldığı yerden devam eder (stokta `__scan_oid__|ilce` işareti tutulur).
-    Üst üste `miss_stop` boş kimlikten sonra taramayı bitirir.
+    Üst üste `miss_stop` boş kimlikten sonra taramayı bitirir — ANCAK bu sınır
+    yalnızca ilk kayıt bulunduktan SONRA işletilir: bazı ilçelerde kimlik uzayı
+    1'den değil çok yukarıdan başlıyor (ör. Güngören ~37700), erken durursak
+    ilçeyi tamamen ıskalıyorduk. Bu yüzden önce KABA TARAMA ile dolu bölge
+    bulunur.
     """
     cfg = MUNICIPAL_WEBGIS.get(_norm(district))
     if not cfg or cfg["platform"] != "netgis":
@@ -999,7 +1003,37 @@ def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
 
     nonce = _nonce()
     h = {"Referer": base, "X-Service-Nonce": nonce, "X-Requested-With": "XMLHttpRequest"}
+
+    def _has(oid: int) -> bool:
+        try:
+            r = s.get(base + "service/imarsvc.aspx",
+                      params={"type": "parsel", "parselid": oid},
+                      headers=h, timeout=12, verify=False)
+            t = r.text.strip()
+            return t.startswith("[") and len(t) > 4
+        except Exception:
+            return False
+
+    # Kaba tarama: kimlik uzayının nerede dolu olduğunu bul (adım adım örnekle).
+    # Yalnızca baştan başlıyorsak ve ilk bölge boşsa gerekir.
+    if start <= 1 and not _has(1):
+        step = max(200, (end - start) // 800 or 200)
+        first = None
+        oid_s = start
+        while oid_s <= end:
+            if _has(oid_s):
+                first = oid_s
+                break
+            oid_s += step
+        if first is None:
+            if progress:
+                progress("kaba tarama: 1..%d aralığında hiç parsel yok" % end)
+            return 0
+        start = max(1, first - step)
+        if progress:
+            progress("kaba tarama: dolu bölge ~%d -> taramaya %d'den başlanıyor" % (first, start))
     stocked = miss = done = 0
+    seen_any = False          # miss_stop yalnız ilk kayıttan SONRA işletilir
     oid = start
     while oid <= end:
         if limit and done >= limit:
@@ -1018,13 +1052,14 @@ def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
             m = re.match(r'^\s*(\d+)\s*/\s*(\d+)\s*$', ap)
             if not m:
                 miss += 1
-                if miss >= miss_stop:
+                if seen_any and miss >= miss_stop:
                     if progress:
                         progress("üst üste %d boş kimlik -> tarama bitti (oid=%d)" % (miss, oid))
                     break
                 oid += 1
                 continue
             miss = 0
+            seen_any = True
             ada, parsel = m.group(1), m.group(2)
             key = _cache_key(district, ada, parsel)
             if key not in _IMAR_CACHE:
