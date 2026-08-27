@@ -61,13 +61,19 @@ def indir_ilce(ilce, delay: float, progress=True) -> dict:
     """Bir ilçenin tüm adres ağacını indirir; kaldığı yerden devam eder."""
     data = _read(ilce["id"]) or {"ilce": ilce, "mahalleler": {}}
     mahs = A.mahalleler(ilce["id"])
-    yeni_sokak = yeni_kapi = 0
+    yeni_sokak = yeni_kapi = bos_mahalle = 0
     for mi, m in enumerate(mahs, 1):
         mkey = str(m["id"])
         mrec = data["mahalleler"].setdefault(mkey, {"ad": m["name"], "sokaklar": {}})
         try:
             sokaklar = A.sokaklar(m["id"])
         except Exception:
+            sokaklar = []
+        if not sokaklar:
+            # Servis o an yanıt vermemiş olabilir. BOŞ LİSTEYİ KAYDETME —
+            # aksi halde "bu mahallede sokak yok" diye kalıcılaşır ve sonraki
+            # koşular da atlar. Mahalleyi eksik bırakıp devam ediyoruz.
+            bos_mahalle += 1
             continue
         for s in sokaklar:
             skey = str(s["id"])
@@ -76,7 +82,9 @@ def indir_ilce(ilce, delay: float, progress=True) -> dict:
             try:
                 kaps = A.kapilar(m["id"], s["id"])
             except Exception:
-                continue
+                kaps = []
+            if not kaps:
+                continue                          # kapısız kaydetme -> tekrar denenir
             mrec["sokaklar"][skey] = {
                 "ad": s["name"],
                 "kapilar": [{"id": k["id"], "ad": k["name"],
@@ -94,8 +102,11 @@ def indir_ilce(ilce, delay: float, progress=True) -> dict:
         if progress:
             print("  [%d/%d] %-22s toplam %d sokak"
                   % (mi, len(mahs), m["name"][:22], len(mrec["sokaklar"])), flush=True)
+    # Hiç sokağı olmayan mahalleleri kaydetme (sonraki koşuda tekrar denensin)
+    for mk in [k for k, v in data["mahalleler"].items() if not v["sokaklar"]]:
+        del data["mahalleler"][mk]
     _write(ilce["id"], data)
-    return {"sokak": yeni_sokak, "kapi": yeni_kapi}
+    return {"sokak": yeni_sokak, "kapi": yeni_kapi, "bos_mahalle": bos_mahalle}
 
 
 def durum():
@@ -122,7 +133,8 @@ def main():
     ap.add_argument("--ilce", help="tek ilçe adı")
     ap.add_argument("--hepsi", action="store_true", help="39 ilçenin tamamı")
     ap.add_argument("--durum", action="store_true", help="indirme durumunu göster")
-    ap.add_argument("--delay", type=float, default=0.4)
+    ap.add_argument("--delay", type=float, default=1.0,
+                    help="istekler arası saniye (canlı servisi yormamak için)")
     args = ap.parse_args()
 
     if args.durum:
@@ -147,7 +159,10 @@ def main():
     for x in hedef:
         print("════ %s ════" % x["name"], flush=True)
         r = indir_ilce(x, args.delay)
-        print("  bitti: +%d sokak, +%d kapı" % (r["sokak"], r["kapi"]), flush=True)
+        msg = "  bitti: +%d sokak, +%d kapı" % (r["sokak"], r["kapi"])
+        if r.get("bos_mahalle"):
+            msg += "  [%d mahalle yanıt alamadı -> tekrar denenecek]" % r["bos_mahalle"]
+        print(msg, flush=True)
     print("\nTAMAMLANDI")
 
 

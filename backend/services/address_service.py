@@ -142,11 +142,21 @@ def _discover_prefix() -> Optional[str]:
         return None
 
 
+# `sokak` ve `kapi` uçları AĞIR sorgular (bir mahallenin tüm sokakları /
+# bir sokağın tüm kapıları) ve zaman zaman 20 sn'yi aşıyor. Kısa timeout +
+# tek deneme, wizard'da "sokak yok" gibi görünen sessiz başarısızlığa yol
+# açıyordu. Bu yüzden ağır uçlarda daha uzun süre ve artan beklemeli tekrar.
+_AGIR = {"sokak", "kapi", "getbypoint", "getbyadaparsel"}
+
+
 def _post(path: str, body: Dict[str, Any]) -> Any:
     global _prefix
-    for attempt in (1, 2):
+    timeout = 45 if path in _AGIR else 20
+    denemeler = 3 if path in _AGIR else 2
+    for attempt in range(1, denemeler + 1):
         try:
-            r = requests.post(f"{ROOT}{_prefix}/{path}", json=body, headers=_HDR, timeout=20)
+            r = requests.post(f"{ROOT}{_prefix}/{path}", json=body,
+                              headers=_HDR, timeout=timeout)
             if r.status_code == 200:
                 return r.json()
         except Exception:
@@ -157,7 +167,8 @@ def _post(path: str, body: Dict[str, Any]) -> Any:
                 with _lock:
                     _prefix = np
                 continue
-        break
+        if attempt < denemeler:
+            time.sleep(1.5 * attempt)         # artan bekleme
     return None
 
 
@@ -175,7 +186,10 @@ def mahalleler(ilce_id: int) -> List[Dict[str, Any]]:
                       key=lambda x: x["name"])
     k = f"mah:{ilce_id}"
     if k not in _cache:
-        _cache[k] = _post("mahalle", {"id": int(ilce_id), "geometry": False}) or []
+        r = _post("mahalle", {"id": int(ilce_id), "geometry": False})
+        if not r:
+            return []          # BOŞ/HATALI yanıtı ÖNBELLEĞE ALMA
+        _cache[k] = r
     return _cache[k]
 
 
@@ -195,7 +209,12 @@ def sokaklar(mahalle_id: int) -> List[Dict[str, Any]]:
                       key=lambda x: x["name"])
     k = f"sok:{mahalle_id}"
     if k not in _cache:
-        _cache[k] = _post("sokak", {"id": int(mahalle_id), "geometry": False}) or []
+        r = _post("sokak", {"id": int(mahalle_id), "geometry": False})
+        if not r:
+            # Servis o an yanıt vermedi; boş listeyi ÖNBELLEĞE ALMA, yoksa
+            # "bu mahallede sokak yok" diye kalıcılaşır ve wizard tıkanır.
+            return []
+        _cache[k] = r
     return _cache[k]
 
 
@@ -210,7 +229,9 @@ def kapilar(mahalle_id: int, sokak_id: int) -> List[Dict[str, Any]]:
     k = f"kapi:{mahalle_id}:{sokak_id}"
     if k in _cache:
         return _cache[k]
-    raw = _post("kapi", {"districtId": int(mahalle_id), "id": int(sokak_id)}) or []
+    raw = _post("kapi", {"districtId": int(mahalle_id), "id": int(sokak_id)})
+    if not raw:
+        return []              # başarısız yanıtı önbelleğe alma
     out = []
     for d in raw:
         g = d.get("geometry") or {}
