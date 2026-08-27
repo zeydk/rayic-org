@@ -171,6 +171,39 @@ def main():
               % (np.mean(np.abs(e_ctl)), np.mean(np.abs(e_loc)),
                  "konum İYİLEŞTİRİYOR" if np.mean(np.abs(e_loc)) < np.mean(np.abs(e_ctl))
                  else "konum İYİLEŞTİRMİYOR"))
+    # ---------------------------------------------------------------------
+    # BİLEŞİM DAYANIKLILIĞI: havuzlanmış sabit-etki tahmini, ilan sayısı fazla
+    # olan mahallelerin ağırlığıyla kayabiliyor (örneklem pahalı kıyı ilçeleriyle
+    # başladığında -0.19, sonra -0.40 çıktı). Çapraz kontrol olarak HER MAHALLEDE
+    # ayrı eğim hesaplayıp MEDYANINI alıyoruz — bu, ilan sayısına duyarsızdır.
+    # Nihai katsayı olarak İKİSİNDEN KÜÇÜK OLANI (muhafazakâr) kullanılır.
+    # ---------------------------------------------------------------------
+    egimler = []
+    for k in keys:
+        g = [r for r in d if (r.get("ilce"), r["mahalle"]) == k]
+        if len(g) < 8 or len({(round(r["lat"], 4), round(r["lng"], 4)) for r in g}) < 3:
+            continue
+        if np.std([r["d_kiyi"] for r in g]) < 0.05:
+            continue
+        Xg = np.c_[np.ones(len(g)), [[r["ln_d_kiyi"], r["ln_m2"], r["oda"]] for r in g]]
+        try:
+            bg, *_ = np.linalg.lstsq(Xg, np.log([r["tlm2"] for r in g]), rcond=None)
+            egimler.append(float(bg[1]))
+        except Exception:
+            pass
+    havuz = float(beta.get("ln_d_kiyi", 0.0))
+    if egimler:
+        med = float(np.median(egimler))
+        print("\n   ÇAPRAZ KONTROL — mahalle-içi eğim medyanı: %+.3f (%d mahalle, %%%.0f negatif)"
+              % (med, len(egimler), 100 * sum(1 for x in egimler if x < 0) / len(egimler)))
+        if med < 0 and havuz < 0:
+            secilen = max(havuz, med)          # daha KÜÇÜK büyüklük = muhafazakâr
+            print("   -> nihai (muhafazakâr): %+.3f  [havuz %+.3f | medyan %+.3f]"
+                  % (secilen, havuz, med))
+            beta["ln_d_kiyi"] = secilen
+            beta["_ln_d_kiyi_havuz"] = havuz
+            beta["_ln_d_kiyi_medyan"] = med
+
     out = {
         "meta": {
             "amac": "Mahalle içi konum çarpanı (mahalle ortalaması = 1.00).",
