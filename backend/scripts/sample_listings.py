@@ -146,17 +146,39 @@ def main():
                 except Exception:
                     pass
 
+    # MAHALLE BAZLI gezinme: ilçe sayfası mahalle YOLLARINI listeliyor
+    # (/satilik-konut/istanbul-kadikoy-caferaga-mahallesi). Mahalle içi
+    # varyasyonu ölçmek için ilçe genelinde değil MAHALLE İÇİNDE derinlik
+    # gerekiyor. Not: robots.txt'te yasak olan `?mahalle` QUERY parametresidir;
+    # bu YOL tabanlı sayfalar (ve `?sayfa=` sayfalaması) yasak listesinde yok.
     links = []
     try:
-        for p in range(1, args.sayfa + 1):
-            u = f"{BASE}/satilik-konut/{args.ilce}" + (f"/{p}" if p > 1 else "")
-            html = _get(s, u, args.delay)
-            found = re.findall(r'/ilan/[a-z0-9-]+', html)
-            new = [x for x in dict.fromkeys(found) if BASE + x not in seen]
-            links += new
-            print("  gezinme %d: %d yeni ilan (toplam %d)" % (p, len(new), len(links)), flush=True)
+        html = _get(s, f"{BASE}/satilik-konut/{args.ilce}", args.delay)
+        mahalleler = list(dict.fromkeys(
+            re.findall(r'/satilik-konut/' + re.escape(args.ilce) + r'-[a-z0-9-]+-mahallesi', html)))
+        print("  %d mahalle bulundu" % len(mahalleler), flush=True)
+        found = [x for x in dict.fromkeys(re.findall(r'/ilan/[a-z0-9-]+', html))
+                 if BASE + x not in seen]
+        links += found
+        for mp in mahalleler:
             if len(links) >= args.max:
                 break
+            for p in range(1, args.sayfa + 1):
+                u = BASE + mp + (f"?sayfa={p}" if p > 1 else "")
+                try:
+                    h = _get(s, u, args.delay)
+                except Engellendi:
+                    raise
+                except Exception:
+                    break
+                new = [x for x in dict.fromkeys(re.findall(r'/ilan/[a-z0-9-]+', h))
+                       if BASE + x not in seen and x not in links]
+                links += new
+                if len(new) < 5:      # sayfa boşaldı -> sonraki mahalle
+                    break
+                if len(links) >= args.max:
+                    break
+            print("  %-46s toplam %d ilan" % (mp.split('/')[-1][:46], len(links)), flush=True)
     except Engellendi as e:
         print("[DURDURULDU] site erişimi kısıtladı: %s" % e)
         return
