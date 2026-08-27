@@ -13,6 +13,7 @@ from services.spatial_service import analyze_spatial_data, SpatialCheckupResult,
 from services.pdf_report import generate_checkup_pdf
 from services.tcmb_service import get_tcmb_kfe_summary
 from services.observation_log import kaydet as _gozlem_kaydet
+from services import address_service as _adres
 
 app = FastAPI(
     title="rayic.org API",
@@ -77,6 +78,41 @@ def read_root():
         "service": "rayic.org Real Estate Valuation & TKGM API",
         "version": "1.2.0"
     }
+
+# ---------------------------------------------------------------------------
+# RESMİ ADRES SEÇİMİ (İBB e-Plan). Kullanıcı adres YAZMAZ, listeden SEÇER:
+# ilçe -> mahalle -> sokak -> kapı. Kapı seçilince binanın kendi koordinatı ve
+# oradan ada/parsel kesin olarak gelir; adres ayrıştırma tahmini ortadan kalkar.
+# ---------------------------------------------------------------------------
+@app.get("/api/v1/adres/ilceler")
+def adres_ilceler():
+    return {"ilceler": _adres.ilceler()}
+
+
+@app.get("/api/v1/adres/mahalleler")
+def adres_mahalleler(ilce_id: int):
+    return {"mahalleler": _adres.mahalleler(ilce_id)}
+
+
+@app.get("/api/v1/adres/sokaklar")
+def adres_sokaklar(mahalle_id: int):
+    return {"sokaklar": _adres.sokaklar(mahalle_id)}
+
+
+@app.get("/api/v1/adres/kapilar")
+def adres_kapilar(mahalle_id: int, sokak_id: int):
+    return {"kapilar": _adres.kapilar(mahalle_id, sokak_id)}
+
+
+@app.get("/api/v1/adres/coz")
+def adres_coz(ilce_id: int, mahalle_id: int, sokak_id: int, kapi_id: int):
+    """Seçilen kapı -> koordinat + ada/parsel (wizard bunu kullanır)."""
+    r = _adres.adres_coz(ilce_id, mahalle_id, sokak_id, kapi_id)
+    if not r:
+        return {"bulundu": False,
+                "mesaj": "Bu kapı için konum alınamadı. Ada/parsel ile devam edebilirsiniz."}
+    return {"bulundu": True, **r}
+
 
 @app.post("/api/v1/cadastre-lookup")
 def lookup_cadastre(req: CadastreLookupRequest):
