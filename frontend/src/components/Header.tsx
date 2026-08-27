@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calculator, Hammer, Plus, ShieldCheck, Activity, User, GraduationCap } from "lucide-react";
+import { Calculator, Hammer, Plus, ShieldCheck, Activity, User, GraduationCap, MapPin} from "lucide-react";
 
 export type NavMenu = "home" | "valuation" | "earthquake" | "safety" | "education" | "urban" | "guides" | "profile" | "add_property";
 
@@ -67,6 +67,15 @@ export default function Header({ activeMenu, onMenuChange, onOpenParser, savedCo
               </button>
             );
           })}
+          {/* Mahalle Rehberi ayrı bir ROUTE'tur (SEO için sunucuda render edilir),
+              SPA sekmesi değil — bu yüzden gerçek link kullanılıyor. */}
+          <a
+            href="/mahalleler"
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 whitespace-nowrap border text-slate-700 border-transparent hover:bg-[#E5E7EB]/50 hover:text-[#111827]"
+          >
+            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+            <span>Mahalle Rehberi</span>
+          </a>
         </nav>
 
         {/* Primary Action Button */}
