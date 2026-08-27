@@ -31,6 +31,7 @@ import math
 import os
 import re
 import threading
+import time
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -56,26 +57,45 @@ _cache: Dict[str, Any] = {}
 # ---------------------------------------------------------------------------
 _ADRES_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "adres")
 _yerel: Dict[str, Any] = {}
-_yerel_yuklendi = False
+_yerel_imza: Optional[tuple] = None
+_yerel_kontrol_ts = 0.0
+_YEREL_TTL = 30.0          # saniyede bir'den sik dizin taramasin
 
 
 def _yerel_yukle() -> None:
-    global _yerel_yuklendi
-    if _yerel_yuklendi:
+    """Yerel yedegi yukler; dosyalar DEGISTIYSE yeniden yukler.
+
+    On-cekme arka planda calisirken yeni ilcelerin dosyalari olusuyor. Tek
+    seferlik yukleme yapsaydik calisan API bunlari hic gormezdi (indirme
+    bittigi halde hala aga gitmeye devam ederdi). Bu yuzden dizin imzasi
+    (dosya adi + boyut + mtime) TTL ile kontrol edilir."""
+    global _yerel_imza, _yerel_kontrol_ts
+    simdi = time.time()
+    if _yerel_imza is not None and (simdi - _yerel_kontrol_ts) < _YEREL_TTL:
         return
-    _yerel_yuklendi = True
+    _yerel_kontrol_ts = simdi
     try:
-        for fn in os.listdir(_ADRES_DIR):
-            if not fn.endswith(".json"):
-                continue
-            try:
-                with open(os.path.join(_ADRES_DIR, fn), encoding="utf-8") as f:
-                    d = json.load(f)
-                _yerel[str(d["ilce"]["id"])] = d
-            except Exception:
-                continue
+        dosyalar = sorted(fn for fn in os.listdir(_ADRES_DIR) if fn.endswith(".json"))
+        imza = tuple((fn, os.path.getsize(os.path.join(_ADRES_DIR, fn)),
+                      int(os.path.getmtime(os.path.join(_ADRES_DIR, fn))))
+                     for fn in dosyalar)
     except FileNotFoundError:
-        pass
+        _yerel_imza = ()
+        return
+    if imza == _yerel_imza:
+        return
+    yeni: Dict[str, Any] = {}
+    for fn, _, _ in imza:
+        try:
+            with open(os.path.join(_ADRES_DIR, fn), encoding="utf-8") as f:
+                d = json.load(f)
+            yeni[str(d["ilce"]["id"])] = d
+        except Exception:
+            continue
+    with _lock:
+        _yerel.clear()
+        _yerel.update(yeni)
+        _yerel_imza = imza
 
 
 def yerel_durum() -> Dict[str, Any]:
