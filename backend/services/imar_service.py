@@ -972,9 +972,31 @@ def netgis_probe_ada(cfg: Dict[str, str], ada: str, parsel_max: int = 40,
 _SCAN_KEY = "__scan_oid__"   # işaret anahtarı: "{ilce}|__scan_oid__"
 
 
+def _blocked_reason(resp) -> Optional[str]:
+    """Belediye sunucusu erişimi kısıtladı mı? (CAPTCHA / 403 / boş belge)
+
+    Toplu çekim sırasında belediyelerin bot korumasını tetiklediğimizi
+    gördük: NETCAD kurulumları istek hacmi artınca imar belgesini
+    recaptcha.aspx'e yönlendiriyor ya da 403 veriyor. Bu korumaları
+    AŞMAYA ÇALIŞMIYORUZ; tespit edip geri çekiliyoruz."""
+    try:
+        head = (resp.text or "")[:2000].lower()
+        loc = (resp.headers.get("Location") or "").lower()
+        if "recaptcha" in loc or "recaptcha" in head or "güvenlik doğrulaması" in head:
+            return "recaptcha"
+        if resp.status_code == 403 or "hata.aspx?code=403" in loc or "hata.aspx?code=403" in head:
+            return "403"
+        if resp.status_code == 429:
+            return "429 (hız sınırı)"
+    except Exception:
+        pass
+    return None
+
+
 def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
-                          delay: float = 0.4, limit: int = 0,
-                          miss_stop: int = 3000, progress=None) -> int:
+                          delay: float = 2.0, limit: int = 0,
+                          miss_stop: int = 3000, force: bool = False,
+                          progress=None) -> int:
     """NETGIS ilçesini PARSEL KİMLİĞİ (OBJECTID) üzerinden tarayarak stoklar.
 
     NETGIS'te ada/parsel'i toplu listeleyen bir uç YOK; ada×parsel kombinasyonu
@@ -1003,8 +1025,14 @@ def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
     base = cfg["base"]
     dk = _norm(district)
     mark = f"{dk}|{_SCAN_KEY}"
+    prev = _IMAR_CACHE.get(mark, {})
+    if prev.get("blocked") and not force:
+        if progress:
+            progress("bu ilçe daha önce erişimi kısıtladı (%s) -> atlanıyor. "
+                     "Yeniden denemek için force=True." % prev["blocked"])
+        return 0
     if not start:
-        start = int(_IMAR_CACHE.get(mark, {}).get("last_oid", 0)) + 1
+        start = int(prev.get("last_oid", 0)) + 1
 
     s = requests.Session()
     s.headers.update({"User-Agent": _UA})
@@ -1076,9 +1104,21 @@ def bulk_fetch_netgis_oid(district: str, start: int = 0, end: int = 250000,
             key = _cache_key(district, ada, parsel)
             if key not in _IMAR_CACHE:
                 done += 1
-                doc = s.get(base + "imar.aspx", params={"parselid": oid},
-                            headers={"Referer": base, "X-Service-Nonce": nonce},
-                            timeout=30, verify=False).text
+                dr = s.get(base + "imar.aspx", params={"parselid": oid},
+                           headers={"Referer": base, "X-Service-Nonce": nonce},
+                           timeout=30, verify=False)
+                blocked = _blocked_reason(dr)
+                if blocked:
+                    # Belediye bot korumasını devreye soktu. ASLA aşmaya
+                    # çalışmıyoruz ve ısrarla istek atmıyoruz: taramayı burada
+                    # bitirip durumu bildiriyoruz.
+                    if progress:
+                        progress("DURDURULDU — belediye erişimi kısıtladı (%s, oid=%d). "
+                                 "Bu ilçe için toplu çekim bırakıldı." % (blocked, oid))
+                    _IMAR_CACHE[mark] = {"last_oid": oid, "blocked": blocked}
+                    _save_cache(district)
+                    return stocked
+                doc = dr.text
                 fields = _extract_imar(doc)
                 if fields:
                     rec = {"supported": True,
