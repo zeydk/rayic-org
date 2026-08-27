@@ -14,16 +14,24 @@ ilan örnekleminde mahalle sabit etkili regresyon (scripts/estimate_location_fac
 Mahalle sabit etkisi mahallenin fiyat seviyesini soğurduğu için `b` yalnızca
 MAHALLE İÇİ değişimden gelir. Daire özellikleri (m², yaş, oda) kontrol edilir.
 
-ÖLÇÜM SONUCU (2554 ilan, 98 mahalle; GERÇEK kıyı çizgisiyle):
-    ln_d_kiyi = -0.193 -> kıyıya uzaklık 2 katına çıkınca fiyat ~%13 DÜŞER
-    ln_d_ray  = -0.104 -> raylı sisteme (metro+Marmaray) uzaklık 2x -> ~%7 düşer
+ÖLÇÜM SONUCU — NİHAİ (7009 ilan, 231 mahalle; 20 ilçelik örneklem tamamlandı):
+    ln_d_kiyi = -0.245 -> kıyıya uzaklık 2 katına çıkınca fiyat ~%16 DÜŞER
+    ln_d_ray  = -0.109 -> raylı sisteme (metro+Marmaray) uzaklık 2x -> ~%7 düşer
 
-SAĞLAMLIK (aynı örneklem üzerinde):
-  * Bir mahalle çıkarma: kıyı 99/99 mahallede NEGATİF (-0.262..-0.162);
-    raylı 98/99 negatif.
-  * Bootstrap %5-%95: kıyı (-0.312, -0.115), raylı (-0.220, -0.002) —
+SAĞLAMLIK (nihai örneklem):
+  * Bir mahalle çıkarma: kıyı 231/231 mahallede NEGATİF (-0.282..-0.113);
+    raylı da 231/231 negatif (-0.156..-0.054).
+  * Bootstrap %5-%95: kıyı (-0.329, -0.183), raylı (-0.170, -0.036) —
     ikisi de sıfırı İÇERMEZ.
-  * Örneklem dışı hata iyileşiyor (MAE 0.2874 -> 0.2857).
+  * Örneklem dışı hata iyileşiyor (MAE 0.3082 -> 0.3070).
+
+YAKINSAMA: Katsayı örneklem büyüdükçe oturdu ve kararlı hale geldi:
+    n=2554 -> -0.193 | n=3639 -> -0.234 | n=7009 -> -0.245
+Ara aşamada havuzlanmış tahmin -0.404'e sıçramıştı; bunun aykırı değerden
+DEĞİL örneklem bileşiminden (önce pahalı kıyı ilçeleri) kaynaklandığı
+tespit edildi (%1-%2 winsorize katsayıyı değiştirmiyordu). Bu yüzden
+tahminci artık mahalle-içi eğim medyanıyla çapraz kontrol yapıp
+MUHAFAZAKÂR olanı seçiyor.
 
 ÖNCEKİ BAŞARISIZ DENEME (kayıt için): Aynı etki mahalle MERKEZLERİ üzerinden
 kestirilmeye çalışıldığında ilçe içi kıyı katsayısı -0.02 (gürültü) çıkmıştı;
@@ -33,7 +41,7 @@ ilan koordinatlarıyla ölçüyor olmamız.
 DÜRÜST SINIRLAR:
   * Örneklem konumları 462 m ızgaraya yuvarlı -> ölçüm hatası katsayıyı sıfıra
     çeker; gerçek etki muhtemelen ölçtüğümüzden BÜYÜKTÜR (alt sınır).
-  * Katsayı 98 mahalleden kestirilip tüm İstanbul'a uygulanıyor.
+  * Katsayı 231 mahalleden kestirilip tüm İstanbul'a uygulanıyor.
   * Konumun kontrollerden SONRAKİ ek açıklaması küçük (~%1); yani konum
     gerçek ama fiyatın küçük bir bölümünü açıklıyor — piyasada modellenemeyen
     başka etkenler baskın.
