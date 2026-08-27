@@ -52,9 +52,43 @@ def test_urban_transformation():
         neighborhood="Caddebostan"
     )
     
-    assert res.estimated_new_net_m2 == 60.0
-    assert res.land_security_ratio_percent > 0.0
-    assert res.new_apartment_value > 0.0
+    # Arsa payı: (20/300) x 2400 (varsayılan toplam arsa) = 160 m²
+    assert res.land_share_m2 == 160.0
+    # Kullanıcının verdiği müteahhit oranı geçerli aralıkta -> aynen kullanılır
+    assert res.contractor_share_percent == 40.0
+    # Yeni daire = arsa payı x (1 - müteahhit oranı) x 1.15 = 160 x 0.6 x 1.15
+    assert res.new_flat_net_m2 == 110.4
+    assert res.estimated_new_building_price == 12_000_000.0 * 1.65
+    assert res.value_appreciation_percent > 0.0
+
+
+def test_urban_transformation_mahalle_orani():
+    """Oran verilmezse mahalle haritasından gelmeli (Caddebostan = %42)."""
+    res = simulate_urban_transformation(
+        advertised_price=12_000_000.0,
+        current_net_m2=100.0,
+        land_num=20.0,
+        land_den=300.0,
+        contractor_share_ratio=None,
+        district="Kadıköy",
+        neighborhood="Caddebostan"
+    )
+    assert res.contractor_share_percent == 42.0
+    assert res.new_flat_net_m2 == 106.7
+
+
+def test_urban_transformation_taban_sinir():
+    """Arsa payı çok küçükse yeni daire 45 m² tabanına sabitlenir."""
+    res = simulate_urban_transformation(
+        advertised_price=5_000_000.0,
+        current_net_m2=60.0,
+        total_land_m2=300.0,
+        land_num=5.0,
+        land_den=100.0,
+        contractor_share_ratio=0.50
+    )
+    assert res.land_share_m2 == 15.0
+    assert res.new_flat_net_m2 == 45.0
 
 def test_spatial_analysis():
     res = analyze_spatial_data(
