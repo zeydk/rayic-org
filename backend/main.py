@@ -12,6 +12,7 @@ from services.financial_engine import calculate_financials, FinancialYieldResult
 from services.spatial_service import analyze_spatial_data, SpatialCheckupResult, resolve_tkgm_cadastre_and_attributes
 from services.pdf_report import generate_checkup_pdf
 from services.tcmb_service import get_tcmb_kfe_summary
+from services.observation_log import kaydet as _gozlem_kaydet
 
 app = FastAPI(
     title="rayic.org API",
@@ -134,6 +135,23 @@ def valuate_property(req: ValuationRequest):
         building_age=req.building_age,
         floor_count=req.floor_count
     )
+
+    # Her ekspertiz talebi aynı zamanda bir GEOCODED FİYAT GÖZLEMİdir: adresi
+    # TKGM ile parsel koordinatına çözdük, ilan fiyatı ve m² elimizde. Mahalle
+    # İÇİ konum çarpanı ancak bu gözlemler birikince GERÇEK veriyle kestirilebilir
+    # (hazır veri setlerinde koordinat yok, portallar otomatik erişime kapalı).
+    try:
+        _gozlem_kaydet(
+            lat=getattr(spatial_res, "property_lat", None),
+            lng=getattr(spatial_res, "property_lng", None),
+            district=req.district, neighborhood=req.neighborhood,
+            price=req.price, net_m2=req.net_m2,
+            building_age=req.building_age, floor_category=req.floor_category,
+            ada_no=getattr(getattr(spatial_res, "tkgm_cadastre", None), "ada_no", None),
+            parsel_no=getattr(getattr(spatial_res, "tkgm_cadastre", None), "parsel_no", None),
+        )
+    except Exception:
+        pass
 
     tcmb_data = get_tcmb_kfe_summary()
 

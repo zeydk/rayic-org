@@ -25,3 +25,6 @@ backend/data/imar/
 backend/data/*.tmp
 backend/data/*.lock
 
+
+# geocoded fiyat gözlem defteri (kullanıcı verisi)
+backend/data/fiyat_gozlemleri.jsonl
