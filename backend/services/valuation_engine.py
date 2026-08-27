@@ -196,14 +196,27 @@ def market_projection(district: Optional[str], current_tlm2: float) -> Dict[str,
 
 
 def piyasa_kiralik(district: Optional[str], neighborhood: Optional[str]) -> Optional[float]:
-    """Ağustos 2026 raporundan güncel mahalle kira rayici (TL/m²)."""
+    """Ağustos 2026 raporundan güncel mahalle kira rayici (TL/m²).
+
+    Mahalle bulunamazsa İLÇE MEDYANINA düşer — eski davranışta mahalle
+    eşleşmeyince None dönüyordu ve kira hesabı 5 ilçelik sabit tabloya
+    (Kadıköy 420 / diğer 380 TL/m²) geri düşüyordu. Oysa elimizde 39 ilçe /
+    479 mahallelik güncel rayiç var."""
     if not district:
         return None
     for k, v in PIYASA_RAYIC.items():
-        if _norm_tr(k) == _norm_tr(district):
-            for mk, mv in v.items():
-                if _norm_tr(mk) == _norm_tr(neighborhood or ""):
-                    return mv.get("kiralik")
+        if _norm_tr(k) != _norm_tr(district):
+            continue
+        for mk, mv in v.items():
+            if _norm_tr(mk) == _norm_tr(neighborhood or ""):
+                kr = mv.get("kiralik")
+                if kr:
+                    return float(kr)
+        # mahalle yok -> ilçe medyanı
+        vals = sorted(float(mv["kiralik"]) for mv in v.values() if mv.get("kiralik"))
+        if vals:
+            n = len(vals)
+            return vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2.0
     return None
 
 

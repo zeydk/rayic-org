@@ -157,7 +157,10 @@ def valuate_property(req: ValuationRequest):
         advertised_price=req.price,
         net_m2=req.net_m2,
         district=req.district,
-        building_age=req.building_age or 10
+        building_age=req.building_age or 10,
+        neighborhood=req.neighborhood,
+        lat=req.lat,
+        lng=req.lng,
     )
 
     spatial_res = analyze_spatial_data(

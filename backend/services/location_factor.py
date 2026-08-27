@@ -79,6 +79,7 @@ def _load_kiyi():
 _KIYI = _load_kiyi()
 _RAY = _M.get("rayli_duraklar") or []
 _MERKEZ = _M.get("mahalle_merkezleri") or {}
+_ILCE = _M.get("ilce_merkezleri") or {}
 
 
 def _nrm(s: Optional[str]) -> str:
@@ -102,16 +103,24 @@ def _d_ray(lat: float, lng: float) -> float:
     return min(_km(lat, lng, p[0], p[1]) for p in _RAY) if _RAY else 0.0
 
 
-def mahalle_merkezi(district: Optional[str], neighborhood: Optional[str]):
-    """Mahallenin referans merkezi. Aynı adlı mahalleler için ilçeye en yakını."""
+def mahalle_merkezi(district: Optional[str], neighborhood: Optional[str],
+                    lat: Optional[float] = None, lng: Optional[float] = None):
+    """Mahallenin referans merkezi (aynı adlı mahalleler için doğru olanı seçer).
+
+    İstanbul'da çok sayıda mahalle aynı adı taşıyor ("Merkez" 11 yerde, "Maden"
+    2 yerde...). Önceden ilçe adı mahalle listesinde yoksa İLK aday seçiliyordu
+    ve yanlış konuma düşebiliyordu (Esenyurt/Merkez gerçek yerden 7 km uzağa).
+    Artık sırayla: (1) konutun kendi koordinatına en yakın aday, (2) İLÇE
+    merkezine en yakın aday, (3) tek aday varsa o."""
     cands = _MERKEZ.get(_nrm(neighborhood))
     if not cands:
         return None
     if len(cands) == 1:
         return cands[0]
-    ilce = _MERKEZ.get(_nrm(district))
-    if ilce:
-        ic = ilce[0]
+    if lat is not None and lng is not None:
+        return min(cands, key=lambda p: _km(p[0], p[1], lat, lng))
+    ic = _ILCE.get(_nrm(district))
+    if ic:
         return min(cands, key=lambda p: _km(p[0], p[1], ic[0], ic[1]))
     return cands[0]
 
@@ -122,7 +131,7 @@ def konum_carpani(lat: Optional[float], lng: Optional[float],
     """Konutun mahalle ortalamasına göre konum çarpanı (1.00 = mahalle ortalaması)."""
     if lat is None or lng is None or not _B:
         return None
-    ref = mahalle_merkezi(district, neighborhood)
+    ref = mahalle_merkezi(district, neighborhood, lat, lng)
     if not ref:
         return None
 
