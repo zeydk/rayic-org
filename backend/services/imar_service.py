@@ -42,6 +42,11 @@ MUNICIPAL_WEBGIS: Dict[str, Dict[str, str]] = {
     "uskudar":    {"platform": "arcgis_kentrehberi",
                    "gis": "https://harita.uskudar.bel.tr/server/rest/services/KENTREHBERI",
                    "eharita": "https://cbs.uskudar.bel.tr/eharita/"},
+    # NETCAD KEOS/YKR platformu: OGC-Features arama proxy'si + NETGIS imar belgesi.
+    "pendik":     {"platform": "keos_ykr",
+                   "proxy": "https://cbsproxy.pendik.bel.tr",
+                   "base": "https://keos.pendik.bel.tr/imardurumu/",
+                   "kentrehberi": "https://keos.pendik.bel.tr/_keos/"},
     # GiSoft GIS platformu (anonim JWT + entity/report + PDF imar belgesi).
     "beylikduzu": {"platform": "gisoft",
                    "base": "https://cbs.beylikduzu.istanbul/GiSoftGis",
@@ -106,7 +111,10 @@ _LABEL_MAP = {
     "Plan Fonksiyon": "fonksiyon", "Fonksiyon": "fonksiyon",
     "Bina Yüksekliği": "bina_yuksekligi", "Kat Adedi": "kat_adedi",
     "İnşaat Nizamı": "insaat_nizami", "T.A.K.S.": "taks", "TAKS": "taks",
+    "T.A.K.S": "taks", "K.A.K.S (Emsal)": "kaks", "K.A.K.S": "kaks",
     "K.A.K.S.": "kaks", "KAKS": "kaks", "Emsal": "emsal",
+    "Ada/Parsel": "ada_parsel_belge", "Tapu Kütüğü": "tapu_kutugu",
+    "Açıklama": "aciklama",
     "Ön Bahçe": "on_bahce", "Yan Bahçe": "yan_bahce", "Arka Bahçe": "arka_bahce",
     "Bina Derinliği": "bina_derinligi", "Bina Genişliği": "bina_genisligi",
     "Pafta": "pafta", "Mer'i İmar Planı": "imar_plani",
@@ -116,6 +124,11 @@ _LABEL_MAP = {
 
 
 def _clean_val(raw: str) -> str:
+    # Ekranda görünmeyen/yardımcı öğeleri at (yazdırma dışı linkler, ikonlar,
+    # sarı vurgulu uyarı notları) — asıl değer metnini KORUYARAK.
+    raw = re.sub(r'<a\b[^>]*\bno-print\b[^>]*>.*?</a>', ' ', raw, flags=re.DOTALL | re.I)
+    raw = re.sub(r'<marker\b[^>]*>.*?</marker>', ' ', raw, flags=re.DOTALL | re.I)
+    raw = re.sub(r'<i\b[^>]*></i>', ' ', raw, flags=re.I)
     # Tooltip/span attribute leaks -> keep only real inner text.
     if "data-ref" in raw or "data-placement" in raw or "title=" in raw:
         inner = re.findall(r">([^<>]+)<", raw)
@@ -123,7 +136,8 @@ def _clean_val(raw: str) -> str:
             raw = " ".join(inner)
     t = _html.unescape(re.sub(r"<[^>]+>", " ", raw))
     t = re.sub(r"\s+", " ", t).strip()
-    if t in ("EMPTYROW", "-", ".", ""):
+    t = re.sub(r"\(\s*\)$", "", t).strip()          # boşalan parantezleri temizle
+    if t in ("EMPTYROW", "-", ".", "", "- (-)", "-(-)"):
         return ""
     return re.sub(r"\s*(Harita|Google Maps|TKGM\|Parsel Sorgu)\s*$", "", t).strip()
 
@@ -148,11 +162,23 @@ def _extract_imar(doc: str) -> Dict[str, Any]:
         if not label or label in (".", "EMPTYROW"):
             continue
         if label.startswith("Parsel Alanı") and val:
-            out["parsel_alani"] = val.split("(")[0].strip()
+            # "509,94 m² ( Tapu alanı değildir! ) Bilgi" -> "509,94 m²"
+            malan = re.match(r"\s*([\d.,]+\s*m²)", val)
+            out["parsel_alani"] = malan.group(1) if malan else val.split("(")[0].strip()
         if label in _LABEL_MAP and val:
             out.setdefault(_LABEL_MAP[label], val)
         if val:
             tum[label] = val
+
+    # Bazı belediyeler (ör. Pendik) "Plan Fonksiyon" hücresine önce genel bir
+    # uyarı metni koyup asıl fonksiyonu sona yazıyor: "- Uygulama İmar Planına
+    # ait genel plan notları ... Konut Alanı (509.941 m²)". Gerçek fonksiyonu ayır.
+    fon = out.get("fonksiyon")
+    if fon and len(fon) > 90:
+        mf = re.search(r'([^.\-]{3,60}?\s*(?:Alanı|Alan|Bölgesi|Sahası)\s*(?:\([^)]*\))?)\s*$', fon)
+        if mf:
+            out["fonksiyon"] = mf.group(1).strip()
+            out.setdefault("fonksiyon_aciklama", fon[:800])
 
     # Plan notları (numaralı liste) — tam metin.
     txt = _strip_html(doc)
@@ -161,6 +187,11 @@ def _extract_imar(doc: str) -> Dict[str, Any]:
         notes = re.sub(r"\s+", " ", mnot.group(1)).strip()
         if len(notes) > 30:
             out["plan_notlari"] = notes[:1500]
+
+    # Plan notları ayrı bir PDF olarak linklenmişse (Pendik) URL'yi sakla.
+    mpdf = re.search(r'https?://[^\s"\'<>]+/plannotlari/[^\s"\'<>]+\.pdf', doc, re.I)
+    if mpdf:
+        out["plan_notlari_pdf"] = _html.unescape(mpdf.group(0))
 
     if tum:
         out["tum_alanlar"] = tum
@@ -230,6 +261,20 @@ def fetch_parcel_geometry(district: str, ada: str, parsel: str) -> Optional[Dict
             geom = {"type": "Polygon", "coordinates": [[[p[0], p[1]] for p in ring]]}
             return {"lat": cy, "lng": cx, "geometry": geom,
                     "tapu_mahalle": feats[0]["attributes"].get("MAHALLE", "")}
+        except Exception:
+            return None
+
+    # KEOS/YKR: arama proxy'si doğrudan parsel poligonunu (GeoJSON) veriyor.
+    if cfg["platform"] == "keos_ykr":
+        try:
+            feat = _keos_search(cfg, ada, parsel)
+            if not feat:
+                return None
+            cen = _geojson_centroid(feat.get("geometry"))
+            if not cen:
+                return None
+            return {"lat": cen[0], "lng": cen[1], "geometry": feat.get("geometry"),
+                    "tapu_mahalle": (feat.get("properties") or {}).get("mahalle", "")}
         except Exception:
             return None
 
@@ -374,6 +419,79 @@ def _build_arcgis_record(cfg, district, ada, parsel, a, plan, dom, lat, lng):
     if tum:
         out["tum_alanlar"] = tum
     return out if (fonksiyon or "taks" in out or "kat_adedi" in out) else None
+
+
+# ---------------------------------------------------------------------------
+# NETCAD KEOS/YKR platformu (Pendik)
+# ---------------------------------------------------------------------------
+#   1) GET {proxy}/search?function=public.ykr_lsearch_parsel&q=ada/parsel
+#        -> GeoJSON FeatureCollection; properties: {ad:"8100/13", mahalle, pk}
+#           `pk` = imar belgesindeki `parselid`, geometry = parsel poligonu
+#   2) GET {base}imar.aspx?parselid={pk}  -> NETGIS imar durumu belgesi (HTML)
+#      (aynı divTable yapısı; `_extract_imar` ile ayrıştırılır)
+
+def _keos_search(cfg: Dict[str, str], ada: str, parsel: str,
+                 function: str = "public.ykr_lsearch_parsel") -> Optional[Dict[str, Any]]:
+    """KEOS arama proxy'sinden ada/parsel için GeoJSON feature (tam eşleşme)."""
+    r = requests.get(cfg["proxy"] + "/search",
+                     params={"function": function, "q": f"{ada}/{parsel}"},
+                     headers={"User-Agent": _UA, "Referer": cfg.get("kentrehberi", "")},
+                     timeout=15, verify=False)
+    feats = r.json().get("features", [])
+    target = f"{ada}/{parsel}"
+    for f in feats:
+        if (f.get("properties") or {}).get("ad") == target:
+            return f
+    return None
+
+
+def _query_keos_ykr(cfg: Dict[str, str], district: str, ada: str, parsel: str) -> Optional[Dict[str, Any]]:
+    feat = _keos_search(cfg, ada, parsel)
+    if not feat:
+        return None
+    props = feat.get("properties") or {}
+    pk = props.get("pk")
+    if not pk:
+        return None
+
+    s = requests.Session()
+    s.headers.update({"User-Agent": _UA, "Referer": cfg.get("kentrehberi", "")})
+    doc = s.get(cfg["base"] + "imar.aspx", params={"parselid": pk},
+                timeout=20, verify=False).text
+    fields = _extract_imar(doc)
+    if not fields:
+        return None
+
+    rec: Dict[str, Any] = {
+        "supported": True,
+        "belediye": district.strip().title() + " Belediyesi",
+        "ada_parsel": f"{ada}/{parsel}",
+        "tapu_mahalle": props.get("mahalle", ""),
+        "kaynak_url": f"{cfg['base']}imar.aspx?parselid={pk}",
+        **fields,
+    }
+    cen = _geojson_centroid(feat.get("geometry"))
+    if cen:
+        rec["_lat"], rec["_lng"] = cen
+    return rec
+
+
+def _geojson_centroid(geom: Optional[Dict[str, Any]]):
+    """GeoJSON Polygon/MultiPolygon -> (lat, lng) dış halka ortalaması."""
+    if not geom or not geom.get("coordinates"):
+        return None
+    try:
+        if geom["type"] == "Polygon":
+            ring = geom["coordinates"][0]
+        elif geom["type"] == "MultiPolygon":
+            ring = geom["coordinates"][0][0]
+        else:
+            return None
+        xs = [p[0] for p in ring]
+        ys = [p[1] for p in ring]
+        return (sum(ys) / len(ys), sum(xs) / len(xs))
+    except Exception:
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -549,6 +667,7 @@ _ADAPTERS = {
     "netgis": _query_netgis,
     "arcgis_kentrehberi": _query_arcgis_kentrehberi,
     "gisoft": _query_gisoft,
+    "keos_ykr": _query_keos_ykr,
 }
 
 
