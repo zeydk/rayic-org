@@ -30,3 +30,4 @@ backend/data/*.lock
 backend/data/fiyat_gozlemleri.jsonl
 backend/data/konum_ornegi.jsonl
 backend/data/konum_ornegi.jsonl
+backend/data/adres/
